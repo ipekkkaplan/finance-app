@@ -1,5 +1,5 @@
 // screens/home/home_screen.dart
-import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart'; // screens/home/home_screen.dart
+import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
 import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -141,12 +142,20 @@ class DashboardPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 12),
+
                 _sectorItem("1", "Teknoloji", "+24.5%", "ASELS, LOGO, Karel"),
                 const SizedBox(height: 12),
                 _sectorItem("2", "Bankacılık", "+15.3%", "GARAN, AKBNK, ISCTR"),
                 const SizedBox(height: 12),
                 _sectorItem("3", "Enerji", "+28.7%", "TUPRS, ENKAI, AKENR"),
+
+                const SizedBox(height: 25),
+
+                //Tüm sektörleri gör butonu
+                _seeAllSectorsButton(context, primary),
               ],
             ),
           ),
@@ -193,6 +202,54 @@ class DashboardPage extends StatelessWidget {
 
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  // ---------------------
+  //yeni buton
+  // ---------------------
+  Widget _seeAllSectorsButton(BuildContext context, Color primary) {
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const HomeScreen(initialIndex: 1),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                primary.withOpacity(0.15),
+                primary.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: primary.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Tüm Sektörleri Gör",
+                style: TextStyle(
+                  color: primary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(Icons.arrow_right_alt, color: primary, size: 22),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -318,11 +375,11 @@ class _StockTickerState extends State<StockTicker> {
     _controller
         .animateTo(maxScroll, duration: duration, curve: Curves.linear)
         .then((_) {
-          if (mounted) {
-            _controller.jumpTo(0);
-            _startAutoScrolling();
-          }
-        });
+      if (mounted) {
+        _controller.jumpTo(0);
+        _startAutoScrolling();
+      }
+    });
   }
 
   @override
