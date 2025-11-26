@@ -1,7 +1,9 @@
-// screens/home/home_screen.dart
-import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart'; // screens/home/home_screen.dart
-import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
+import 'package:finance_app/screens/sectors/sectors_screen.dart';
+import 'package:finance_app/screens/settings/settings_page.dart';
+import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
+import 'package:finance_app/core/theme/colors.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -13,49 +15,46 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
   }
 
-  final Color darkBg = const Color(0xFF0A0F24);
-  final Color cardBg = const Color(0xFF0F162C);
-  final Color primary = const Color(0xFF3D8BFF);
-
-  static const List<Widget> _pages = [
-    DashboardPage(),
-    SectorsScreen(),
-    Center(
-      child: Text("Portföy Sayfası", style: TextStyle(color: Colors.white)),
-    ),
-    Center(
-      child: Text("Ayarlar Sayfası", style: TextStyle(color: Colors.white)),
-    ),
+  static List<Widget> _pages = [
+    const DashboardPage(),
+    const SectorsScreen(),
+    const PortfolioScreen(),
+    SettingsPage(),
   ];
 
   void _onItemTapped(int index) => setState(() => _selectedIndex = index);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: darkBg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "FinScope AI",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleLarge!.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: cardBg,
+        backgroundColor: theme.cardColor,
         currentIndex: _selectedIndex,
-        selectedItemColor: primary,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: theme.textTheme.bodySmall!.color,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -75,11 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
-  final Color cardBg = const Color(0xFF0F162C);
-  final Color primary = const Color(0xFF3D8BFF);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -90,7 +88,7 @@ class DashboardPage extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
+                    backgroundColor: theme.colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -114,7 +112,7 @@ class DashboardPage extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: primary),
+                    side: BorderSide(color: theme.colorScheme.primary),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -123,7 +121,10 @@ class DashboardPage extends StatelessWidget {
                   onPressed: () {},
                   child: Text(
                     "Giriş Yap",
-                    style: TextStyle(color: primary, fontSize: 16),
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -131,51 +132,70 @@ class DashboardPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
-
-          _sectionTitle("En İyi Performans Gösteren Sektörler"),
+          _sectionTitle(context, "En İyi Performans Gösteren Sektörler"),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
-                _sectorItem("1", "Teknoloji", "+24.5%", "ASELS, LOGO, Karel"),
+                _sectorItem(
+                  context,
+                  "1",
+                  "Teknoloji",
+                  "+24.5%",
+                  "ASELS, LOGO, Karel",
+                ),
                 const SizedBox(height: 12),
-                _sectorItem("2", "Bankacılık", "+15.3%", "GARAN, AKBNK, ISCTR"),
+                _sectorItem(
+                  context,
+                  "2",
+                  "Bankacılık",
+                  "+15.3%",
+                  "GARAN, AKBNK, ISCTR",
+                ),
                 const SizedBox(height: 12),
-                _sectorItem("3", "Enerji", "+28.7%", "TUPRS, ENKAI, AKENR"),
+                _sectorItem(
+                  context,
+                  "3",
+                  "Enerji",
+                  "+28.7%",
+                  "TUPRS, ENKAI, AKENR",
+                ),
               ],
             ),
           ),
 
           const SizedBox(height: 24),
-
-          _sectionTitle("Yapay Zeka Tahminleri"),
+          _sectionTitle(context, "Yapay Zeka Tahminleri"),
 
           _aiPredictionCard(
-            "Havacılık sektöründe önümüzdeki çeyrek için güçlü büyüme bekleniyor.",
+            context,
+            "Havacılık sektöründe güçlü büyüme bekleniyor.",
           ),
           const SizedBox(height: 12),
-          _aiPredictionCard("ASELS ve THYAO kurumsal alımlarda öne çıkıyor."),
+          _aiPredictionCard(
+            context,
+            "ASELS ve THYAO kurumsal alımlarda öne çıkıyor.",
+          ),
 
           const SizedBox(height: 24),
-
-          _sectionTitle("Akıllı Para Takibi"),
+          _sectionTitle(context, "Akıllı Para Takibi"),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _moneyFlowItem("En Çok Alınan", "THYAO", "+45.3M"),
-                _moneyFlowItem("Teknoloji Net", "Alım", "+8%"),
+                _moneyFlowItem(context, "En Çok Alınan", "THYAO", "+45.3M"),
+                _moneyFlowItem(context, "Teknoloji Net", "Alım", "+8%"),
               ],
             ),
           ),
@@ -197,28 +217,37 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String text) {
+  Widget _sectionTitle(BuildContext context, String text) {
+    final theme = Theme.of(context);
     return Text(
       text,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: theme.textTheme.bodyMedium!.color,
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
     );
   }
 
-  Widget _sectorItem(String rank, String title, String change, String desc) {
+  Widget _sectorItem(
+    BuildContext context,
+    String rank,
+    String title,
+    String change,
+    String desc,
+  ) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2038),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF3D8BFF),
+            backgroundColor: theme.colorScheme.primary,
             child: Text(rank, style: const TextStyle(color: Colors.white)),
           ),
           const SizedBox(width: 12),
@@ -228,43 +257,81 @@ class DashboardPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium!.color,
+                    fontSize: 16,
+                  ),
                 ),
-                Text(desc, style: TextStyle(color: Colors.grey.shade400)),
+                Text(
+                  desc,
+                  style: TextStyle(color: theme.textTheme.bodySmall!.color),
+                ),
               ],
             ),
           ),
           Text(
             change,
-            style: const TextStyle(color: Colors.greenAccent, fontSize: 16),
+            style: TextStyle(
+              color: ThemeAwareColors.profit(context),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _aiPredictionCard(String text) {
+  Widget _aiPredictionCard(BuildContext context, String text) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2038),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white70, fontSize: 15),
+        style: TextStyle(
+          color: theme.textTheme.bodyMedium!.color,
+          fontSize: 15,
+        ),
       ),
     );
   }
 
-  Widget _moneyFlowItem(String label, String title, String value) {
+  Widget _moneyFlowItem(
+    BuildContext context,
+    String label,
+    String title,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+
+    final bool isNegative = value.contains("-");
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey)),
+        Text(label, style: TextStyle(color: theme.textTheme.bodySmall!.color)),
         const SizedBox(height: 4),
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 18)),
-        Text(value, style: const TextStyle(color: Colors.greenAccent)),
+        Text(
+          title,
+          style: TextStyle(
+            color: theme.textTheme.bodyMedium!.color,
+            fontSize: 18,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color:
+                isNegative
+                    ? ThemeAwareColors.loss(context)
+                    : ThemeAwareColors.profit(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -343,9 +410,12 @@ class _StockTickerState extends State<StockTicker> {
               Text(
                 "${item['name']}  ${item['price']}  (${item['change']})",
                 style: TextStyle(
-                  color: isNegative ? Colors.redAccent : Colors.greenAccent,
+                  color:
+                      isNegative
+                          ? ThemeAwareColors.loss(context)
+                          : ThemeAwareColors.profit(context),
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 40),

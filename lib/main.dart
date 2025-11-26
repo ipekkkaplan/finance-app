@@ -1,7 +1,12 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+import 'package:provider/provider.dart';
+import 'package:finance_app/core/theme/theme_provider.dart';
+import 'package:finance_app/core/theme/app_theme.dart';
+
+import 'package:finance_app/services/portfolio_provider.dart';
 import 'package:finance_app/screens/auth_screen/login_screen.dart';
 
 void main() async {
@@ -11,12 +16,19 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    debugPrint('Firebase başarıyla başlatıldı!');
   } catch (e) {
     debugPrint('Firebase initialization hatası: $e');
   }
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => PortfolioProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -24,15 +36,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FinScope AI', // Başlığı güncelledim
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D47A1)),
-        useMaterial3: true,
-      ),
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
-      home: const LoginScreen(),
+    return MaterialApp(
+      title: 'FinScope AI',
+      theme:
+          themeProvider.isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
+      home: const LoginScreen(),
     );
   }
 }

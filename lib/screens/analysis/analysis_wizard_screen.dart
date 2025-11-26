@@ -1,6 +1,7 @@
-// screens/analysis/analysis_wizard_screen.dart
-import 'package:finance_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:finance_app/screens/home/home_screen.dart';
+import 'package:finance_app/core/theme/colors.dart';
+import 'package:finance_app/core/theme/theme_provider.dart';
 
 class AnalysisWizardScreen extends StatefulWidget {
   const AnalysisWizardScreen({super.key});
@@ -13,19 +14,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Renkler
-  final Color darkBg = const Color(0xFF0A0F24);
-  final Color cardBg = const Color(0xFF0F162C);
-  final Color primary = const Color(0xFF3D8BFF);
-  final Color green = const Color(0xFF00C853);
-
-  // Seçim Durumları
   String? _selectedRisk;
   String? _selectedDuration;
   String? _selectedSize;
   final List<String> _selectedSectors = [];
 
-  // Sektör Listesi
   final List<String> _sectors = [
     "Teknoloji",
     "Enerji",
@@ -39,13 +32,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: darkBg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: theme.iconTheme.color),
           onPressed: () {
             if (_currentPage > 0) {
               _pageController.previousPage(
@@ -60,7 +55,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
       ),
       body: Column(
         children: [
-          // --- İLERLEME ÇUBUĞU ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -70,7 +64,10 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                     height: 4,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      color: index <= _currentPage ? green : cardBg,
+                      color:
+                          index <= _currentPage
+                              ? theme.colorScheme.primary
+                              : theme.cardColor.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -80,37 +77,29 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           ),
           const SizedBox(height: 20),
 
-          // --- SAYFA İÇERİKLERİ (PAGEVIEW) ---
           Expanded(
             child: PageView(
               controller: _pageController,
-              physics:
-                  const NeverScrollableScrollPhysics(), // Elle kaydırmayı kapat
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) => setState(() => _currentPage = index),
               children: [
-                _buildRiskPage(), // 1. Sayfa: Risk
-                _buildDurationPage(), // 2. Sayfa: Vade
-                _buildSectorPage(), // 3. Sayfa: Sektörler
-                _buildResultPage(), // 4. Sayfa: Sonuç & Büyüklük
+                _buildRiskPage(theme),
+                _buildDurationPage(theme),
+                _buildSectorPage(theme),
+                _buildResultPage(theme),
               ],
             ),
           ),
 
-          // --- ALT BUTONLAR ---
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
                 if (_currentPage > 0)
                   Expanded(
-                    flex: 1,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey[800]!),
+                        side: BorderSide(color: theme.dividerColor),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -122,9 +111,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Geri",
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium!.color,
+                        ),
                       ),
                     ),
                   ),
@@ -133,7 +124,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   flex: 2,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: green,
+                      backgroundColor: theme.colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -151,13 +142,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        if (_currentPage != 3)
+                        if (_currentPage != 3) ...[
+                          const SizedBox(width: 8),
                           const Icon(
                             Icons.arrow_forward,
                             color: Colors.white,
                             size: 18,
                           ),
+                        ],
                       ],
                     ),
                   ),
@@ -170,7 +162,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     );
   }
 
-  // --- BUTON FONKSİYONU ---
   void _nextPage() {
     if (_currentPage < 3) {
       _pageController.nextPage(
@@ -178,169 +169,172 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Sektörler sayfasına (HomeScreen içindeki 1. index) yönlendir
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder:
-              (context) =>
-                  const HomeScreen(initialIndex: 1), // 1 = Sektörler Tab'ı
-        ),
+        MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 1)),
         (route) => false,
       );
     }
   }
 
-  // --- 1. SAYFA: RİSK SEÇİMİ ---
-  Widget _buildRiskPage() {
+  Widget _buildRiskPage(ThemeData theme) {
+    final text = theme.textTheme.bodyMedium!.color!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: text.withOpacity(0.7)),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Risk İştahınızı Seçin",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
           _buildSelectableCard(
-            title: "Düşük Risk",
-            subtitle: "Güvenli, stabil yatırımlar",
-            value: "dusuk",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
+            theme,
+            "Düşük Risk",
+            "Güvenli, stabil yatırımlar",
+            "dusuk",
+            _selectedRisk,
+            (val) => setState(() => _selectedRisk = val),
           ),
           _buildSelectableCard(
-            title: "Orta Risk",
-            subtitle: "Dengeli büyüme odaklı",
-            value: "orta",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
+            theme,
+            "Orta Risk",
+            "Dengeli büyüme odaklı",
+            "orta",
+            _selectedRisk,
+            (val) => setState(() => _selectedRisk = val),
           ),
           _buildSelectableCard(
-            title: "Yüksek Risk",
-            subtitle: "Agresif, yüksek getiri",
-            value: "yuksek",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
+            theme,
+            "Yüksek Risk",
+            "Agresif, yüksek getiri",
+            "yuksek",
+            _selectedRisk,
+            (val) => setState(() => _selectedRisk = val),
           ),
         ],
       ),
     );
   }
 
-  // --- 2. SAYFA: VADE SEÇİMİ ---
-  Widget _buildDurationPage() {
+  Widget _buildDurationPage(ThemeData theme) {
+    final text = theme.textTheme.bodyMedium!.color!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: text.withOpacity(0.7)),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Yatırım Süreniz",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 16),
           _buildSelectableCard(
-            title: "Kısa Vade",
-            subtitle: "3-6 ay",
+            theme,
+            "Kısa Vade",
+            "3-6 ay",
+            "kisa",
+            _selectedDuration,
+            (val) => setState(() => _selectedDuration = val),
             icon: Icons.access_time,
-            value: "kisa",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
           ),
           _buildSelectableCard(
-            title: "Orta Vade",
-            subtitle: "6-18 ay",
+            theme,
+            "Orta Vade",
+            "6-18 ay",
+            "orta",
+            _selectedDuration,
+            (val) => setState(() => _selectedDuration = val),
             icon: Icons.show_chart,
-            value: "orta",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
           ),
           _buildSelectableCard(
-            title: "Uzun Vade",
-            subtitle: "2+ yıl",
+            theme,
+            "Uzun Vade",
+            "2+ yıl",
+            "uzun",
+            _selectedDuration,
+            (val) => setState(() => _selectedDuration = val),
             icon: Icons.gps_fixed,
-            value: "uzun",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
           ),
         ],
       ),
     );
   }
 
-  // --- 3. SAYFA: SEKTÖR SEÇİMİ ---
-  Widget _buildSectorPage() {
+  Widget _buildSectorPage(ThemeData theme) {
+    final text = theme.textTheme.bodyMedium!.color!;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: text.withOpacity(0.7)),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Tercih Ettiğiniz Sektörler",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             "Birden fazla seçebilirsiniz",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(color: text.withOpacity(0.6), fontSize: 12),
           ),
           const SizedBox(height: 16),
+
           Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -353,41 +347,42 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               itemBuilder: (context, index) {
                 final sector = _sectors[index];
                 final isSelected = _selectedSectors.contains(sector);
+
                 return GestureDetector(
                   onTap: () {
                     setState(() {
-                      if (isSelected) {
-                        _selectedSectors.remove(sector);
-                      } else {
-                        _selectedSectors.add(sector);
-                      }
+                      isSelected
+                          ? _selectedSectors.remove(sector)
+                          : _selectedSectors.add(sector);
                     });
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(
-                      color: cardBg,
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? green : Colors.transparent,
+                        color:
+                            isSelected
+                                ? theme.colorScheme.primary
+                                : Colors.transparent,
                         width: 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: Text(
-                            sector,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
+                        Text(
+                          sector,
+                          style: TextStyle(color: text, fontSize: 14),
                         ),
                         if (isSelected)
-                          Icon(Icons.check, color: green, size: 18),
+                          Icon(
+                            Icons.check,
+                            color: theme.colorScheme.primary,
+                            size: 18,
+                          ),
                       ],
                     ),
                   ),
@@ -400,32 +395,34 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     );
   }
 
-  // --- 4. SAYFA: BÜYÜKLÜK VE SONUÇ ---
-  Widget _buildResultPage() {
+  Widget _buildResultPage(ThemeData theme) {
+    final text = theme.textTheme.bodyMedium!.color!;
+    final profit = ThemeAwareColors.profit(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: text.withOpacity(0.7)),
           ),
           const SizedBox(height: 30),
 
-          const Text(
+          Text(
             "Şirket Büyüklüğü Tercihi",
             style: TextStyle(
-              color: Colors.white,
+              color: text,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -433,51 +430,53 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           const SizedBox(height: 16),
 
           _buildSelectableCard(
-            title: "BIST 30",
-            subtitle: "En büyük şirketler",
+            theme,
+            "BIST 30",
+            "En büyük şirketler",
+            "bist30",
+            _selectedSize,
+            (val) => setState(() => _selectedSize = val),
             icon: Icons.apartment,
-            value: "bist30",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
           ),
           _buildSelectableCard(
-            title: "BIST 100",
-            subtitle: "Büyük ve orta ölçekli",
+            theme,
+            "BIST 100",
+            "Büyük ve orta ölçekli",
+            "bist100",
+            _selectedSize,
+            (val) => setState(() => _selectedSize = val),
             icon: Icons.domain,
-            value: "bist100",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
           ),
           _buildSelectableCard(
-            title: "Küçük Şirketler",
-            subtitle: "Yüksek potansiyelli",
+            theme,
+            "Küçük Şirketler",
+            "Yüksek potansiyelli",
+            "small",
+            _selectedSize,
+            (val) => setState(() => _selectedSize = val),
             icon: Icons.storefront,
-            value: "small",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
           ),
 
           const SizedBox(height: 24),
 
-          // PROFİL ÖZETİ KARTI
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF061D23), // Koyu yeşilimsi arka plan
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: green.withOpacity(0.3)),
+              border: Border.all(color: profit.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: green, size: 18),
+                    Icon(Icons.auto_awesome, color: profit, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       "Profil Özeti",
                       style: TextStyle(
-                        color: green,
+                        color: profit,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -485,63 +484,67 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  "Orta Risk profiline sahip, kısa vade odaklı bir yatırımcısınız. Havacılık sektörlerinde BIST 100 şirketlerini tercih ediyorsunuz.",
-                  style: TextStyle(color: Colors.white, height: 1.5),
+                Text(
+                  "Orta risk profiline sahip, kısa vade odaklı "
+                  "bir yatırımcısınız. Havacılık sektöründe BIST 100 "
+                  "şirketleri tercih ediyorsunuz.",
+                  style: TextStyle(color: text, height: 1.5),
                 ),
               ],
             ),
           ),
+
           const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  // --- ORTAK KART BİLEŞENİ ---
-  Widget _buildSelectableCard({
-    required String title,
-    required String subtitle,
+  Widget _buildSelectableCard(
+    ThemeData theme,
+    String title,
+    String subtitle,
+    String value,
+    String? groupValue,
+    Function(String) onTap, {
     IconData? icon,
-    required String value,
-    required String? groupValue,
-    required Function(String) onTap,
   }) {
     final isSelected = groupValue == value;
+    final text = theme.textTheme.bodyMedium!.color!;
+
     return GestureDetector(
       onTap: () => onTap(value),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardBg,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? primary : Colors.transparent,
+            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
             width: 1.5,
           ),
         ),
         child: Row(
           children: [
-            if (icon != null) ...[
+            if (icon != null)
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: text.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: Colors.white70, size: 20),
+                child: Icon(icon, color: text.withOpacity(0.8), size: 20),
               ),
-              const SizedBox(width: 16),
-            ],
+            if (icon != null) const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: text,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -549,12 +552,16 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(
+                      color: text.withOpacity(0.6),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
             ),
-            if (isSelected) Icon(Icons.check, color: primary, size: 20),
+            if (isSelected)
+              Icon(Icons.check, color: theme.colorScheme.primary, size: 20),
           ],
         ),
       ),

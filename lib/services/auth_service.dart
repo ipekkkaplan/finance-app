@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class AuthService {
-  // Firebase Auth instance - null safety ile
   FirebaseAuth? get _auth {
     try {
       return FirebaseAuth.instance;
@@ -11,7 +10,6 @@ class AuthService {
     }
   }
 
-  // Firebase'in kullanılabilir olup olmadığını kontrol et
   bool get isFirebaseAvailable {
     try {
       return Firebase.apps.isNotEmpty && _auth != null;
@@ -20,7 +18,6 @@ class AuthService {
     }
   }
 
-  // Kullanıcı kayıt etme ve email doğrulama gönderme
   Future<Map<String, dynamic>> registerUser({
     required String email,
     required String password,
@@ -29,26 +26,21 @@ class AuthService {
     String? phoneNumber,
     DateTime? birthDate,
   }) async {
-    // Firebase kontrolü
     if (!isFirebaseAvailable || _auth == null) {
       return {
         'success': false,
-        'message': 'Firebase yapılandırması eksik. Lütfen Firebase yapılandırmasını tamamlayın.\n\nflutterfire configure komutunu çalıştırın.',
+        'message':
+            'Firebase yapılandırması eksik. flutterfire configure komutunu çalıştır.',
       };
     }
 
     try {
-      // Kullanıcı oluştur
-      UserCredential userCredential =
-          await _auth!.createUserWithEmailAndPassword(
+      final userCredential = await _auth!.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Kullanıcı profilini güncelle
       await userCredential.user!.updateDisplayName('$firstName $lastName');
-
-      // Email doğrulama gönder
       await userCredential.user!.sendEmailVerification();
 
       return {
@@ -68,44 +60,29 @@ class AuthService {
         case 'invalid-email':
           errorMessage = 'Geçersiz email adresi.';
           break;
-        case 'operation-not-allowed':
-          errorMessage = 'Bu işlem şu anda izin verilmiyor.';
-          break;
         default:
           errorMessage = 'Kayıt işlemi başarısız: ${e.message}';
       }
-      return {
-        'success': false,
-        'message': errorMessage,
-      };
+      return {'success': false, 'message': errorMessage};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Beklenmeyen bir hata oluştu: $e',
-      };
+      return {'success': false, 'message': 'Beklenmeyen hata: $e'};
     }
   }
 
-  // Kullanıcı girişi
   Future<Map<String, dynamic>> signInUser({
     required String email,
     required String password,
   }) async {
-    // Firebase kontrolü
     if (!isFirebaseAvailable || _auth == null) {
-      return {
-        'success': false,
-        'message': 'Firebase yapılandırması eksik. Lütfen Firebase yapılandırmasını tamamlayın.\n\nflutterfire configure komutunu çalıştırın.',
-      };
+      return {'success': false, 'message': 'Firebase yapılandırması eksik.'};
     }
 
     try {
-      UserCredential userCredential = await _auth!.signInWithEmailAndPassword(
+      final userCredential = await _auth!.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Email doğrulanmış mı kontrol et
       if (!userCredential.user!.emailVerified) {
         return {
           'success': false,
@@ -123,7 +100,7 @@ class AuthService {
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'Bu email adresi ile kayıtlı kullanıcı bulunamadı.';
+          errorMessage = 'Bu email ile kayıtlı kullanıcı yok.';
           break;
         case 'wrong-password':
           errorMessage = 'Şifre yanlış.';
@@ -136,35 +113,24 @@ class AuthService {
           break;
         case 'too-many-requests':
           errorMessage =
-              'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
+              'Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.';
           break;
         default:
           errorMessage = 'Giriş işlemi başarısız: ${e.message}';
       }
-      return {
-        'success': false,
-        'message': errorMessage,
-      };
+      return {'success': false, 'message': errorMessage};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Beklenmeyen bir hata oluştu: $e',
-      };
+      return {'success': false, 'message': 'Beklenmeyen hata: $e'};
     }
   }
 
-  // Email doğrulama maili yeniden gönder
   Future<Map<String, dynamic>> resendVerificationEmail() async {
-    // Firebase kontrolü
     if (!isFirebaseAvailable || _auth == null) {
-      return {
-        'success': false,
-        'message': 'Firebase yapılandırması eksik.',
-      };
+      return {'success': false, 'message': 'Firebase yapılandırması eksik.'};
     }
 
     try {
-      User? user = _auth!.currentUser;
+      final user = _auth!.currentUser;
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
         return {
@@ -174,7 +140,7 @@ class AuthService {
       }
       return {
         'success': false,
-        'message': 'Kullanıcı bulunamadı veya email zaten doğrulanmış.',
+        'message': 'Kullanıcı yok veya email zaten doğrulanmış.',
       };
     } catch (e) {
       return {
@@ -184,22 +150,14 @@ class AuthService {
     }
   }
 
-  // Şifre sıfırlama maili gönder
   Future<Map<String, dynamic>> sendPasswordResetEmail(String email) async {
-    // Firebase kontrolü
     if (!isFirebaseAvailable || _auth == null) {
-      return {
-        'success': false,
-        'message': 'Firebase yapılandırması eksik.',
-      };
+      return {'success': false, 'message': 'Firebase yapılandırması eksik.'};
     }
 
     try {
       await _auth!.sendPasswordResetEmail(email: email);
-      return {
-        'success': true,
-        'message': 'Şifre sıfırlama maili gönderildi.',
-      };
+      return {'success': true, 'message': 'Şifre sıfırlama maili gönderildi.'};
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -212,26 +170,18 @@ class AuthService {
         default:
           errorMessage = 'Şifre sıfırlama maili gönderilemedi: ${e.message}';
       }
-      return {
-        'success': false,
-        'message': errorMessage,
-      };
+      return {'success': false, 'message': errorMessage};
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Beklenmeyen bir hata oluştu: $e',
-      };
+      return {'success': false, 'message': 'Beklenmeyen hata: $e'};
     }
   }
 
-  // Çıkış yap
   Future<void> signOut() async {
     if (isFirebaseAvailable && _auth != null) {
       await _auth!.signOut();
     }
   }
 
-  // Mevcut kullanıcı
   User? get currentUser {
     try {
       return _auth?.currentUser;
@@ -239,5 +189,89 @@ class AuthService {
       return null;
     }
   }
-}
 
+  Future<Map<String, dynamic>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (!isFirebaseAvailable || _auth == null) {
+      return {'success': false, 'message': 'Firebase yapılandırması eksik.'};
+    }
+
+    try {
+      final user = _auth!.currentUser;
+
+      if (user == null || user.email == null) {
+        return {'success': false, 'message': 'Kullanıcı oturumu bulunamadı.'};
+      }
+
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: oldPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+
+      return {'success': true};
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'wrong-password':
+          message = 'Eski şifre yanlış.';
+          break;
+        case 'weak-password':
+          message = 'Yeni şifre çok zayıf.';
+          break;
+        case 'requires-recent-login':
+          message = 'Lütfen tekrar giriş yapıp yeniden deneyin.';
+          break;
+        default:
+          message = e.message ?? 'Şifre güncellenemedi.';
+      }
+      return {'success': false, 'message': message};
+    } catch (e) {
+      return {'success': false, 'message': 'Beklenmeyen bir hata oluştu: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteAccount({required String password}) async {
+    if (!isFirebaseAvailable || _auth == null) {
+      return {'success': false, 'message': 'Firebase yapılandırması eksik.'};
+    }
+
+    try {
+      final user = _auth!.currentUser;
+      if (user == null) {
+        return {'success': false, 'message': 'Kullanıcı oturumu açık değil.'};
+      }
+
+      // Reauthenticate
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(cred);
+
+      // Hesabı sil
+      await user.delete();
+
+      return {'success': true, 'message': 'Hesap başarıyla silindi.'};
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        return {'success': false, 'message': 'Şifre yanlış.'};
+      }
+      if (e.code == 'requires-recent-login') {
+        return {
+          'success': false,
+          'message':
+              'Güvenlik nedeniyle tekrar giriş yapmanız gerekiyor. Tekrar giriş yapın.',
+        };
+      }
+      return {'success': false, 'message': e.message ?? 'Hesap silinemedi.'};
+    } catch (e) {
+      return {'success': false, 'message': 'Hata oluştu: $e'};
+    }
+  }
+}
