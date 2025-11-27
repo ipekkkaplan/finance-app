@@ -1,6 +1,7 @@
 // screens/home/home_screen.dart
 import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
 import 'package:finance_app/screens/sectors/sectors_screen.dart';
+import 'package:finance_app/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,9 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Center(
       child: Text("Portföy Sayfası", style: TextStyle(color: Colors.white)),
     ),
-    Center(
-      child: Text("Ayarlar Sayfası", style: TextStyle(color: Colors.white)),
-    ),
+    SettingsScreen(),
   ];
 
   void _onItemTapped(int index) => setState(() => _selectedIndex = index);
