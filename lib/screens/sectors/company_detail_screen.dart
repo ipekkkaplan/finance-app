@@ -391,19 +391,19 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF0D1B3E), // Koyu mavi
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: primary.withOpacity(0.3)),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: primary, size: 18),
+                  Icon(Icons.auto_awesome, color: Colors.blue, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     "AI Teknik Yorum",
                     style: TextStyle(
-                      color: primary,
+                      color: Colors.blue,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
