@@ -1,3 +1,4 @@
+// screens/auth_screen/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:finance_app/services/auth_service.dart';
 
@@ -294,7 +295,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withAlpha(51),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
@@ -325,7 +326,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withAlpha(26),
                           spreadRadius: 2,
                           blurRadius: 10,
                           offset: const Offset(0, 3),

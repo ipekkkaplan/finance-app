@@ -85,23 +85,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         TextButton(
                           onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
                             Navigator.pop(context);
                             final resendResult =
                                 await _authService.resendVerificationEmail();
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    resendResult['message'] ??
-                                        'Email gönderilemedi',
-                                  ),
-                                  backgroundColor:
-                                      resendResult['success'] == true
-                                          ? Colors.green
-                                          : Colors.red,
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  resendResult['message'] ?? 'İşlem tamamlandı',
                                 ),
-                              );
-                            }
+                                backgroundColor:
+                                    resendResult['success'] == true
+                                        ? Colors.green
+                                        : Colors.red,
+                              ),
+                            );
                           },
                           child: const Text('Yeniden Gönder'),
                         ),
@@ -110,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
               );
             }
           } else {
-            // Diğer hatalar
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

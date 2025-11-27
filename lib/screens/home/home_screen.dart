@@ -224,14 +224,14 @@ class DashboardPage extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                primary.withOpacity(0.15),
-                primary.withOpacity(0.05),
+                primary.withValues(alpha: 0.15),
+                primary.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: primary.withOpacity(0.3)),
+            border: Border.all(color: primary.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -374,11 +374,11 @@ class _StockTickerState extends State<StockTicker> {
     _controller
         .animateTo(maxScroll, duration: duration, curve: Curves.linear)
         .then((_) {
-      if (mounted) {
-        _controller.jumpTo(0);
-        _startAutoScrolling();
-      }
-    });
+          if (mounted) {
+            _controller.jumpTo(0);
+            _startAutoScrolling();
+          }
+        });
   }
 
   @override
