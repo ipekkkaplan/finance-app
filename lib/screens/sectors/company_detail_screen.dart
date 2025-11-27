@@ -65,7 +65,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               decoration: BoxDecoration(
                 color: cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +90,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: green.withOpacity(0.2),
+                              color: green.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -205,7 +205,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF0D1B3E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primary.withOpacity(0.3)),
+        border: Border.all(color: primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +234,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg.withOpacity(0.5),
+              color: cardBg.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -253,7 +253,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg.withOpacity(0.5),
+              color: cardBg.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -431,7 +431,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
+                      color: Colors.blue.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -597,7 +597,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,7 +638,7 @@ class SimpleLineChartPainter extends CustomPainter {
 
     final Paint gridPaint =
         Paint()
-          ..color = Colors.grey.withOpacity(0.2)
+          ..color = Colors.grey.withValues(alpha: 0.2)
           ..strokeWidth = 1;
 
     final Paint dotPaint = Paint()..color = lineColor;

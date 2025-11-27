@@ -1,3 +1,4 @@
+// screens/settings/update_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -11,136 +12,233 @@ class UpdateProfileScreen extends StatefulWidget {
 class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final _auth = FirebaseAuth.instance;
 
-  // Email Güncelleme
+  // Email Güncelleme Kontrolcüleri
   final _oldEmailController = TextEditingController();
   final _emailPasswordController = TextEditingController();
   final _newEmailController = TextEditingController();
 
-  // Şifre Güncelleme
+  // Şifre Güncelleme Kontrolcüleri
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   bool _loading = false;
 
-  // Şifre göz toggle'ları
+  // Şifre gizleme/gösterme durumları
   bool _showEmailPassword = false;
   bool _showOldPassword = false;
   bool _showNewPassword = false;
   bool _showConfirmPassword = false;
 
-  // ----------------- Email Güncelle -----------------
-  Future<void> _updateEmail() async {
-    setState(() => _loading = true);
-    final user = _auth.currentUser;
-    if (user == null) return;
-
-    try {
-      // Kullanıcıyı yeniden doğrula
-      final cred = EmailAuthProvider.credential(
-          email: _oldEmailController.text.trim(),
-          password: _emailPasswordController.text.trim());
-      await user.reauthenticateWithCredential(cred);
-
-      // Email güncelle
-      await user.updateEmail(_newEmailController.text.trim());
-
-      // Yeni email'e doğrulama maili gönder
-      await user.sendEmailVerification();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Email başarıyla güncellendi! Yeni email adresine doğrulama maili gönderildi.'),
-        ),
-      );
-
-      // Kullanıcı doğrulama yapmadan yeni email ile işlem yapamayacak
-      await _auth.signOut();
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF0D1117),
-          title: const Text('Doğrulama Gerekiyor',
-              style: TextStyle(color: Colors.white)),
-          content: const Text(
-              'Yeni email adresinizi doğrulamadan giriş yapamazsınız. Lütfen mailinizi kontrol edin.',
-              style: TextStyle(color: Colors.white70)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Tamam', style: TextStyle(color: Colors.blue)),
-            )
-          ],
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email güncellenemedi: ${e.message}')),
-      );
-    } finally {
-      setState(() => _loading = false);
+  @override
+  void initState() {
+    super.initState();
+    // Kullanıcının mevcut emailini "Eski Email" alanına otomatik dolduralım
+    // Böylece kullanıcı yazmakla uğraşmaz
+    if (_auth.currentUser?.email != null) {
+      _oldEmailController.text = _auth.currentUser!.email!;
     }
   }
 
-  // ----------------- Şifre Güncelle -----------------
-  Future<void> _updatePassword() async {
+  // ----------------- Email Güncelleme İşlemi -----------------
+  Future<void> _updateEmail() async {
     setState(() => _loading = true);
     final user = _auth.currentUser;
+
     if (user == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kullanıcı bulunamadı. Lütfen tekrar giriş yapın.')),
+        const SnackBar(content: Text('Kullanıcı oturumu bulunamadı.')),
+      );
+      setState(() => _loading = false);
+      return;
+    }
+
+    // Basit doğrulama: Alanlar boş mu?
+    if (_emailPasswordController.text.isEmpty ||
+        _newEmailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen şifrenizi ve yeni email adresinizi girin.'),
+        ),
       );
       setState(() => _loading = false);
       return;
     }
 
     try {
-      // Eski şifre ile yeniden doğrulama
+      // 1. ADIM: Güvenlik için kullanıcıyı yeniden doğruluyoruz (Re-authenticate)
+      // Burada kullanıcının elle yazdığı email yerine (user.email) kullanmak daha güvenlidir.
       final cred = EmailAuthProvider.credential(
-          email: user.email!, password: _oldPasswordController.text.trim());
+        email: user.email!,
+        password: _emailPasswordController.text.trim(),
+      );
+
       await user.reauthenticateWithCredential(cred);
 
-      // Yeni şifreler eşleşiyor mu kontrolü
-      if (_newPasswordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(
-              'Yeni şifre ve tekrar şifre eşleşmiyor. Lütfen iki alana da aynı şifreyi.')),
-        );
-        return;
-      }
+      // 2. ADIM: Yeni email adresine doğrulama linki gönderiyoruz
+      // Bu işlem sonrası Firebase veritabanında email hemen değişmez.
+      // Kullanıcı linke tıkladığında değişir.
+      await user.verifyBeforeUpdateEmail(_newEmailController.text.trim());
 
-      // Şifre güçlü mü kontrolü
-      final password = _newPasswordController.text.trim();
-      final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$');
-      if (!passwordRegex.hasMatch(password)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(
-              'Şifre güçlü değil! En az 8 karakter, 1 büyük harf, 1 küçük harf ve 1 sayı içermelidir.')),
-        );
-        return;
-      }
+      if (!mounted) return;
 
-      // Şifre güncelleme
-      await user.updatePassword(password);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Şifre başarıyla güncellendi!')),
+      // 3. ADIM: Kullanıcıyı bilgilendir ve Çıkış Yap
+      // Email değişeceği için oturumu kapatmak güvenlik standardıdır.
+      await _auth.signOut();
+
+      // Dialog göstermek için context kontrolü
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false, // Kullanıcı boşluğa basıp kapatamasın
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFF0D1117),
+              title: const Text(
+                'Doğrulama Maili Gönderildi',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: const Text(
+                'Güvenliğiniz için oturumunuz kapatıldı.\n\nLütfen yeni email adresinize gelen linke tıklayarak değişimi onaylayın, ardından yeni emailinizle giriş yapın.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Dialogu kapat
+                    Navigator.of(
+                      context,
+                    ).pop(); // Profil sayfasından çık (Login'e döner)
+                  },
+                  child: const Text(
+                    'Anladım, Giriş Yap',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
       );
     } on FirebaseAuthException catch (e) {
-      String message = 'Şifre güncellenemedi. Lütfen tekrar deneyin.';
+      String message = 'Bir hata oluştu.';
       if (e.code == 'wrong-password') {
-        message = 'Eski şifre yanlış. Lütfen doğru şifreyi girin.';
+        message = 'Girdiğiniz şifre yanlış.';
+      } else if (e.code == 'email-already-in-use') {
+        message =
+            'Bu email adresi zaten başka bir hesap tarafından kullanılıyor.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Geçersiz email formatı.';
       } else if (e.code == 'requires-recent-login') {
-        message = 'Güvenlik nedeniyle işlemi tekrar yapmak için yeniden giriş yapmanız gerekiyor.';
-      } else if (e.code == 'weak-password') {
-        message = 'Yeni şifreniz çok zayıf. Lütfen daha güçlü bir şifre seçin.';
+        message =
+            'Oturumunuz zaman aşımına uğradı, lütfen çıkış yapıp tekrar girin.';
       }
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // ----------------- Şifre Güncelleme İşlemi -----------------
+  Future<void> _updatePassword() async {
+    setState(() => _loading = true);
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kullanıcı bulunamadı. Lütfen tekrar giriş yapın.'),
+        ),
+      );
+      setState(() => _loading = false);
+      return;
+    }
+
+    if (_oldPasswordController.text.isEmpty ||
+        _newPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen tüm alanları doldurun.')),
+      );
+      setState(() => _loading = false);
+      return;
+    }
+
+    try {
+      // 1. Eski şifre ile yeniden doğrulama
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: _oldPasswordController.text.trim(),
+      );
+      await user.reauthenticateWithCredential(cred);
+
+      // 2. Yeni şifre eşleşme kontrolü
+      if (_newPasswordController.text != _confirmPasswordController.text) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Yeni şifreler birbiriyle eşleşmiyor.')),
+        );
+        return;
+      }
+
+      // 3. Şifre Güçlülük Kontrolü (Regex)
+      final password = _newPasswordController.text.trim();
+      final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$');
+
+      if (!passwordRegex.hasMatch(password)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Şifre en az 8 karakter, 1 büyük harf, 1 küçük harf ve 1 rakam içermelidir.',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // 4. Şifreyi Güncelle
+      await user.updatePassword(password);
+
+      if (!mounted) return;
+
+      // Başarı Mesajı
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Şifreniz başarıyla güncellendi!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Alanları temizle
+      _oldPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+    } on FirebaseAuthException catch (e) {
+      String message = 'Şifre güncellenemedi.';
+      if (e.code == 'wrong-password') {
+        message = 'Mevcut şifrenizi yanlış girdiniz.';
+      } else if (e.code == 'requires-recent-login') {
+        message = 'Güvenlik nedeniyle yeniden giriş yapmanız gerekiyor.';
+      } else if (e.code == 'weak-password') {
+        message = 'Yeni şifreniz çok zayıf.';
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -155,29 +253,44 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     super.dispose();
   }
 
-  // ----------------- TextField Widget -----------------
-  Widget _textField(String label, TextEditingController controller,
-      {bool obscure = false, VoidCallback? toggleObscure, bool showToggle = false}) {
+  // ----------------- TextField Widget Yardımcısı -----------------
+  Widget _textField(
+    String label,
+    TextEditingController controller, {
+    bool obscure = false,
+    VoidCallback? toggleObscure,
+    bool showToggle = false,
+    bool readOnly = false, // Sadece okunabilir alanlar için (örn: Eski email)
+  }) {
     return TextField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
+      readOnly: readOnly,
+      style: TextStyle(
+        color:
+            readOnly
+                ? Colors.white54
+                : Colors.white, // Okunabilirse gri, değilse beyaz
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
         filled: true,
         fillColor: const Color(0xFF0D1117),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        suffixIcon: showToggle
-            ? IconButton(
-          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white70),
-          onPressed: toggleObscure,
-        )
-            : null,
+        suffixIcon:
+            showToggle
+                ? IconButton(
+                  icon: Icon(
+                    obscure ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white70,
+                  ),
+                  onPressed: toggleObscure,
+                )
+                : null,
       ),
     );
   }
@@ -186,35 +299,52 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil Güncelle',
-        style: TextStyle(color: Colors.white),),
-        backgroundColor: const Color(0xFF0D193F),
-        iconTheme: const IconThemeData(
-          color: Colors.white
+        title: const Text(
+          'Profil Güncelle',
+          style: TextStyle(color: Colors.white),
         ),
+        backgroundColor: const Color(0xFF0D193F),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: const Color(0xFF0D193F),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start, // Başlıkları sola hizalar
           children: [
-            const Text('Email Güncelleme',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
+            // --- EMAIL GÜNCELLEME BÖLÜMÜ ---
+            const Text(
+              'Email Güncelleme',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 12),
-            _textField('Eski Email', _oldEmailController),
+
+            // Eski emaili sadece gösteriyoruz, değiştirtmiyoruz (readOnly: true)
+            _textField('Mevcut Email', _oldEmailController, readOnly: true),
+
             const SizedBox(height: 10),
-            _textField('Şifre', _emailPasswordController,
-                obscure: !_showEmailPassword,
-                showToggle: true,
-                toggleObscure: () {
-                  setState(() => _showEmailPassword = !_showEmailPassword);
-                }),
+
+            _textField(
+              'Mevcut Şifreniz (Onay için)',
+              _emailPasswordController,
+              obscure: !_showEmailPassword,
+              showToggle: true,
+              toggleObscure: () {
+                setState(() => _showEmailPassword = !_showEmailPassword);
+              },
+            ),
+
             const SizedBox(height: 10),
-            _textField('Yeni Email', _newEmailController),
+
+            _textField('Yeni Email Adresi', _newEmailController),
+
             const SizedBox(height: 16),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -226,42 +356,70 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: _loading
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : const Text('Email Güncelle',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15)),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text(
+                          'Emaili Güncelle',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
               ),
             ),
-            const SizedBox(height: 30),
-            const Text('Şifre Güncelleme',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
+
+            const SizedBox(height: 40), // Bölümler arası boşluk
+            const Divider(color: Colors.white24), // Çizgi ile ayırma
+            const SizedBox(height: 20),
+
+            // --- ŞİFRE GÜNCELLEME BÖLÜMÜ ---
+            const Text(
+              'Şifre Güncelleme',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 12),
-            _textField('Eski Şifre', _oldPasswordController,
-                obscure: !_showOldPassword,
-                showToggle: true,
-                toggleObscure: () {
-                  setState(() => _showOldPassword = !_showOldPassword);
-                }),
+            _textField(
+              'Eski Şifre',
+              _oldPasswordController,
+              obscure: !_showOldPassword,
+              showToggle: true,
+              toggleObscure: () {
+                setState(() => _showOldPassword = !_showOldPassword);
+              },
+            ),
             const SizedBox(height: 10),
-            _textField('Yeni Şifre', _newPasswordController,
-                obscure: !_showNewPassword,
-                showToggle: true,
-                toggleObscure: () {
-                  setState(() => _showNewPassword = !_showNewPassword);
-                }),
+            _textField(
+              'Yeni Şifre',
+              _newPasswordController,
+              obscure: !_showNewPassword,
+              showToggle: true,
+              toggleObscure: () {
+                setState(() => _showNewPassword = !_showNewPassword);
+              },
+            ),
             const SizedBox(height: 10),
-            _textField('Yeni Şifre (Tekrar)', _confirmPasswordController,
-                obscure: !_showConfirmPassword,
-                showToggle: true,
-                toggleObscure: () {
-                  setState(() => _showConfirmPassword = !_showConfirmPassword);
-                }),
+            _textField(
+              'Yeni Şifre (Tekrar)',
+              _confirmPasswordController,
+              obscure: !_showConfirmPassword,
+              showToggle: true,
+              toggleObscure: () {
+                setState(() => _showConfirmPassword = !_showConfirmPassword);
+              },
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -274,15 +432,27 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: _loading
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : const Text('Şifre Güncelle',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15)),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text(
+                          'Şifre Güncelle',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
               ),
             ),
+            const SizedBox(height: 30), // Alt boşluk
           ],
         ),
       ),

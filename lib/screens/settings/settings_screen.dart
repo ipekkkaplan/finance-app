@@ -1,5 +1,6 @@
+// screens/settings/settings_screen.dart
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart';// AuthService path’ini güncelle
+import '../../services/auth_service.dart'; // AuthService path’ini güncelle
 import 'update_profile_screen.dart'; // UpdateProfileScreen dosya yolunu güncelle
 
 class SettingsScreen extends StatefulWidget {
@@ -12,7 +13,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final Color darkBg = const Color(0xFF0D1117);
   final Color primary = const Color(0xFF3D8BFF); // mavi
-  final Color icons_colors = const Color(0xFF4CAF50); // bildirim ikonu rengi
+  final Color iconsColors = const Color(0xFF4CAF50); // bildirim ikonu rengi
 
   bool darkMode = false;
   bool notifications = false;
@@ -27,9 +28,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final user = AuthService().currentUser;
 
     nameController = TextEditingController(
-        text: user != null ? (user.displayName ?? '') : '');
+      text: user != null ? (user.displayName ?? '') : '',
+    );
     emailController = TextEditingController(
-        text: user != null ? (user.email ?? '') : '');
+      text: user != null ? (user.email ?? '') : '',
+    );
   }
 
   @override
@@ -61,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 "Hesap ve uygulama tercihlerini yönet.",
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 14,
                 ),
               ),
@@ -90,13 +93,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                  const UpdateProfileScreen(),
+                                  builder:
+                                      (context) => const UpdateProfileScreen(),
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: icons_colors,
+                              backgroundColor: iconsColors,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -129,11 +132,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _switchRow(
                       title: "Karanlık Mod",
                       subtitle: darkMode ? "Açık" : "Kapalı",
-                      icon: darkMode
-                          ? Icons.dark_mode_outlined
-                          : Icons.wb_sunny_outlined,
-                      iconColor:
-                      darkMode ? primary : const Color(0xFFFFC107),
+                      icon:
+                          darkMode
+                              ? Icons.dark_mode_outlined
+                              : Icons.wb_sunny_outlined,
+                      iconColor: darkMode ? primary : const Color(0xFFFFC107),
                       value: darkMode,
                       onChange: (v) => setState(() => darkMode = v),
                     ),
@@ -141,12 +144,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _switchRow(
                       title: "Bildirimler",
                       subtitle: notifications ? "Açık" : "Kapalı",
-                      icon: notifications
-                          ? Icons.notifications_none
-                          : Icons.notifications_off,
+                      icon:
+                          notifications
+                              ? Icons.notifications_none
+                              : Icons.notifications_off,
                       value: notifications,
                       onChange: (v) => setState(() => notifications = v),
-                      iconColor: icons_colors,
+                      iconColor: iconsColors,
                     ),
                   ],
                 ),
@@ -163,9 +167,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.all(6.0),
                   child: Text(
                     "FinScope AI, kişisel verilerinizi güvenli bir şekilde saklar. "
-                        "Finansal bilgileriniz şifrelenir ve üçüncü taraflarla paylaşılmaz.",
+                    "Finansal bilgileriniz şifrelenir ve üçüncü taraflarla paylaşılmaz.",
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -181,18 +185,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: const [
                     Text(
                       "FinScope AI",
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.white54, fontSize: 13),
                     ),
                     SizedBox(height: 4),
                     Text(
                       "Versiyon 1.0.0",
-                      style: TextStyle(
-                        color: Colors.white38,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white38, fontSize: 12),
                     ),
                   ],
                 ),
@@ -216,9 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF0F162C),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Row(
             children: [
               if (icon != null) ...[
-                Icon(icon, color: iconColor ?? icons_colors, size: 22),
+                Icon(icon, color: iconColor ?? iconsColors, size: 22),
                 const SizedBox(width: 10),
               ],
               Text(
@@ -254,7 +250,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -308,18 +304,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 subtitle,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.45),
+                  color: Colors.white.withValues(alpha: 0.45),
                   fontSize: 13,
                 ),
               ),
             ],
           ),
         ),
-        Switch(
-          value: value,
-          activeColor: primary,
-          onChanged: onChange,
-        ),
+        Switch(value: value, activeColor: primary, onChanged: onChange),
       ],
     );
   }
