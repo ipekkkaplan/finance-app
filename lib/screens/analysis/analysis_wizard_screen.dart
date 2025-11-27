@@ -465,7 +465,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF061D23), // Koyu yeşilimsi arka plan
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: green.withOpacity(0.3)),
+              border: Border.all(color: green.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -527,7 +527,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: Colors.white70, size: 20),
