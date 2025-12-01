@@ -1,4 +1,3 @@
-// screens/settings/update_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -30,11 +29,12 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   bool _showNewPassword = false;
   bool _showConfirmPassword = false;
 
+  // Marka Rengi (Butonlar için sabit kalabilir veya temadan çekilebilir)
+  final Color successColor = const Color(0xFF4CAF50);
+
   @override
   void initState() {
     super.initState();
-    // Kullanıcının mevcut emailini "Eski Email" alanına otomatik dolduralım
-    // Böylece kullanıcı yazmakla uğraşmaz
     if (_auth.currentUser?.email != null) {
       _oldEmailController.text = _auth.currentUser!.email!;
     }
@@ -54,7 +54,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       return;
     }
 
-    // Basit doğrulama: Alanlar boş mu?
     if (_emailPasswordController.text.isEmpty ||
         _newEmailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,8 +66,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     }
 
     try {
-      // 1. ADIM: Güvenlik için kullanıcıyı yeniden doğruluyoruz (Re-authenticate)
-      // Burada kullanıcının elle yazdığı email yerine (user.email) kullanmak daha güvenlidir.
+      // 1. ADIM: Güvenlik için kullanıcıyı yeniden doğruluyoruz
       final cred = EmailAuthProvider.credential(
         email: user.email!,
         password: _emailPasswordController.text.trim(),
@@ -77,61 +75,59 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       await user.reauthenticateWithCredential(cred);
 
       // 2. ADIM: Yeni email adresine doğrulama linki gönderiyoruz
-      // Bu işlem sonrası Firebase veritabanında email hemen değişmez.
-      // Kullanıcı linke tıkladığında değişir.
       await user.verifyBeforeUpdateEmail(_newEmailController.text.trim());
 
       if (!mounted) return;
 
       // 3. ADIM: Kullanıcıyı bilgilendir ve Çıkış Yap
-      // Email değişeceği için oturumu kapatmak güvenlik standardıdır.
       await _auth.signOut();
 
-      // Dialog göstermek için context kontrolü
       if (!mounted) return;
+
+      // Dialog renklerini de temaya uygun hale getirmek için context'ten alıyoruz
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final dialogBg = isDark ? const Color(0xFF0D1117) : Colors.white;
+      final titleColor = isDark ? Colors.white : Colors.black;
+      final contentColor = isDark ? Colors.white70 : Colors.black87;
 
       await showDialog(
         context: context,
-        barrierDismissible: false, // Kullanıcı boşluğa basıp kapatamasın
+        barrierDismissible: false,
         builder:
             (context) => AlertDialog(
-              backgroundColor: const Color(0xFF0D1117),
-              title: const Text(
-                'Doğrulama Maili Gönderildi',
-                style: TextStyle(color: Colors.white),
+          backgroundColor: dialogBg,
+          title: Text(
+            'Doğrulama Maili Gönderildi',
+            style: TextStyle(color: titleColor),
+          ),
+          content: Text(
+            'Güvenliğiniz için oturumunuz kapatıldı.\n\nLütfen yeni email adresinize gelen linke tıklayarak değişimi onaylayın, ardından yeni emailinizle giriş yapın.',
+            style: TextStyle(color: contentColor),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Dialogu kapat
+                Navigator.of(context).pop(); // Profil sayfasından çık
+              },
+              child: const Text(
+                'Anladım, Giriş Yap',
+                style: TextStyle(color: Colors.blue),
               ),
-              content: const Text(
-                'Güvenliğiniz için oturumunuz kapatıldı.\n\nLütfen yeni email adresinize gelen linke tıklayarak değişimi onaylayın, ardından yeni emailinizle giriş yapın.',
-                style: TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Dialogu kapat
-                    Navigator.of(
-                      context,
-                    ).pop(); // Profil sayfasından çık (Login'e döner)
-                  },
-                  child: const Text(
-                    'Anladım, Giriş Yap',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
             ),
+          ],
+        ),
       );
     } on FirebaseAuthException catch (e) {
       String message = 'Bir hata oluştu.';
       if (e.code == 'wrong-password') {
         message = 'Girdiğiniz şifre yanlış.';
       } else if (e.code == 'email-already-in-use') {
-        message =
-            'Bu email adresi zaten başka bir hesap tarafından kullanılıyor.';
+        message = 'Bu email adresi zaten kullanılıyor.';
       } else if (e.code == 'invalid-email') {
         message = 'Geçersiz email formatı.';
       } else if (e.code == 'requires-recent-login') {
-        message =
-            'Oturumunuz zaman aşımına uğradı, lütfen çıkış yapıp tekrar girin.';
+        message = 'Lütfen çıkış yapıp tekrar girin.';
       }
 
       if (!mounted) return;
@@ -184,12 +180,12 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       if (_newPasswordController.text != _confirmPasswordController.text) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Yeni şifreler birbiriyle eşleşmiyor.')),
+          const SnackBar(content: Text('Yeni şifreler eşleşmiyor.')),
         );
         return;
       }
 
-      // 3. Şifre Güçlülük Kontrolü (Regex)
+      // 3. Şifre Güçlülük Kontrolü
       final password = _newPasswordController.text.trim();
       final passwordRegex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$');
 
@@ -211,7 +207,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
       if (!mounted) return;
 
-      // Başarı Mesajı
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Şifreniz başarıyla güncellendi!'),
@@ -219,7 +214,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         ),
       );
 
-      // Alanları temizle
       _oldPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
@@ -255,77 +249,102 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   // ----------------- TextField Widget Yardımcısı -----------------
   Widget _textField(
-    String label,
-    TextEditingController controller, {
-    bool obscure = false,
-    VoidCallback? toggleObscure,
-    bool showToggle = false,
-    bool readOnly = false, // Sadece okunabilir alanlar için (örn: Eski email)
-  }) {
+      String label,
+      TextEditingController controller, {
+        bool obscure = false,
+        VoidCallback? toggleObscure,
+        bool showToggle = false,
+        bool readOnly = false,
+        // Renkleri parametre olarak alıyoruz
+        required Color fillColor,
+        required Color textColor,
+        required Color labelColor,
+        required Color iconColor,
+      }) {
     return TextField(
       controller: controller,
       obscureText: obscure,
       readOnly: readOnly,
       style: TextStyle(
         color:
-            readOnly
-                ? Colors.white54
-                : Colors.white, // Okunabilirse gri, değilse beyaz
+        readOnly
+            ? textColor.withOpacity(0.6)
+            : textColor, // Okunabilirse soluk, değilse normal
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+        labelStyle: TextStyle(color: labelColor),
         filled: true,
-        fillColor: const Color(0xFF0D1117),
+        fillColor: fillColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         suffixIcon:
-            showToggle
-                ? IconButton(
-                  icon: Icon(
-                    obscure ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white70,
-                  ),
-                  onPressed: toggleObscure,
-                )
-                : null,
+        showToggle
+            ? IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: iconColor,
+          ),
+          onPressed: toggleObscure,
+        )
+            : null,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // TEMA VERİLERİNİ ÇEKİYORUZ
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Dinamik renkler
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final appBarBg = theme.scaffoldBackgroundColor; // AppBar scaffold ile aynı renk
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final labelColor = isDark ? Colors.white70 : Colors.grey[700]!;
+    final inputFillColor = isDark ? const Color(0xFF0D1117) : Colors.grey[200]!;
+    final iconColor = theme.iconTheme.color ?? textColor;
+    final dividerColor = theme.dividerColor;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Profil Güncelle',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: textColor, fontSize: 20),
         ),
-        backgroundColor: const Color(0xFF0D193F),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: appBarBg,
+        elevation: 0,
+        iconTheme: IconThemeData(color: iconColor), // Geri butonu rengi
       ),
-      backgroundColor: const Color(0xFF0D193F),
+      backgroundColor: scaffoldBg,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start, // Başlıkları sola hizalar
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- EMAIL GÜNCELLEME BÖLÜMÜ ---
-            const Text(
+            Text(
               'Email Güncelleme',
               style: TextStyle(
-                color: Colors.white,
+                color: textColor,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
 
-            // Eski emaili sadece gösteriyoruz, değiştirtmiyoruz (readOnly: true)
-            _textField('Mevcut Email', _oldEmailController, readOnly: true),
+            _textField(
+              'Mevcut Email',
+              _oldEmailController,
+              readOnly: true,
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
+            ),
 
             const SizedBox(height: 10),
 
@@ -337,11 +356,22 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               toggleObscure: () {
                 setState(() => _showEmailPassword = !_showEmailPassword);
               },
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
             ),
 
             const SizedBox(height: 10),
 
-            _textField('Yeni Email Adresi', _newEmailController),
+            _textField(
+              'Yeni Email Adresi',
+              _newEmailController,
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
+            ),
 
             const SizedBox(height: 16),
 
@@ -350,42 +380,42 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _updateEmail,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: successColor,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child:
-                    _loading
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.black,
-                            strokeWidth: 2,
-                          ),
-                        )
-                        : const Text(
-                          'Emaili Güncelle',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
+                _loading
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white, // Yükleme ikonu beyaz
+                    strokeWidth: 2,
+                  ),
+                )
+                    : const Text(
+                  'Emaili Güncelle',
+                  style: TextStyle(
+                    color: Colors.white, // Buton yazısı beyaz
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
               ),
             ),
 
-            const SizedBox(height: 40), // Bölümler arası boşluk
-            const Divider(color: Colors.white24), // Çizgi ile ayırma
+            const SizedBox(height: 40),
+            Divider(color: dividerColor), // Dinamik ayıraç rengi
             const SizedBox(height: 20),
 
             // --- ŞİFRE GÜNCELLEME BÖLÜMÜ ---
-            const Text(
+            Text(
               'Şifre Güncelleme',
               style: TextStyle(
-                color: Colors.white,
+                color: textColor,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -399,6 +429,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               toggleObscure: () {
                 setState(() => _showOldPassword = !_showOldPassword);
               },
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
             ),
             const SizedBox(height: 10),
             _textField(
@@ -409,6 +443,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               toggleObscure: () {
                 setState(() => _showNewPassword = !_showNewPassword);
               },
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
             ),
             const SizedBox(height: 10),
             _textField(
@@ -419,6 +457,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               toggleObscure: () {
                 setState(() => _showConfirmPassword = !_showConfirmPassword);
               },
+              fillColor: inputFillColor,
+              textColor: textColor,
+              labelColor: labelColor,
+              iconColor: iconColor,
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -426,33 +468,33 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _updatePassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: successColor,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child:
-                    _loading
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.black,
-                            strokeWidth: 2,
-                          ),
-                        )
-                        : const Text(
-                          'Şifre Güncelle',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
+                _loading
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+                    : const Text(
+                  'Şifre Güncelle',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 30), // Alt boşluk
+            const SizedBox(height: 30),
           ],
         ),
       ),

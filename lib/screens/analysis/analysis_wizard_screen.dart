@@ -1,4 +1,3 @@
-// screens/analysis/analysis_wizard_screen.dart
 import 'package:finance_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,9 +12,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Renkler
-  final Color darkBg = const Color(0xFF0A0F24);
-  final Color cardBg = const Color(0xFF0F162C);
+  // Sabit marka renkleri (Tema bağımsız)
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
 
@@ -39,13 +36,26 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Tema verilerini alıyoruz
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Dinamik renkler
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final cardColor = theme.cardColor;
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final iconColor = theme.iconTheme.color ?? textColor;
+
+    // İlerleme çubuğu pasif rengi
+    final progressInactiveColor = isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
+
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: darkBg,
+        backgroundColor: scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: iconColor),
           onPressed: () {
             if (_currentPage > 0) {
               _pageController.previousPage(
@@ -70,7 +80,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                     height: 4,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      color: index <= _currentPage ? green : cardBg,
+                      color: index <= _currentPage ? green : progressInactiveColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -84,18 +94,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           Expanded(
             child: PageView(
               controller: _pageController,
-              physics:
-                  const NeverScrollableScrollPhysics(), // Elle kaydırmayı kapat
+              physics: const NeverScrollableScrollPhysics(), // Elle kaydırmayı kapat
               onPageChanged: (index) {
                 setState(() {
                   _currentPage = index;
                 });
               },
               children: [
-                _buildRiskPage(), // 1. Sayfa: Risk
-                _buildDurationPage(), // 2. Sayfa: Vade
-                _buildSectorPage(), // 3. Sayfa: Sektörler
-                _buildResultPage(), // 4. Sayfa: Sonuç & Büyüklük
+                _buildRiskPage(textColor, cardColor, isDark), // 1. Sayfa
+                _buildDurationPage(textColor, cardColor, isDark), // 2. Sayfa
+                _buildSectorPage(textColor, cardColor, isDark), // 3. Sayfa
+                _buildResultPage(textColor, cardColor, isDark), // 4. Sayfa
               ],
             ),
           ),
@@ -110,7 +119,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                     flex: 1,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey[800]!),
+                        side: BorderSide(
+                          color: isDark ? Colors.grey[800]! : Colors.grey[400]!,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -122,9 +133,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Geri",
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: textColor),
                       ),
                     ),
                   ),
@@ -146,7 +157,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                         Text(
                           _currentPage == 3 ? "Tamamla" : "Devam Et",
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Colors.white, // Buton içi hep beyaz
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -178,44 +189,41 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Sektörler sayfasına (HomeScreen içindeki 1. index) yönlendir
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder:
-              (context) =>
-                  const HomeScreen(initialIndex: 1), // 1 = Sektörler Tab'ı
+          builder: (context) => const HomeScreen(initialIndex: 1),
         ),
-        (route) => false,
+            (route) => false,
       );
     }
   }
 
   // --- 1. SAYFA: RİSK SEÇİMİ ---
-  Widget _buildRiskPage() {
+  Widget _buildRiskPage(Color textColor, Color cardColor, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Risk İştahınızı Seçin",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -227,6 +235,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "dusuk",
             groupValue: _selectedRisk,
             onTap: (val) => setState(() => _selectedRisk = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "Orta Risk",
@@ -234,6 +245,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "orta",
             groupValue: _selectedRisk,
             onTap: (val) => setState(() => _selectedRisk = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "Yüksek Risk",
@@ -241,6 +255,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "yuksek",
             groupValue: _selectedRisk,
             onTap: (val) => setState(() => _selectedRisk = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
         ],
       ),
@@ -248,30 +265,30 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }
 
   // --- 2. SAYFA: VADE SEÇİMİ ---
-  Widget _buildDurationPage() {
+  Widget _buildDurationPage(Color textColor, Color cardColor, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Yatırım Süreniz",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -284,6 +301,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "kisa",
             groupValue: _selectedDuration,
             onTap: (val) => setState(() => _selectedDuration = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "Orta Vade",
@@ -292,6 +312,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "orta",
             groupValue: _selectedDuration,
             onTap: (val) => setState(() => _selectedDuration = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "Uzun Vade",
@@ -300,6 +323,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "uzun",
             groupValue: _selectedDuration,
             onTap: (val) => setState(() => _selectedDuration = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
         ],
       ),
@@ -307,38 +333,38 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }
 
   // --- 3. SAYFA: SEKTÖR SEÇİMİ ---
-  Widget _buildSectorPage() {
+  Widget _buildSectorPage(Color textColor, Color cardColor, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
           const SizedBox(height: 30),
-          const Text(
+          Text(
             "Tercih Ettiğiniz Sektörler",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             "Birden fazla seçebilirsiniz",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600], fontSize: 12),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -367,12 +393,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(
-                      color: cardBg,
-                      border: Border.all(
-                        color: isSelected ? green : Colors.transparent,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
+                        color: cardColor,
+                        border: Border.all(
+                          color: isSelected ? green : (isDark ? Colors.transparent : Colors.grey.shade300),
+                          width: 1.5,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
+                        ]
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -380,8 +409,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                         Expanded(
                           child: Text(
                             sector,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 14,
                             ),
                           ),
@@ -401,31 +430,31 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }
 
   // --- 4. SAYFA: BÜYÜKLÜK VE SONUÇ ---
-  Widget _buildResultPage() {
+  Widget _buildResultPage(Color textColor, Color cardColor, bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Yatırımcı Profili",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
           const SizedBox(height: 30),
 
-          const Text(
+          Text(
             "Şirket Büyüklüğü Tercihi",
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -439,6 +468,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "bist30",
             groupValue: _selectedSize,
             onTap: (val) => setState(() => _selectedSize = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "BIST 100",
@@ -447,6 +479,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "bist100",
             groupValue: _selectedSize,
             onTap: (val) => setState(() => _selectedSize = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
           _buildSelectableCard(
             title: "Küçük Şirketler",
@@ -455,17 +490,23 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             value: "small",
             groupValue: _selectedSize,
             onTap: (val) => setState(() => _selectedSize = val),
+            cardColor: cardColor,
+            textColor: textColor,
+            isDark: isDark,
           ),
 
           const SizedBox(height: 24),
 
           // PROFİL ÖZETİ KARTI
+          // Bu kart özel bir "vurgu" kartı olduğu için Light modda da renkli kalabilir
+          // veya hafif yeşil bir ton alabilir.
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF061D23), // Koyu yeşilimsi arka plan
+              // Dark modda koyu yeşil, Light modda çok açık yeşil
+              color: isDark ? const Color(0xFF061D23) : const Color(0xFFE8F5E9),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: green.withValues(alpha: 0.3)),
+              border: Border.all(color: green.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,9 +526,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   "Orta Risk profiline sahip, kısa vade odaklı bir yatırımcısınız. Havacılık sektörlerinde BIST 100 şirketlerini tercih ediyorsunuz.",
-                  style: TextStyle(color: Colors.white, height: 1.5),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -506,20 +550,29 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     required String value,
     required String? groupValue,
     required Function(String) onTap,
+    required Color cardColor,
+    required Color textColor,
+    required bool isDark,
   }) {
     final isSelected = groupValue == value;
+    final iconBgColor = isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100;
+    final iconColor = isDark ? Colors.white70 : Colors.grey.shade700;
+
     return GestureDetector(
       onTap: () => onTap(value),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? primary : Colors.transparent,
-            width: 1.5,
-          ),
+            color: cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? primary : (isDark ? Colors.transparent : Colors.grey.shade300),
+              width: 1.5,
+            ),
+            boxShadow: [
+              if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
+            ]
         ),
         child: Row(
           children: [
@@ -527,10 +580,10 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: iconBgColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: Colors.white70, size: 20),
+                child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 16),
             ],
@@ -540,8 +593,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -549,7 +602,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600], fontSize: 13),
                   ),
                 ],
               ),

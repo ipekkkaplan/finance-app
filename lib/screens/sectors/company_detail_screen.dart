@@ -1,4 +1,3 @@
-// screens/sectors/company_detail_screen.dart
 import 'package:flutter/material.dart';
 
 class CompanyDetailScreen extends StatefulWidget {
@@ -20,25 +19,38 @@ class CompanyDetailScreen extends StatefulWidget {
 class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   int _selectedTabIndex = 0; // 0: AI Özet, 1: Finansal, 2: Teknik
 
-  final Color darkBg = const Color(0xFF0A0F24);
-  final Color cardBg = const Color(0xFF0F162C);
+  // Marka Renkleri (Sabit kalabilir)
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
 
   @override
   Widget build(BuildContext context) {
+    // Tema verilerini alıyoruz
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Dinamik renkler
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final cardColor = theme.cardColor;
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
+    final iconColor = theme.iconTheme.color ?? textColor;
+
+    // Border ve Divider renkleri
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.3);
+
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: darkBg,
+        backgroundColor: scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: iconColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Sektörler",
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: textColor, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
@@ -51,9 +63,9 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildTopChip(widget.ticker, isSelected: true),
-                  _buildTopChip("THYAO", isSelected: false),
-                  _buildTopChip("GARAN", isSelected: false),
+                  _buildTopChip(widget.ticker, isSelected: true, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
+                  _buildTopChip("THYAO", isSelected: false, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
+                  _buildTopChip("GARAN", isSelected: false, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
                 ],
               ),
             ),
@@ -63,9 +75,12 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderColor),
+                  boxShadow: [
+                    if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+                  ]
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,8 +92,8 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                         children: [
                           Text(
                             widget.companyName,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -90,7 +105,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: green.withValues(alpha: 0.2),
+                              color: green.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -110,13 +125,13 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   const SizedBox(height: 4),
                   Text(
                     "${widget.ticker} • ${widget.sector}",
-                    style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    style: TextStyle(color: subTextColor, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     "32.5B ₺",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -143,15 +158,15 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.grey[700]!),
+                            side: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[400]!),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                           onPressed: () {},
-                          child: const Text(
+                          child: Text(
                             "Karşılaştır",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: textColor),
                           ),
                         ),
                       ),
@@ -160,11 +175,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey[700]!),
+                          border: Border.all(color: isDark ? Colors.grey[700]! : Colors.grey[400]!),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.download,
-                          color: Colors.white,
+                          color: textColor,
                           size: 20,
                         ),
                       ),
@@ -178,19 +193,19 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             // --- TAB MENÜ ---
             Row(
               children: [
-                _buildTabButton("AI Özet", 0),
+                _buildTabButton("AI Özet", 0, textColor),
                 const SizedBox(width: 20),
-                _buildTabButton("Finansal", 1),
+                _buildTabButton("Finansal", 1, textColor),
                 const SizedBox(width: 20),
-                _buildTabButton("Teknik", 2),
+                _buildTabButton("Teknik", 2, textColor),
               ],
             ),
             const SizedBox(height: 20),
 
             // --- TAB İÇERİK DEĞİŞTİRİCİ ---
-            if (_selectedTabIndex == 0) _buildAISummaryTab(),
-            if (_selectedTabIndex == 1) _buildFinancialTab(),
-            if (_selectedTabIndex == 2) _buildTechnicalTab(),
+            if (_selectedTabIndex == 0) _buildAISummaryTab(cardColor, textColor, subTextColor, isDark),
+            if (_selectedTabIndex == 1) _buildFinancialTab(cardColor, textColor, subTextColor, borderColor, isDark),
+            if (_selectedTabIndex == 2) _buildTechnicalTab(cardColor, textColor, isDark, borderColor),
 
             const SizedBox(height: 40),
           ],
@@ -199,11 +214,14 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _buildAISummaryTab() {
+  Widget _buildAISummaryTab(Color cardColor, Color textColor, Color? subTextColor, bool isDark) {
+    // AI Tabı için özel arka plan (Dark mode: Koyu Mavi, Light Mode: Açık Mavi)
+    final aiCardBg = isDark ? const Color(0xFF0D1B3E) : Colors.blue.shade50;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1B3E),
+        color: aiCardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: primary.withValues(alpha: 0.3)),
       ),
@@ -225,26 +243,26 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             "ASELS güçlü borç yönetimine sahip ancak orta düzeyde gelir büyümesi göstermektedir. Savunma sanayi portföyü ve AR-GE yatırımları pozitif sinyal veriyor.",
-            style: TextStyle(color: Colors.white, height: 1.5),
+            style: TextStyle(color: textColor, height: 1.5),
           ),
           const SizedBox(height: 24),
           // Güçlü Yönler
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg.withValues(alpha: 0.5),
+              color: isDark ? cardColor.withValues(alpha: 0.5) : Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Güçlü Yönler", style: TextStyle(color: Colors.grey[400])),
+                Text("Güçlü Yönler", style: TextStyle(color: subTextColor)),
                 const SizedBox(height: 8),
-                _buildBulletPoint("Güçlü borç yönetimi", green),
+                _buildBulletPoint("Güçlü borç yönetimi", green, textColor),
                 const SizedBox(height: 8),
-                _buildBulletPoint("Yüksek AR-GE yatırımları", green),
+                _buildBulletPoint("Yüksek AR-GE yatırımları", green, textColor),
               ],
             ),
           ),
@@ -253,7 +271,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg.withValues(alpha: 0.5),
+              color: isDark ? cardColor.withValues(alpha: 0.5) : Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -261,10 +279,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               children: [
                 Text(
                   "Dikkat Edilmesi Gerekenler",
-                  style: TextStyle(color: Colors.grey[400]),
+                  style: TextStyle(color: subTextColor),
                 ),
                 const SizedBox(height: 8),
-                _buildBulletPoint("Orta düzey gelir büyümesi", Colors.amber),
+                _buildBulletPoint("Orta düzey gelir büyümesi", Colors.amber, textColor),
               ],
             ),
           ),
@@ -273,61 +291,47 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  // 2. TAB: FİNANSAL İÇERİK (Görselindeki Tasarım)
+  // 2. TAB: FİNANSAL İÇERİK
 
-  Widget _buildFinancialTab() {
+  Widget _buildFinancialTab(Color cardColor, Color textColor, Color? subTextColor, Color borderColor, bool isDark) {
     return Column(
       children: [
         // Grafik Kartı
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: cardBg,
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Finansal Göstergeler",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  Icon(Icons.info_outline, color: Colors.grey, size: 18),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildHorizontalBar("Likidite", 0.1),
-              const SizedBox(height: 12),
-              _buildHorizontalBar("Karlılık", 0.6),
-              const SizedBox(height: 12),
-              _buildHorizontalBar("Borç Oranı", 0.9),
-              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "0",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    "Finansal Göstergeler",
+                    style: TextStyle(color: textColor, fontSize: 16),
                   ),
-                  Text(
-                    "9",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Text(
-                    "18",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Text(
-                    "27",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Text(
-                    "36",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
+                  Icon(Icons.info_outline, color: subTextColor, size: 18),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildHorizontalBar("Likidite", 0.1, subTextColor, borderColor),
+              const SizedBox(height: 12),
+              _buildHorizontalBar("Karlılık", 0.6, subTextColor, borderColor),
+              const SizedBox(height: 12),
+              _buildHorizontalBar("Borç Oranı", 0.9, subTextColor, borderColor),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("0", style: TextStyle(color: subTextColor, fontSize: 12)),
+                  Text("9", style: TextStyle(color: subTextColor, fontSize: 12)),
+                  Text("18", style: TextStyle(color: subTextColor, fontSize: 12)),
+                  Text("27", style: TextStyle(color: subTextColor, fontSize: 12)),
+                  Text("36", style: TextStyle(color: subTextColor, fontSize: 12)),
                 ],
               ),
             ],
@@ -337,36 +341,37 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         // Alt Metrik Kartları
         Row(
           children: [
-            _buildFinancialMetricCard("Likidite", "2.8", "İyi"),
+            _buildFinancialMetricCard("Likidite", "2.8", "İyi", cardColor, textColor, subTextColor, borderColor),
             const SizedBox(width: 12),
-            _buildFinancialMetricCard("Karlılık", "18.4%", "Yüksek"),
+            _buildFinancialMetricCard("Karlılık", "18.4%", "Yüksek", cardColor, textColor, subTextColor, borderColor),
             const SizedBox(width: 12),
-            _buildFinancialMetricCard("Borç", "35%", "Düşük"),
+            _buildFinancialMetricCard("Borç", "35%", "Düşük", cardColor, textColor, subTextColor, borderColor),
           ],
         ),
       ],
     );
   }
 
-  // 3. TAB: TEKNİK İÇERİK (Görselindeki Tasarım)
+  // 3. TAB: TEKNİK İÇERİK
 
-  Widget _buildTechnicalTab() {
+  Widget _buildTechnicalTab(Color cardColor, Color textColor, bool isDark, Color borderColor) {
     return Column(
       children: [
         // 6 Aylık Tahmin Grafiği
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: cardBg,
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "6 Aylık Tahmin",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -377,7 +382,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                 height: 150,
                 width: double.infinity,
                 child: CustomPaint(
-                  painter: SimpleLineChartPainter(lineColor: green),
+                  painter: SimpleLineChartPainter(lineColor: green, isDark: isDark),
                 ),
               ),
             ],
@@ -389,7 +394,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1B3E), // Koyu mavi
+            color: isDark ? const Color(0xFF0D1B3E) : Colors.blue.shade50, // AI Kartı
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
           ),
@@ -410,18 +415,18 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 "Mevcut RSI kısa vadeli konsolidasyona işaret ediyor. Destek seviyesi 138₺ civarında.",
-                style: TextStyle(color: Colors.white, height: 1.4),
+                style: TextStyle(color: textColor, height: 1.4),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Text("RSI: ", style: TextStyle(color: Colors.grey)),
-                  const Text(
+                  Text("RSI: ", style: TextStyle(color: isDark ? Colors.grey : Colors.grey[700])),
+                  Text(
                     "58 ",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -450,19 +455,20 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: cardBg,
+            color: cardColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "AI Risk Skoru",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -470,7 +476,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   Text(
                     "92/100",
                     style: TextStyle(
-                      color: Color(0xFF00C853),
+                      color: const Color(0xFF00C853),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -482,7 +488,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
                   value: 0.92,
-                  backgroundColor: Colors.grey[800],
+                  backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
                   color: green,
                   minHeight: 10,
                 ),
@@ -490,7 +496,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               const SizedBox(height: 12),
               Text(
                 "Yüksek skor daha iyi finansal sağlığı gösterir",
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 12),
               ),
             ],
           ),
@@ -501,27 +507,31 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
 
   // --- YARDIMCI WIDGET'LAR ---
 
-  Widget _buildTopChip(String text, {required bool isSelected}) {
+  Widget _buildTopChip(String text, {required bool isSelected, required Color cardColor, required Color textColor, required Color borderColor, required bool isDark}) {
     return Container(
       margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? green : cardBg,
+        color: isSelected ? green : cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: isSelected ? null : Border.all(color: Colors.grey[800]!),
+        border: isSelected ? null : Border.all(color: borderColor),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: isSelected ? Colors.black : Colors.grey[400],
+          // Seçiliyse (yeşilse) yazı siyah, değilse dinamik text rengi (beyaz/siyah)
+          color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  Widget _buildTabButton(String text, int index) {
+  Widget _buildTabButton(String text, int index, Color textColor) {
     bool isSelected = _selectedTabIndex == index;
+    // Seçili olmayanlar daha soluk
+    final color = isSelected ? textColor : textColor.withOpacity(0.5);
+
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
       child: Column(
@@ -529,7 +539,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           Text(
             text,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey,
+              color: color,
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
@@ -541,24 +551,24 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _buildBulletPoint(String text, Color dotColor) {
+  Widget _buildBulletPoint(String text, Color dotColor, Color textColor) {
     return Row(
       children: [
         Icon(Icons.circle, size: 6, color: dotColor),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(color: Colors.white)),
+        Text(text, style: TextStyle(color: textColor)),
       ],
     );
   }
 
-  Widget _buildHorizontalBar(String label, double percent) {
+  Widget _buildHorizontalBar(String label, double percent, Color? subTextColor, Color borderColor) {
     return Row(
       children: [
         SizedBox(
           width: 80,
           child: Text(
             label,
-            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+            style: TextStyle(color: subTextColor, fontSize: 12),
           ),
         ),
         Expanded(
@@ -568,7 +578,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             decoration: BoxDecoration(
               color: Colors.transparent,
               border: Border(
-                left: BorderSide(color: Colors.grey[800]!, width: 1),
+                left: BorderSide(color: borderColor, width: 1),
               ),
             ),
             child: FractionallySizedBox(
@@ -590,27 +600,27 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _buildFinancialMetricCard(String title, String value, String status) {
+  Widget _buildFinancialMetricCard(String title, String value, String status, Color cardColor, Color textColor, Color? subTextColor, Color borderColor) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: cardBg,
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: subTextColor, fontSize: 12),
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textColor,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -626,20 +636,21 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
 
 class SimpleLineChartPainter extends CustomPainter {
   final Color lineColor;
-  SimpleLineChartPainter({required this.lineColor});
+  final bool isDark;
+  SimpleLineChartPainter({required this.lineColor, required this.isDark});
 
   @override
   void paint(Canvas canvas, Size size) {
     final Paint linePaint =
-        Paint()
-          ..color = lineColor
-          ..strokeWidth = 3
-          ..style = PaintingStyle.stroke;
+    Paint()
+      ..color = lineColor
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
 
     final Paint gridPaint =
-        Paint()
-          ..color = Colors.grey.withValues(alpha: 0.2)
-          ..strokeWidth = 1;
+    Paint()
+      ..color = isDark ? Colors.grey.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1)
+      ..strokeWidth = 1;
 
     final Paint dotPaint = Paint()..color = lineColor;
 
@@ -672,28 +683,19 @@ class SimpleLineChartPainter extends CustomPainter {
 
     canvas.drawPath(path, linePaint);
 
-    canvas.drawCircle(Offset(0, size.height * 0.8), 4, dotPaint);
-    canvas.drawCircle(
+    // Noktalar
+    final points = [
+      Offset(0, size.height * 0.8),
       Offset(size.width * 0.2, size.height * 0.65),
-      4,
-      dotPaint,
-    );
-    canvas.drawCircle(
       Offset(size.width * 0.4, size.height * 0.75),
-      4,
-      dotPaint,
-    );
-    canvas.drawCircle(
       Offset(size.width * 0.6, size.height * 0.45),
-      4,
-      dotPaint,
-    );
-    canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.30),
-      4,
-      dotPaint,
-    );
-    canvas.drawCircle(Offset(size.width, size.height * 0.20), 4, dotPaint);
+      Offset(size.width, size.height * 0.20)
+    ];
+
+    for (var point in points) {
+      canvas.drawCircle(point, 4, dotPaint);
+    }
   }
 
   @override

@@ -1,6 +1,6 @@
-// screens/auth_screen/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:finance_app/services/auth_service.dart';
+import 'package:finance_app/widgets/force_light_mode.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -205,20 +205,20 @@ class _SignupScreenState extends State<SignupScreen> {
               barrierDismissible: false,
               builder:
                   (context) => AlertDialog(
-                    title: const Text('Email Doğrulama'),
-                    content: const Text(
-                      'Kayıt işleminiz başarıyla tamamlandı! Email adresinize doğrulama maili gönderildi. Lütfen email adresinizi kontrol edip doğrulama linkine tıklayın.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Dialog'u kapat
-                          Navigator.pop(context); // Signup ekranından çık
-                        },
-                        child: const Text('Tamam'),
-                      ),
-                    ],
+                title: const Text('Email Doğrulama'),
+                content: const Text(
+                  'Kayıt işleminiz başarıyla tamamlandı! Email adresinize doğrulama maili gönderildi. Lütfen email adresinizi kontrol edip doğrulama linkine tıklayın.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Dialog'u kapat
+                      Navigator.pop(context); // Signup ekranından çık
+                    },
+                    child: const Text('Tamam'),
                   ),
+                ],
+              ),
             );
           }
         } else {
@@ -254,690 +254,706 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     final gereksinimler = _sifreGereksinimleri();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Stack(
-        children: [
-          // Üstteki koyu mavi başlık bölümü
-          Container(
-            height: MediaQuery.of(context).size.height * 0.25,
-            decoration: const BoxDecoration(
-              color: Color(0xFF0D47A1),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
+    // 2. ADIM: Scaffold'ı ForceLightMode ile sarmala
+    return ForceLightMode(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Stack(
+          children: [
+            // Üstteki koyu mavi başlık bölümü
+            Container(
+              height: MediaQuery.of(context).size.height * 0.25,
+              decoration: const BoxDecoration(
+                color: Color(0xFF0D47A1),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: Stack(
+                children: [
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Text(
+                        "Üye Ol",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Geri butonu - daha küçük ve modern
+                  Positioned(
+                    top: 40,
+                    left: 10,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(51),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Stack(
-              children: [
-                const Center(
+            // Form kartı
+            Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height * 0.22,
+              ),
+              child: Center(
+                child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: Text(
-                      "Üye Ol",
-                      style: TextStyle(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      padding: const EdgeInsets.all(25),
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withAlpha(26),
+                            spreadRadius: 2,
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                ),
-                // Geri butonu - daha küçük ve modern
-                Positioned(
-                  top: 40,
-                  left: 10,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(51),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Form kartı
-          Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.22,
-            ),
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withAlpha(26),
-                          spreadRadius: 2,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 10),
-                          // İsim alanı
-                          TextFormField(
-                            controller: _isimController,
-                            decoration: InputDecoration(
-                              hintText: "Adınızı giriniz",
-                              labelText: "İsim",
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF0D47A1),
-                                  width: 2,
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+                            // İsim alanı
+                            TextFormField(
+                              controller: _isimController,
+                              // ForceLightMode sayesinde text rengi siyah olur, 
+                              // ama explicit belirtmekte zarar yok.
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "Adınızı giriniz",
+                                labelText: "İsim",
+                                filled: true,
+                                fillColor: const Color(0xFFF5F5F5),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF0D47A1),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Lütfen isminizi giriniz';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Lütfen isminizi giriniz';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Soyisim alanı
-                          TextFormField(
-                            controller: _soyisimController,
-                            decoration: InputDecoration(
-                              hintText: "Soyadınızı giriniz",
-                              labelText: "Soyisim",
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF0D47A1),
-                                  width: 2,
+                            const SizedBox(height: 16),
+                            // Soyisim alanı
+                            TextFormField(
+                              controller: _soyisimController,
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "Soyadınızı giriniz",
+                                labelText: "Soyisim",
+                                filled: true,
+                                fillColor: const Color(0xFFF5F5F5),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF0D47A1),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Lütfen soyisminizi giriniz';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Lütfen soyisminizi giriniz';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Email alanı
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              hintText: "example@example.com",
-                              labelText: "Email Adresi",
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF0D47A1),
-                                  width: 2,
+                            const SizedBox(height: 16),
+                            // Email alanı
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "example@example.com",
+                                labelText: "Email Adresi",
+                                filled: true,
+                                fillColor: const Color(0xFFF5F5F5),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF0D47A1),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Lütfen email adresinizi giriniz';
+                                }
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
+                                  return 'Geçerli bir email adresi giriniz';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Lütfen email adresinizi giriniz';
-                              }
-                              if (!RegExp(
-                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
-                                return 'Geçerli bir email adresi giriniz';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Telefon alanı
-                          Row(
-                            children: [
-                              // Ülke kodu seçici
-                              Container(
-                                width: 80,
-                                height: 48,
+                            const SizedBox(height: 16),
+                            // Telefon alanı
+                            Row(
+                              children: [
+                                // Ülke kodu seçici
+                                Container(
+                                  width: 80,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F5),
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  child: PopupMenuButton<String>(
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            _ulkeKodu,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 20,
+                                            color: Colors.black54,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        _ulkeKodu = value;
+                                      });
+                                    },
+                                    itemBuilder:
+                                        (context) => [
+                                      const PopupMenuItem(
+                                        value: '+90',
+                                        child: Text('+90 (TR)'),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: '+1',
+                                        child: Text('+1 (US)'),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: '+44',
+                                        child: Text('+44 (UK)'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                // Telefon numarası
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _telefonController,
+                                    keyboardType: TextInputType.phone,
+                                    style: const TextStyle(color: Colors.black87),
+                                    decoration: InputDecoration(
+                                      hintText: "5XX XXX XX XX",
+                                      labelText: "Telefon Numarası",
+                                      filled: true,
+                                      fillColor: const Color(0xFFF5F5F5),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minHeight: 48,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        borderSide: const BorderSide(
+                                          color: Color(0xFF0D47A1),
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Lütfen telefon numaranızı giriniz';
+                                      }
+                                      if (value.length < 10) {
+                                        return 'Geçerli bir telefon numarası giriniz';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Şifre Oluştur alanı
+                            TextFormField(
+                              controller: _sifreController,
+                              obscureText: _sifreGizli,
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "Şifrenizi giriniz",
+                                labelText: "Şifre Oluştur",
+                                filled: true,
+                                fillColor: const Color(0xFFF5F5F5),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _sifreGizli
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.grey[600],
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _sifreGizli = !_sifreGizli;
+                                    });
+                                  },
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF0D47A1),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: _sifreValidator,
+                            ),
+                            // Şifre gereksinimleri
+                            if (_sifreController.text.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _sifreGereksinimiItem(
+                                      'En az 8 karakter',
+                                      gereksinimler['enAz8Karakter']!,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _sifreGereksinimiItem(
+                                      '1 büyük harf (A-Z)',
+                                      gereksinimler['buyukHarf']!,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _sifreGereksinimiItem(
+                                      '1 küçük harf (a-z)',
+                                      gereksinimler['kucukHarf']!,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    _sifreGereksinimiItem(
+                                      '1 sayı (0-9)',
+                                      gereksinimler['sayi']!,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            // Şifreyi Tekrarla alanı
+                            TextFormField(
+                              controller: _sifreTekrarController,
+                              obscureText: _sifreTekrarGizli,
+                              style: const TextStyle(color: Colors.black87),
+                              decoration: InputDecoration(
+                                hintText: "Şifrenizi tekrar giriniz",
+                                labelText: "Şifreyi Tekrarla",
+                                filled: true,
+                                fillColor: const Color(0xFFF5F5F5),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _sifreTekrarGizli
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.grey[600],
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _sifreTekrarGizli = !_sifreTekrarGizli;
+                                    });
+                                  },
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF0D47A1),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Lütfen şifrenizi tekrar giriniz';
+                                }
+                                if (value != _sifreController.text) {
+                                  return 'Şifreler eşleşmiyor';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            // Doğum Günü alanı
+                            InkWell(
+                              onTap: _dogumGunuSec,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                constraints: const BoxConstraints(minHeight: 48),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF5F5F5),
                                   borderRadius: BorderRadius.circular(18),
                                 ),
-                                child: PopupMenuButton<String>(
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          _ulkeKodu,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            _dogumGunu == null
+                                                ? 'Doğum Günü'
+                                                : '${_dogumGunu!.day}/${_dogumGunu!.month}/${_dogumGunu!.year}',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color:
+                                              _dogumGunu == null
+                                                  ? Colors.grey[600]
+                                                  : Colors.black87,
+                                            ),
                                           ),
-                                        ),
-                                        const Icon(
-                                          Icons.arrow_drop_down,
-                                          size: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  onSelected: (value) {
-                                    setState(() {
-                                      _ulkeKodu = value;
-                                    });
-                                  },
-                                  itemBuilder:
-                                      (context) => [
-                                        const PopupMenuItem(
-                                          value: '+90',
-                                          child: Text('+90 (TR)'),
-                                        ),
-                                        const PopupMenuItem(
-                                          value: '+1',
-                                          child: Text('+1 (US)'),
-                                        ),
-                                        const PopupMenuItem(
-                                          value: '+44',
-                                          child: Text('+44 (UK)'),
-                                        ),
-                                      ],
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              // Telefon numarası
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _telefonController,
-                                  keyboardType: TextInputType.phone,
-                                  decoration: InputDecoration(
-                                    hintText: "5XX XXX XX XX",
-                                    labelText: "Telefon Numarası",
-                                    filled: true,
-                                    fillColor: const Color(0xFFF5F5F5),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minHeight: 48,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                      borderSide: const BorderSide(
-                                        color: Color(0xFF0D47A1),
-                                        width: 2,
+                                          if (_yas != null) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Yaş: $_yas',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[700],
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Lütfen telefon numaranızı giriniz';
-                                    }
-                                    if (value.length < 10) {
-                                      return 'Geçerli bir telefon numarası giriniz';
-                                    }
-                                    return null;
+                                    Icon(
+                                      Icons.calendar_today,
+                                      color: Colors.grey[600],
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            // Sözleşme onayları
+                            // Kullanıcı Sözleşmesi
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Checkbox(
+                                  value: _kullanimSozlesmesi,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _kullanimSozlesmesi = value ?? false;
+                                    });
                                   },
+                                  activeColor: const Color(0xFF0D47A1),
+                                  // ForceLightMode sayesinde tik rengi beyaz olur
+                                  checkColor: Colors.white,
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          // Şifre Oluştur alanı
-                          TextFormField(
-                            controller: _sifreController,
-                            obscureText: _sifreGizli,
-                            decoration: InputDecoration(
-                              hintText: "Şifrenizi giriniz",
-                              labelText: "Şifre Oluştur",
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _sifreGizli
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.grey[600],
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _sifreGizli = !_sifreGizli;
-                                  });
-                                },
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF0D47A1),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            validator: _sifreValidator,
-                          ),
-                          // Şifre gereksinimleri
-                          if (_sifreController.text.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sifreGereksinimiItem(
-                                    'En az 8 karakter',
-                                    gereksinimler['enAz8Karakter']!,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  _sifreGereksinimiItem(
-                                    '1 büyük harf (A-Z)',
-                                    gereksinimler['buyukHarf']!,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  _sifreGereksinimiItem(
-                                    '1 küçük harf (a-z)',
-                                    gereksinimler['kucukHarf']!,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  _sifreGereksinimiItem(
-                                    '1 sayı (0-9)',
-                                    gereksinimler['sayi']!,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          // Şifreyi Tekrarla alanı
-                          TextFormField(
-                            controller: _sifreTekrarController,
-                            obscureText: _sifreTekrarGizli,
-                            decoration: InputDecoration(
-                              hintText: "Şifrenizi tekrar giriniz",
-                              labelText: "Şifreyi Tekrarla",
-                              filled: true,
-                              fillColor: const Color(0xFFF5F5F5),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _sifreTekrarGizli
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.grey[600],
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _sifreTekrarGizli = !_sifreTekrarGizli;
-                                  });
-                                },
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF0D47A1),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Lütfen şifrenizi tekrar giriniz';
-                              }
-                              if (value != _sifreController.text) {
-                                return 'Şifreler eşleşmiyor';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Doğum Günü alanı
-                          InkWell(
-                            onTap: _dogumGunuSec,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              constraints: const BoxConstraints(minHeight: 48),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          _dogumGunu == null
-                                              ? 'Doğum Günü'
-                                              : '${_dogumGunu!.day}/${_dogumGunu!.month}/${_dogumGunu!.year}',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color:
-                                                _dogumGunu == null
-                                                    ? Colors.grey[600]
-                                                    : Colors.black87,
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Sözleşme sayfasına yönlendirme
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                          title: const Text(
+                                            'Kullanıcı Sözleşmesi',
                                           ),
+                                          content: const SingleChildScrollView(
+                                            child: Text(
+                                              'Buraya kullanıcı sözleşmesi metni gelecek...',
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('Kapat'),
+                                            ),
+                                          ],
                                         ),
-                                        if (_yas != null) ...[
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Yaş: $_yas',
+                                      );
+                                    },
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                        ),
+                                        children: [
+                                          const TextSpan(
+                                            text: 'Kullanıcı Sözleşmesini ',
+                                          ),
+                                          TextSpan(
+                                            text: 'okudum ve onaylıyorum',
                                             style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[700],
-                                              fontWeight: FontWeight.w500,
+                                              color:
+                                              _kullanimSozlesmesi
+                                                  ? const Color(0xFF0D47A1)
+                                                  : Colors.blue,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                              TextDecoration.underline,
                                             ),
                                           ),
                                         ],
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                  Icon(
-                                    Icons.calendar_today,
-                                    color: Colors.grey[600],
-                                    size: 20,
+                                ),
+                              ],
+                            ),
+                            // KVKK Onayı
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Checkbox(
+                                  value: _kvkkOnay,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _kvkkOnay = value ?? false;
+                                    });
+                                  },
+                                  activeColor: const Color(0xFF0D47A1),
+                                  checkColor: Colors.white,
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // KVKK sayfasına yönlendirme
+                                      showDialog(
+                                        context: context,
+                                        builder:
+                                            (context) => AlertDialog(
+                                          title: const Text(
+                                            'KVKK Aydınlatma Metni',
+                                          ),
+                                          content: const SingleChildScrollView(
+                                            child: Text(
+                                              'Buraya KVKK aydınlatma metni gelecek...',
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('Kapat'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 14,
+                                        ),
+                                        children: [
+                                          const TextSpan(
+                                            text: 'KVKK Aydınlatma Metnini ',
+                                          ),
+                                          TextSpan(
+                                            text: 'kabul ediyorum',
+                                            style: TextStyle(
+                                              color:
+                                              _kvkkOnay
+                                                  ? const Color(0xFF0D47A1)
+                                                  : Colors.blue,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                              TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            // Üye Ol butonu
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed:
+                                (_formDoluMu() && !_isLoading)
+                                    ? _handleSignup
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0D47A1),
+                                  disabledBackgroundColor: Colors.grey[300],
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  elevation: _formDoluMu() ? 2 : 0,
+                                ),
+                                child:
+                                _isLoading
+                                    ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor:
+                                    AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                    : const Text(
+                                  "Üye Ol",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          // Sözleşme onayları
-                          // Kullanıcı Sözleşmesi
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Checkbox(
-                                value: _kullanimSozlesmesi,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _kullanimSozlesmesi = value ?? false;
-                                  });
-                                },
-                                activeColor: const Color(0xFF0D47A1),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    // Sözleşme sayfasına yönlendirme
-                                    showDialog(
-                                      context: context,
-                                      builder:
-                                          (context) => AlertDialog(
-                                            title: const Text(
-                                              'Kullanıcı Sözleşmesi',
-                                            ),
-                                            content: const SingleChildScrollView(
-                                              child: Text(
-                                                'Buraya kullanıcı sözleşmesi metni gelecek...',
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed:
-                                                    () =>
-                                                        Navigator.pop(context),
-                                                child: const Text('Kapat'),
-                                              ),
-                                            ],
-                                          ),
-                                    );
-                                  },
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 14,
-                                      ),
-                                      children: [
-                                        const TextSpan(
-                                          text: 'Kullanıcı Sözleşmesini ',
-                                        ),
-                                        TextSpan(
-                                          text: 'okudum ve onaylıyorum',
-                                          style: TextStyle(
-                                            color:
-                                                _kullanimSozlesmesi
-                                                    ? const Color(0xFF0D47A1)
-                                                    : Colors.blue,
-                                            fontWeight: FontWeight.w600,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          // KVKK Onayı
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Checkbox(
-                                value: _kvkkOnay,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _kvkkOnay = value ?? false;
-                                  });
-                                },
-                                activeColor: const Color(0xFF0D47A1),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    // KVKK sayfasına yönlendirme
-                                    showDialog(
-                                      context: context,
-                                      builder:
-                                          (context) => AlertDialog(
-                                            title: const Text(
-                                              'KVKK Aydınlatma Metni',
-                                            ),
-                                            content: const SingleChildScrollView(
-                                              child: Text(
-                                                'Buraya KVKK aydınlatma metni gelecek...',
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed:
-                                                    () =>
-                                                        Navigator.pop(context),
-                                                child: const Text('Kapat'),
-                                              ),
-                                            ],
-                                          ),
-                                    );
-                                  },
-                                  child: RichText(
-                                    text: TextSpan(
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 14,
-                                      ),
-                                      children: [
-                                        const TextSpan(
-                                          text: 'KVKK Aydınlatma Metnini ',
-                                        ),
-                                        TextSpan(
-                                          text: 'kabul ediyorum',
-                                          style: TextStyle(
-                                            color:
-                                                _kvkkOnay
-                                                    ? const Color(0xFF0D47A1)
-                                                    : Colors.blue,
-                                            fontWeight: FontWeight.w600,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          // Üye Ol butonu
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed:
-                                  (_formDoluMu() && !_isLoading)
-                                      ? _handleSignup
-                                      : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0D47A1),
-                                disabledBackgroundColor: Colors.grey[300],
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                elevation: _formDoluMu() ? 2 : 0,
-                              ),
-                              child:
-                                  _isLoading
-                                      ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
-                                      )
-                                      : const Text(
-                                        "Üye Ol",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
+                            const SizedBox(height: 10),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
