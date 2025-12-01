@@ -1,4 +1,3 @@
-// screens/home/home_screen.dart
 import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
 import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:finance_app/screens/settings/settings_screen.dart';
@@ -21,16 +20,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  final Color darkBg = const Color(0xFF0A0F24);
-  final Color cardBg = const Color(0xFF0F162C);
-  final Color primary = const Color(0xFF3D8BFF);
-
+  // Sayfa listesi
   static const List<Widget> _pages = [
     DashboardPage(),
     SectorsScreen(),
-    Center(
-      child: Text("Portföy Sayfası", style: TextStyle(color: Colors.white)),
-    ),
+    PortfolioPlaceholder(), // Sabit text yerine widget kullandık
     SettingsScreen(),
   ];
 
@@ -38,24 +32,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Tema verilerine erişim
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: darkBg,
+      backgroundColor: theme.scaffoldBackgroundColor, // Dinamik arka plan
       appBar: AppBar(
-        backgroundColor: darkBg,
+        // Dinamik AppBar
         elevation: 0,
-        title: const Text(
+        title: Text(
           "FinScope AI",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: theme.textTheme.titleLarge?.color, // Dinamik başlık rengi
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: cardBg,
+        backgroundColor: theme.cardColor, // Dinamik alt bar rengi
         currentIndex: _selectedIndex,
-        selectedItemColor: primary,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: theme.primaryColor,
+        unselectedItemColor: isDark ? Colors.grey : Colors.grey.shade600,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -72,14 +73,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
-
-  final Color cardBg = const Color(0xFF0F162C);
-  final Color primary = const Color(0xFF3D8BFF);
+// Portföy sayfası için placeholder widget
+class PortfolioPlaceholder extends StatelessWidget {
+  const PortfolioPlaceholder({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        "Portföy Sayfası",
+        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+      ),
+    );
+  }
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Tema renklerini buradan çekiyoruz
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.primaryColor;
+    final cardColor = theme.cardColor;
+    final textColor = theme.textTheme.bodyLarge?.color;
+    final subTextColor = theme.textTheme.bodyMedium?.color;
+
+    // İç kartlar için renk (Dark modda özel lacivert, Light modda çok açık gri)
+    final innerCardColor = isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -132,28 +156,36 @@ class DashboardPage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          _sectionTitle("En İyi Performans Gösteren Sektörler"),
+          _sectionTitle("En İyi Performans Gösteren Sektörler", textColor),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg,
+              color: cardColor, // Dinamik kart rengi
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (!isDark) // Sadece Light modda hafif gölge
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
 
-                _sectorItem("1", "Teknoloji", "+24.5%", "ASELS, LOGO, Karel"),
+                _sectorItem("1", "Teknoloji", "+24.5%", "ASELS, LOGO, Karel", innerCardColor, textColor, subTextColor, primary),
                 const SizedBox(height: 12),
-                _sectorItem("2", "Bankacılık", "+15.3%", "GARAN, AKBNK, ISCTR"),
+                _sectorItem("2", "Bankacılık", "+15.3%", "GARAN, AKBNK, ISCTR", innerCardColor, textColor, subTextColor, primary),
                 const SizedBox(height: 12),
-                _sectorItem("3", "Enerji", "+28.7%", "TUPRS, ENKAI, AKENR"),
+                _sectorItem("3", "Enerji", "+28.7%", "TUPRS, ENKAI, AKENR", innerCardColor, textColor, subTextColor, primary),
 
                 const SizedBox(height: 25),
 
-                //Tüm sektörleri gör butonu
+                // Tüm sektörleri gör butonu
                 _seeAllSectorsButton(context, primary),
               ],
             ),
@@ -161,29 +193,38 @@ class DashboardPage extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          _sectionTitle("Yapay Zeka Tahminleri"),
+          _sectionTitle("Yapay Zeka Tahminleri", textColor),
 
           _aiPredictionCard(
-            "Havacılık sektöründe önümüzdeki çeyrek için güçlü büyüme bekleniyor.",
+              "Havacılık sektöründe önümüzdeki çeyrek için güçlü büyüme bekleniyor.",
+              innerCardColor, textColor
           ),
           const SizedBox(height: 12),
-          _aiPredictionCard("ASELS ve THYAO kurumsal alımlarda öne çıkıyor."),
+          _aiPredictionCard("ASELS ve THYAO kurumsal alımlarda öne çıkıyor.", innerCardColor, textColor),
 
           const SizedBox(height: 24),
 
-          _sectionTitle("Akıllı Para Takibi"),
+          _sectionTitle("Akıllı Para Takibi", textColor),
 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardBg,
+              color: cardColor,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (!isDark)
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _moneyFlowItem("En Çok Alınan", "THYAO", "+45.3M"),
-                _moneyFlowItem("Teknoloji Net", "Alım", "+8%"),
+                _moneyFlowItem("En Çok Alınan", "THYAO", "+45.3M", textColor, subTextColor),
+                _moneyFlowItem("Teknoloji Net", "Alım", "+8%", textColor, subTextColor),
               ],
             ),
           ),
@@ -197,6 +238,7 @@ class DashboardPage extends StatelessWidget {
               {"name": "THYAO", "price": "295.50₺", "change": "+0.8%"},
               {"name": "SISE", "price": "48.60₺", "change": "-0.2%"},
             ],
+            textColor: textColor,
           ),
 
           const SizedBox(height: 40),
@@ -206,8 +248,9 @@ class DashboardPage extends StatelessWidget {
   }
 
   // ---------------------
-  //yeni buton
+  // Yardımcı Widget'lar
   // ---------------------
+
   Widget _seeAllSectorsButton(BuildContext context, Color primary) {
     return Center(
       child: GestureDetector(
@@ -253,28 +296,28 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String text) {
+  Widget _sectionTitle(String text, Color? color) {
     return Text(
       text,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: color,
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
     );
   }
 
-  Widget _sectorItem(String rank, String title, String change, String desc) {
+  Widget _sectorItem(String rank, String title, String change, String desc, Color bgColor, Color? titleColor, Color? descColor, Color primary) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2038),
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: const Color(0xFF3D8BFF),
+            backgroundColor: primary,
             child: Text(rank, style: const TextStyle(color: Colors.white)),
           ),
           const SizedBox(width: 12),
@@ -284,9 +327,9 @@ class DashboardPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(color: titleColor, fontSize: 16),
                 ),
-                Text(desc, style: TextStyle(color: Colors.grey.shade400)),
+                Text(desc, style: TextStyle(color: descColor)),
               ],
             ),
           ),
@@ -299,27 +342,27 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _aiPredictionCard(String text) {
+  Widget _aiPredictionCard(String text, Color bgColor, Color? textColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A2038),
+        color: bgColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white70, fontSize: 15),
+        style: TextStyle(color: textColor?.withOpacity(0.8), fontSize: 15),
       ),
     );
   }
 
-  Widget _moneyFlowItem(String label, String title, String value) {
+  Widget _moneyFlowItem(String label, String title, String value, Color? titleColor, Color? labelColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey)),
+        Text(label, style: TextStyle(color: labelColor)),
         const SizedBox(height: 4),
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 18)),
+        Text(title, style: TextStyle(color: titleColor, fontSize: 18)),
         Text(value, style: const TextStyle(color: Colors.greenAccent)),
       ],
     );
@@ -328,7 +371,8 @@ class DashboardPage extends StatelessWidget {
 
 class StockTicker extends StatefulWidget {
   final List<Map<String, String>> stocks;
-  const StockTicker({super.key, required this.stocks});
+  final Color? textColor;
+  const StockTicker({super.key, required this.stocks, this.textColor});
 
   @override
   State<StockTicker> createState() => _StockTickerState();
@@ -341,7 +385,6 @@ class _StockTickerState extends State<StockTicker> {
   void initState() {
     super.initState();
     _controller = ScrollController();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startAutoScrolling();
     });
@@ -374,11 +417,11 @@ class _StockTickerState extends State<StockTicker> {
     _controller
         .animateTo(maxScroll, duration: duration, curve: Curves.linear)
         .then((_) {
-          if (mounted) {
-            _controller.jumpTo(0);
-            _startAutoScrolling();
-          }
-        });
+      if (mounted) {
+        _controller.jumpTo(0);
+        _startAutoScrolling();
+      }
+    });
   }
 
   @override
@@ -399,7 +442,7 @@ class _StockTickerState extends State<StockTicker> {
               Text(
                 "${item['name']}  ${item['price']}  (${item['change']})",
                 style: TextStyle(
-                  color: isNegative ? Colors.redAccent : Colors.greenAccent,
+                  color: isNegative ? Colors.redAccent : Colors.green,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),

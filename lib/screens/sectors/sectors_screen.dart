@@ -1,4 +1,3 @@
-// screens/sectors/sectors_screen.dart
 import 'package:finance_app/screens/sectors/company_detail_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +10,8 @@ class SectorsScreen extends StatefulWidget {
 
 class _SectorsScreenState extends State<SectorsScreen> {
   int _selectedFilterIndex = 0; // Filtre butonu için
-  final Color cardBg = const Color(0xFF0F162C);
+
+  // Marka Renkleri (Sabit)
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
 
@@ -90,8 +90,23 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Tema verilerini alıyoruz
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Dinamik renkler
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final cardColor = theme.cardColor;
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final subTextColor = isDark ? Colors.grey : Colors.grey[600];
+
+    // Kart kenarlığı (Light modda belirginleştirmek için)
+    final borderColor = isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
+    // Metrik kutucukları (Z-Skor vb.) rengi
+    final metricCardBg = isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D193F),
+      backgroundColor: scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -102,10 +117,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Sektör Analizi",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -113,24 +128,29 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   Icon(Icons.filter_list, color: primary),
                 ],
               ),
-              const Text(
+              Text(
                 "Son 10 yıllık performans görünümü",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(color: subTextColor, fontSize: 14),
               ),
               const SizedBox(height: 20),
 
               _buildChartPlaceholder(
                 title: "Sektör Performans Karşılaştırması",
+                bgColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                borderColor: borderColor,
+                isDark: isDark,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildBar("Teknoloji", 35, green),
-                    _buildBar("Bankacılık", 15, green),
-                    _buildBar("Enerji", 28, green),
-                    _buildBar("İmalat", 12, green),
-                    _buildBar("Perakende", 18, green),
-                    _buildBar("Havacılık", 40, green),
+                    _buildBar("Teknoloji", 35, green, subTextColor),
+                    _buildBar("Bankacılık", 15, green, subTextColor),
+                    _buildBar("Enerji", 28, green, subTextColor),
+                    _buildBar("İmalat", 12, green, subTextColor),
+                    _buildBar("Perakende", 18, green, subTextColor),
+                    _buildBar("Havacılık", 40, green, subTextColor),
                   ],
                 ),
               ),
@@ -138,22 +158,27 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
               _buildChartPlaceholder(
                 title: "Sektör Trendleri (2020-2025)",
+                bgColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                borderColor: borderColor,
+                isDark: isDark,
                 child: Container(
                   height: 150,
                   alignment: Alignment.center,
-                  child: const Text(
+                  child: Text(
                     "Burada 'fl_chart' ile yapılmış bir Çizgi Grafiği olacak.",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: subTextColor),
                     textAlign: TextAlign.center,
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              const Text(
+              Text(
                 "Sektörler",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -163,10 +188,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _filterButton("Tümü Potansiyel", 0),
-                    _filterButton("Yüksek Potansiyel", 1),
-                    _filterButton("Orta Potansiyel", 2),
-                    _filterButton("Düşük Potansiyel", 3),
+                    _filterButton("Tümü Potansiyel", 0, cardColor, textColor, isDark),
+                    _filterButton("Yüksek Potansiyel", 1, cardColor, textColor, isDark),
+                    _filterButton("Orta Potansiyel", 2, cardColor, textColor, isDark),
+                    _filterButton("Düşük Potansiyel", 3, cardColor, textColor, isDark),
                   ],
                 ),
               ),
@@ -177,14 +202,22 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   ? Container(
                 padding: const EdgeInsets.all(16),
                 alignment: Alignment.center,
-                child: const Text(
+                child: Text(
                   "Tanımlı veri yok",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                  style: TextStyle(color: subTextColor, fontSize: 16),
                 ),
               )
                   : Column(
                 children: filteredSectors
-                    .map((sector) => _buildSectorCard(sector))
+                    .map((sector) => _buildSectorCard(
+                  sector,
+                  cardColor,
+                  textColor,
+                  subTextColor,
+                  metricCardBg,
+                  borderColor,
+                  isDark,
+                ))
                     .toList(),
               ),
 
@@ -196,27 +229,39 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _buildChartPlaceholder({required String title, required Widget child}) {
+  Widget _buildChartPlaceholder({
+    required String title,
+    required Widget child,
+    required Color bgColor,
+    required Color textColor,
+    required Color? subTextColor,
+    required Color borderColor,
+    required bool isDark,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+          boxShadow: [
+            if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+          ]
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: textColor, fontSize: 16),
           ),
           const SizedBox(height: 16),
           SizedBox(height: 180, child: child),
           const SizedBox(height: 8),
-          const Center(
+          Center(
             child: Text(
               "Piyasa değeri büyümesi (%)",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: subTextColor, fontSize: 12),
             ),
           ),
         ],
@@ -224,7 +269,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _buildBar(String label, double heightFactor, Color color) {
+  Widget _buildBar(String label, double heightFactor, Color color, Color? labelColor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -237,13 +282,18 @@ class _SectorsScreenState extends State<SectorsScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+        Text(label, style: TextStyle(color: labelColor, fontSize: 10)),
       ],
     );
   }
 
-  Widget _filterButton(String text, int index) {
+  Widget _filterButton(String text, int index, Color cardColor, Color textColor, bool isDark) {
     final isSelected = _selectedFilterIndex == index;
+    // Seçili değilse Light modda açık gri, Dark modda kart rengi
+    final unselectedBg = isDark ? cardColor : Colors.grey.shade200;
+    // Seçili değilse yazı rengi
+    final unselectedText = isDark ? Colors.white70 : Colors.black87;
+
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: GestureDetector(
@@ -251,13 +301,13 @@ class _SectorsScreenState extends State<SectorsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? green : cardBg,
+            color: isSelected ? green : unselectedBg,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             text,
             style: TextStyle(
-              color: isSelected ? Colors.black : Colors.white,
+              color: isSelected ? Colors.black : unselectedText,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -266,13 +316,25 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _buildSectorCard(Map<String, dynamic> sector) {
+  Widget _buildSectorCard(
+      Map<String, dynamic> sector,
+      Color cardColor,
+      Color textColor,
+      Color? subTextColor,
+      Color metricBgColor,
+      Color borderColor,
+      bool isDark,
+      ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+          boxShadow: [
+            if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+          ]
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,8 +346,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 children: [
                   Text(
                     sector["name"],
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -313,22 +375,22 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   ),
                   Text(
                     sector["grade"],
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(color: subTextColor, fontSize: 14),
                   ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(sector["companies"], style: const TextStyle(color: Colors.grey)),
+          Text(sector["companies"], style: TextStyle(color: subTextColor)),
           const SizedBox(height: 20),
           Row(
             children: [
-              _metricItem("Z-Skor", sector["metrics"][0]),
+              _metricItem("Z-Skor", sector["metrics"][0], metricBgColor, textColor, subTextColor),
               const SizedBox(width: 12),
-              _metricItem("Karlılık", sector["metrics"][1]),
+              _metricItem("Karlılık", sector["metrics"][1], metricBgColor, textColor, subTextColor),
               const SizedBox(width: 12),
-              _metricItem("Büyüme", sector["metrics"][2], isGrowth: true),
+              _metricItem("Büyüme", sector["metrics"][2], metricBgColor, textColor, subTextColor, isGrowth: true),
             ],
           ),
           const SizedBox(height: 16),
@@ -362,12 +424,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _metricItem(String label, String value, {bool isGrowth = false}) {
+  Widget _metricItem(String label, String value, Color bgColor, Color textColor, Color? labelColor, {bool isGrowth = false}) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A2038),
+          color: bgColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -375,13 +437,13 @@ class _SectorsScreenState extends State<SectorsScreen> {
           children: [
             Text(
               label,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: labelColor, fontSize: 12),
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                color: isGrowth ? green : Colors.white,
+                color: isGrowth ? green : textColor,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
