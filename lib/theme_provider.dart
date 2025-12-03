@@ -1,3 +1,4 @@
+// theme_provider.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,7 +10,8 @@ class ThemeProvider extends ChangeNotifier {
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
       // Sistem temasını kontrol etme kısmı (opsiyonel, şimdilik varsayılan dark diyebiliriz)
-      return WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
     }
     return _themeMode == ThemeMode.dark;
   }
