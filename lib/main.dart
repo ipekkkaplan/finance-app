@@ -1,3 +1,4 @@
+// main.dart
 import 'package:finance_app/screens/auth_screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Status Bar kontrolü için eklendi
@@ -39,8 +40,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Sayfa arka planı açık gri
-
+        scaffoldBackgroundColor: const Color(
+          0xFFF5F5F5,
+        ), // Sayfa arka planı açık gri
         // Ana renk: Derin, "Fintech" laciverti
         primaryColor: const Color(0xFF102C57),
 
@@ -51,9 +53,11 @@ class MyApp extends StatelessWidget {
 
         // TÜM SAYFALAR İÇİN VARSAYILAN APPBAR AYARI
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF102C57), // PROFESYONEL RENK: Derin Lacivert
-          foregroundColor: Colors.white,      // Yazılar ve İkonlar BEYAZ (En iyi kontrast)
-
+          backgroundColor: Color(
+            0xFF102C57,
+          ), // PROFESYONEL RENK: Derin Lacivert
+          foregroundColor:
+              Colors.white, // Yazılar ve İkonlar BEYAZ (En iyi kontrast)
           // Hafif bir derinlik hissi
           elevation: 2,
           shadowColor: Colors.black12,
@@ -81,7 +85,9 @@ class MyApp extends StatelessWidget {
 
         // Text Temaları
         textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFF102C57)), // Yazılarda da bu tonu kullandık
+          bodyLarge: TextStyle(
+            color: Color(0xFF102C57),
+          ), // Yazılarda da bu tonu kullandık
           bodyMedium: TextStyle(color: Colors.black54),
         ),
       ),
@@ -90,7 +96,9 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0D193F), // Senin özel lacivertin
+        scaffoldBackgroundColor: const Color(
+          0xFF0D193F,
+        ), // Senin özel lacivertin
         cardColor: const Color(0xFF0F162C),
         primaryColor: const Color(0xFF3D8BFF),
 
@@ -115,7 +123,9 @@ class MyApp extends StatelessWidget {
           // Profesyonel Dokunuş: Başlık ile içeriği ayıran çok ince bir çizgi
           shape: Border(
             bottom: BorderSide(
-              color: Colors.white.withOpacity(0.05), // Çok hafif şeffaf çizgi
+              color: Colors.white.withValues(
+                alpha: 0.2,
+              ), // Çok hafif şeffaf çizgi
               width: 1,
             ),
           ),
