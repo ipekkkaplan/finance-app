@@ -400,7 +400,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
-                          if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
+                          if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))
                         ]
                     ),
                     child: Row(
@@ -506,7 +506,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               // Dark modda koyu yeşil, Light modda çok açık yeşil
               color: isDark ? const Color(0xFF061D23) : const Color(0xFFE8F5E9),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: green.withOpacity(0.3)),
+              border: Border.all(color: green.withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,7 +555,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     required bool isDark,
   }) {
     final isSelected = groupValue == value;
-    final iconBgColor = isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100;
+    final iconBgColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
     final iconColor = isDark ? Colors.white70 : Colors.grey.shade700;
 
     return GestureDetector(
@@ -571,7 +571,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               width: 1.5,
             ),
             boxShadow: [
-              if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
+              if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 5, offset: const Offset(0, 2))
             ]
         ),
         child: Row(

@@ -79,7 +79,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: borderColor),
                   boxShadow: [
-                    if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+                    if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
                   ]
               ),
               child: Column(
@@ -530,7 +530,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   Widget _buildTabButton(String text, int index, Color textColor) {
     bool isSelected = _selectedTabIndex == index;
     // Seçili olmayanlar daha soluk
-    final color = isSelected ? textColor : textColor.withOpacity(0.5);
+    final color = isSelected ? textColor : textColor.withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),

@@ -209,7 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       "Versiyon 1.0.0",
-                      style: TextStyle(color: subTextColor.withOpacity(0.5), fontSize: 12),
+                      style: TextStyle(color: subTextColor.withValues(alpha: 0.5), fontSize: 12),
                     ),
                   ],
                 ),
@@ -237,13 +237,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             // Light modda border görünmesin veya çok silik olsun
-            color: textColor.withOpacity(0.05),
+            color: textColor.withValues(alpha: 0.05),
           ),
           boxShadow: [
             // Light modda hafif gölge, Dark modda yok
             if (Theme.of(context).brightness == Brightness.light)
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -283,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Text(
           label,
           style: TextStyle(
-            color: textColor.withOpacity(0.7),
+            color: textColor.withValues(alpha: 0.7),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),

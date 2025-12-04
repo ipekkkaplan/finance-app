@@ -115,7 +115,7 @@ class MyApp extends StatelessWidget {
           // Profesyonel Dokunuş: Başlık ile içeriği ayıran çok ince bir çizgi
           shape: Border(
             bottom: BorderSide(
-              color: Colors.white.withOpacity(0.05), // Çok hafif şeffaf çizgi
+              color: Colors.white.withValues(alpha: 0.05), // Çok hafif şeffaf çizgi
               width: 1,
             ),
           ),
