@@ -245,7 +245,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor),
           boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
           ]
       ),
       child: Column(
@@ -333,7 +333,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor),
           boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
           ]
       ),
       child: Column(

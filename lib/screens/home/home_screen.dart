@@ -1,4 +1,5 @@
 import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
+import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
 import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:finance_app/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const List<Widget> _pages = [
     DashboardPage(),
     SectorsScreen(),
-    PortfolioPlaceholder(), // Sabit text yerine widget kullandık
+    PortfolioScreen(), // Sabit text yerine widget kullandık
     SettingsScreen(),
   ];
 
@@ -68,21 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Ayarlar"),
         ],
-      ),
-    );
-  }
-}
-
-// Portföy sayfası için placeholder widget
-class PortfolioPlaceholder extends StatelessWidget {
-  const PortfolioPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        "Portföy Sayfası",
-        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       ),
     );
   }
@@ -166,7 +152,7 @@ class DashboardPage extends StatelessWidget {
               boxShadow: [
                 if (!isDark) // Sadece Light modda hafif gölge
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -214,7 +200,7 @@ class DashboardPage extends StatelessWidget {
               boxShadow: [
                 if (!isDark)
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -351,7 +337,7 @@ class DashboardPage extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(color: textColor?.withOpacity(0.8), fontSize: 15),
+        style: TextStyle(color: textColor?.withValues(alpha: 0.8), fontSize: 15),
       ),
     );
   }

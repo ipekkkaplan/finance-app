@@ -268,7 +268,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       style: TextStyle(
         color:
         readOnly
-            ? textColor.withOpacity(0.6)
+            ? textColor.withValues(alpha: 0.6)
             : textColor, // Okunabilirse soluk, değilse normal
       ),
       decoration: InputDecoration(
