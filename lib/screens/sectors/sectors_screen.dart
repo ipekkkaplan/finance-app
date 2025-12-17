@@ -1,5 +1,7 @@
-import 'package:finance_app/screens/sectors/company_detail_screen.dart';
 import 'package:flutter/material.dart';
+import '../../models/sector_model.dart'; // Modeli import etmek için
+import '../../services/data_service.dart'; // Servisini import etmek için
+import 'company_detail_screen.dart';
 
 class SectorsScreen extends StatefulWidget {
   const SectorsScreen({super.key});
@@ -11,80 +13,36 @@ class SectorsScreen extends StatefulWidget {
 class _SectorsScreenState extends State<SectorsScreen> {
   int _selectedFilterIndex = 0; // Filtre butonu için
 
+  // Servis ve Future Tanımları
+  final DataService _dataService = DataService();
+  Future<List<SectorModel>>? _sectorsFuture;
+
   // Marka Renkleri (Sabit)
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
+  final Color red = const Color(0xFFFF5252); // Düşük performans için ekledim
 
-  final List<Map<String, dynamic>> sectorsData = [
-    {
-      "name": "Teknoloji",
-      "tag": "Yüksek",
-      "tagColor": const Color(0xFF00C853),
-      "change": "+24.5%",
-      "grade": "A",
-      "companies": "ASELS • LOGO • Karel",
-      "metrics": ["3.8", "18.2%", "+34.7%"],
-    },
-    {
-      "name": "Bankacılık",
-      "tag": "Orta",
-      "tagColor": const Color(0xFF3D8BFF),
-      "change": "+15.3%",
-      "grade": "B+",
-      "companies": "GARAN • AKBNK • ISCTR",
-      "metrics": ["2.9", "22.5%", "+18.4%"],
-    },
-    {
-      "name": "Enerji",
-      "tag": "Yüksek",
-      "tagColor": const Color(0xFF00C853),
-      "change": "+28.7%",
-      "grade": "A-",
-      "companies": "TUPRS • ENKAI • AKENR",
-      "metrics": ["3.2", "16.8%", "+29.3%"],
-    },
-    {
-      "name": "İmalat",
-      "tag": "Orta",
-      "tagColor": const Color(0xFF3D8BFF),
-      "change": "+12.4%",
-      "grade": "B",
-      "companies": "EREGL • KRDMD • TOASO",
-      "metrics": ["2.5", "14.3%", "+15.2%"],
-    },
-    {
-      "name": "Perakende",
-      "tag": "Orta",
-      "tagColor": const Color(0xFF3D8BFF),
-      "change": "+19.8%",
-      "grade": "B+",
-      "companies": "BIMAS • MGROS • SOKM",
-      "metrics": ["2.8", "11.7%", "+21.5%"],
-    },
-    {
-      "name": "Havacılık",
-      "tag": "Yüksek",
-      "tagColor": const Color(0xFF00C853),
-      "change": "+31.2%",
-      "grade": "A",
-      "companies": "THYAO • PGSUS • CLEBI",
-      "metrics": ["3.5", "24.1%", "+42.8%"],
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _sectorsFuture = _dataService.loadSectorData();
+  }
 
-  // --- Filtreleme mantığı ---
-  List<Map<String, dynamic>> get filteredSectors {
+  // --- Filtreleme mantığı (Gerçek Veri İle) ---
+  List<SectorModel> getFilteredSectors(List<SectorModel> allSectors) {
     switch (_selectedFilterIndex) {
-      case 0:
-        return sectorsData; // Tümü
-      case 1:
-        return sectorsData.where((s) => s["tag"] == "Yüksek").toList();
-      case 2:
-        return sectorsData.where((s) => s["tag"] == "Orta").toList();
-      case 3:
-        return sectorsData.where((s) => s["tag"] == "Düşük").toList();
+      case 0: // Tümü
+        return allSectors;
+      case 1: // Yüksek Potansiyel (Değişim > %2.0)
+        return allSectors.where((s) => s.dailyChange > 2.0).toList();
+      case 2: // Orta Potansiyel (0 < Değişim <= 2.0)
+        return allSectors
+            .where((s) => s.dailyChange > 0 && s.dailyChange <= 2.0)
+            .toList();
+      case 3: // Düşük Potansiyel (Negatif)
+        return allSectors.where((s) => s.dailyChange <= 0).toList();
       default:
-        return sectorsData;
+        return allSectors;
     }
   }
 
@@ -100,130 +58,171 @@ class _SectorsScreenState extends State<SectorsScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = isDark ? Colors.grey : Colors.grey[600];
 
-    // Kart kenarlığı (Light modda belirginleştirmek için)
-    final borderColor = isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
-    // Metrik kutucukları (Z-Skor vb.) rengi
-    final metricCardBg = isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+    // Kart kenarlığı
+    final borderColor = isDark
+        ? Colors.transparent
+        : Colors.grey.withValues(alpha: 0.2);
+    // Metrik kutucukları rengi
+    final metricCardBg =
+    isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Başlık ve filtre ikonu
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // FutureBuilder ile asenkron veri yönetimi
+        child: FutureBuilder<List<SectorModel>>(
+          future: _sectorsFuture,
+          builder: (context, snapshot) {
+            // 1. Durum: Veri yükleniyor
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator(color: primary));
+            }
+            // 2. Durum: Hata var
+            else if (snapshot.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: red, size: 40),
+                    const SizedBox(height: 10),
+                    Text("Veri yüklenemedi", style: TextStyle(color: textColor)),
+                  ],
+                ),
+              );
+            }
+            // 3. Durum: Veri yok veya boş
+            else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text("Veri bulunamadı", style: TextStyle(color: textColor)));
+            }
+
+            // Veri başarıyla geldi
+            final allSectors = snapshot.data!;
+            final filteredList = getFilteredSectors(allSectors);
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Başlık ve filtre ikonu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Sektör Analizi",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Icon(Icons.filter_list, color: primary),
+                    ],
+                  ),
                   Text(
-                    "Sektör Analizi",
+                    "Güncel piyasa performansı",
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // --- GRAPHIIC PLACEHOLDER (Senin tasarımın korundu) ---
+                  _buildChartPlaceholder(
+                    title: "Sektör Performans Karşılaştırması",
+                    bgColor: cardColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                    borderColor: borderColor,
+                    isDark: isDark,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: allSectors.take(6).map((sector) {
+                        // Basit bir bar yüksekliği hesaplaması (Görsel amaçlı)
+                        // Değişim oranına göre bar boyunu ve rengini ayarlıyoruz
+                        double height = (sector.dailyChange.abs() * 10).clamp(10, 100);
+                        return _buildBar(
+                            sector.name.length > 3 ? sector.name.substring(0,3) : sector.name,
+                            height,
+                            sector.dailyChange >= 0 ? green : red,
+                            subTextColor
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildChartPlaceholder(
+                    title: "Sektör Trendleri (2025)",
+                    bgColor: cardColor,
+                    textColor: textColor,
+                    subTextColor: subTextColor,
+                    borderColor: borderColor,
+                    isDark: isDark,
+                    child: Container(
+                      height: 150,
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Grafik verileri hazırlanıyor...",
+                        style: TextStyle(color: subTextColor),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  Text(
+                    "Sektörler",
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Icon(Icons.filter_list, color: primary),
+                  const SizedBox(height: 12),
+
+                  // Filtre Butonları
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _filterButton("Tümü", 0, cardColor, textColor, isDark),
+                        _filterButton("Yüksek Potansiyel", 1, cardColor, textColor, isDark),
+                        _filterButton("Orta Potansiyel", 2, cardColor, textColor, isDark),
+                        _filterButton("Düşük Potansiyel", 3, cardColor, textColor, isDark),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Sektör kartları (Dinamik Listeleme)
+                  filteredList.isEmpty
+                      ? Container(
+                    padding: const EdgeInsets.all(16),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Kriterlere uygun sektör yok",
+                      style: TextStyle(color: subTextColor, fontSize: 16),
+                    ),
+                  )
+                      : Column(
+                    children: filteredList
+                        .map((sector) => _buildSectorCard(
+                      sector, // Artık SectorModel gönderiyoruz
+                      cardColor,
+                      textColor,
+                      subTextColor,
+                      metricCardBg,
+                      borderColor,
+                      isDark,
+                    ))
+                        .toList(),
+                  ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
-              Text(
-                "Son 10 yıllık performans görünümü",
-                style: TextStyle(color: subTextColor, fontSize: 14),
-              ),
-              const SizedBox(height: 20),
-
-              _buildChartPlaceholder(
-                title: "Sektör Performans Karşılaştırması",
-                bgColor: cardColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                borderColor: borderColor,
-                isDark: isDark,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _buildBar("Teknoloji", 35, green, subTextColor),
-                    _buildBar("Bankacılık", 15, green, subTextColor),
-                    _buildBar("Enerji", 28, green, subTextColor),
-                    _buildBar("İmalat", 12, green, subTextColor),
-                    _buildBar("Perakende", 18, green, subTextColor),
-                    _buildBar("Havacılık", 40, green, subTextColor),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _buildChartPlaceholder(
-                title: "Sektör Trendleri (2020-2025)",
-                bgColor: cardColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                borderColor: borderColor,
-                isDark: isDark,
-                child: Container(
-                  height: 150,
-                  alignment: Alignment.center,
-                  child: Text(
-                    "Burada 'fl_chart' ile yapılmış bir Çizgi Grafiği olacak.",
-                    style: TextStyle(color: subTextColor),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              Text(
-                "Sektörler",
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _filterButton("Tümü Potansiyel", 0, cardColor, textColor, isDark),
-                    _filterButton("Yüksek Potansiyel", 1, cardColor, textColor, isDark),
-                    _filterButton("Orta Potansiyel", 2, cardColor, textColor, isDark),
-                    _filterButton("Düşük Potansiyel", 3, cardColor, textColor, isDark),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Sektör kartları veya "Tanımlı veri yok"
-              filteredSectors.isEmpty
-                  ? Container(
-                padding: const EdgeInsets.all(16),
-                alignment: Alignment.center,
-                child: Text(
-                  "Tanımlı veri yok",
-                  style: TextStyle(color: subTextColor, fontSize: 16),
-                ),
-              )
-                  : Column(
-                children: filteredSectors
-                    .map((sector) => _buildSectorCard(
-                  sector,
-                  cardColor,
-                  textColor,
-                  subTextColor,
-                  metricCardBg,
-                  borderColor,
-                  isDark,
-                ))
-                    .toList(),
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -245,9 +244,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor),
           boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-          ]
-      ),
+            if (!isDark)
+              BoxShadow(
+                  color: Colors.grey.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4))
+          ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -260,7 +262,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              "Piyasa değeri büyümesi (%)",
+              "Piyasa değeri değişimi (%)",
               style: TextStyle(color: subTextColor, fontSize: 12),
             ),
           ),
@@ -269,13 +271,14 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _buildBar(String label, double heightFactor, Color color, Color? labelColor) {
+  Widget _buildBar(
+      String label, double height, Color color, Color? labelColor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           width: 30,
-          height: heightFactor * 3,
+          height: height, // Dinamik yükseklik
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(6),
@@ -287,11 +290,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _filterButton(String text, int index, Color cardColor, Color textColor, bool isDark) {
+  Widget _filterButton(
+      String text, int index, Color cardColor, Color textColor, bool isDark) {
     final isSelected = _selectedFilterIndex == index;
-    // Seçili değilse Light modda açık gri, Dark modda kart rengi
     final unselectedBg = isDark ? cardColor : Colors.grey.shade200;
-    // Seçili değilse yazı rengi
     final unselectedText = isDark ? Colors.white70 : Colors.black87;
 
     return Padding(
@@ -316,8 +318,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
+  // Sektör Kartı Oluşturucu - Model Entegrasyonu Yapıldı
   Widget _buildSectorCard(
-      Map<String, dynamic> sector,
+      SectorModel sector, // ARTIK MODEL ALIYOR
       Color cardColor,
       Color textColor,
       Color? subTextColor,
@@ -325,6 +328,20 @@ class _SectorsScreenState extends State<SectorsScreen> {
       Color borderColor,
       bool isDark,
       ) {
+    // Dinamik Etiket Hesaplama
+    String tag = "Nötr";
+    Color tagColor = Colors.grey;
+    if (sector.dailyChange > 2.0) {
+      tag = "Yüksek";
+      tagColor = green;
+    } else if (sector.dailyChange > 0) {
+      tag = "Orta";
+      tagColor = primary;
+    } else {
+      tag = "Düşük";
+      tagColor = red;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -333,9 +350,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor),
           boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-          ]
-      ),
+            if (!isDark)
+              BoxShadow(
+                  color: Colors.grey.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4))
+          ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -345,7 +365,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
               Row(
                 children: [
                   Text(
-                    sector["name"],
+                    sector.name,
                     style: TextStyle(
                       color: textColor,
                       fontSize: 18,
@@ -354,14 +374,15 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   ),
                   const SizedBox(width: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: sector["tagColor"].withOpacity(0.2),
+                      color: tagColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      sector["tag"],
-                      style: TextStyle(color: sector["tagColor"], fontSize: 12),
+                      tag,
+                      style: TextStyle(color: tagColor, fontSize: 12),
                     ),
                   ),
                 ],
@@ -370,11 +391,14 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    sector["change"],
-                    style: TextStyle(color: green, fontSize: 16),
+                    "${sector.dailyChange >= 0 ? '+' : ''}${sector.dailyChange}%",
+                    style: TextStyle(
+                        color: sector.dailyChange >= 0 ? green : red,
+                        fontSize: 16),
                   ),
                   Text(
-                    sector["grade"],
+                    // Grade JSON'da yoksa sembolik hesaplama
+                    sector.dailyChange > 1.5 ? "A+" : (sector.dailyChange > 0 ? "B" : "C"),
                     style: TextStyle(color: subTextColor, fontSize: 14),
                   ),
                 ],
@@ -382,15 +406,21 @@ class _SectorsScreenState extends State<SectorsScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          Text(sector["companies"], style: TextStyle(color: subTextColor)),
+          Text("${sector.name} Endeks Şirketleri",
+              style: TextStyle(color: subTextColor)),
           const SizedBox(height: 20),
+
+          // METRİKLER - Gerçek verilerle güncellendi
           Row(
             children: [
-              _metricItem("Z-Skor", sector["metrics"][0], metricBgColor, textColor, subTextColor),
+              _metricItem("Günlük", "%${sector.dailyChange}", metricBgColor, textColor,
+                  subTextColor, isGrowth: sector.dailyChange > 0),
               const SizedBox(width: 12),
-              _metricItem("Karlılık", sector["metrics"][1], metricBgColor, textColor, subTextColor),
+              _metricItem("Haftalık", "%${sector.weeklyChange}", metricBgColor, textColor,
+                  subTextColor, isGrowth: sector.weeklyChange > 0),
               const SizedBox(width: 12),
-              _metricItem("Büyüme", sector["metrics"][2], metricBgColor, textColor, subTextColor, isGrowth: true),
+              _metricItem("Aylık", "%${sector.monthlyChange}", metricBgColor, textColor,
+                  subTextColor, isGrowth: sector.monthlyChange > 0),
             ],
           ),
           const SizedBox(height: 16),
@@ -401,9 +431,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CompanyDetailScreen(
-                      companyName: "Aselsan Elektronik",
-                      ticker: "ASELS",
-                      sector: sector["name"],
+                      companyName: "${sector.name} Şirketleri",
+                      ticker: "X${sector.name.substring(0, (sector.name.length > 3 ? 3 : sector.name.length)).toUpperCase()}",
+                      sector: sector.name,
                     ),
                   ),
                 );
@@ -424,7 +454,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _metricItem(String label, String value, Color bgColor, Color textColor, Color? labelColor, {bool isGrowth = false}) {
+  Widget _metricItem(String label, String value, Color bgColor, Color textColor,
+      Color? labelColor,
+      {bool isGrowth = false}) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -443,7 +475,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
             Text(
               value,
               style: TextStyle(
-                color: isGrowth ? green : textColor,
+                color: isGrowth ? green : (value.contains('-') ? red : textColor),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
