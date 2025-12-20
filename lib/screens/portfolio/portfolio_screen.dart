@@ -10,7 +10,12 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
-  // --- MARKA RENKLERİ ---
+  // --- 1. DEĞİŞKENLER VE RENKLER ---
+
+  // Varsayılan Bakiye (Kullanıcının değiştireceği değer)
+  double _totalBalance = 250000.0;
+
+  // Marka Renkleri
   final Color primaryGreen = const Color(0xFF00C853);
   final Color primaryBlue = const Color(0xFF3D8BFF);
   final Color primaryYellow = const Color(0xFFFFC107);
@@ -19,6 +24,74 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   // Pie Chart Etkileşimi için seçili dilim indeksi
   int touchedIndex = -1;
+
+  // --- 2. BAKİYE DÜZENLEME PENCERESİ (DIALOG) ---
+  void _showEditBalanceDialog(BuildContext context) {
+    // Mevcut bakiyeyi text kutusuna koyuyoruz (virgülsüz)
+    final TextEditingController controller = TextEditingController(
+      text: _totalBalance.toStringAsFixed(0),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            "Toplam Varlık Düzenle",
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            decoration: InputDecoration(
+              hintText: "Miktar giriniz",
+              hintStyle: TextStyle(
+                color: isDark ? Colors.grey : Colors.grey[700],
+              ),
+              suffixText: "₺",
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: isDark ? Colors.white54 : Colors.grey,
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: primaryGreen),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                "İptal",
+                style: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
+              onPressed: () {
+                setState(() {
+                  String cleanText = controller.text.replaceAll(',', '.');
+                  _totalBalance = double.tryParse(cleanText) ?? _totalBalance;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Kaydet",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +104,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final cardColor = theme.cardColor;
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
-    final borderColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.2);
-    final balanceCardInnerColor = isDark ? const Color(0xFF0F162C) : Colors.white;
+    final borderColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.grey.withValues(alpha: 0.2);
+    final balanceCardInnerColor =
+        isDark ? const Color(0xFF0F162C) : Colors.white;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -81,12 +158,24 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         child: Column(
           children: [
             // 1. TOPLAM DEĞER KARTI
-            _buildTotalBalanceCard(balanceCardInnerColor, textColor, subTextColor, borderColor, isDark),
+            _buildTotalBalanceCard(
+              balanceCardInnerColor,
+              textColor,
+              subTextColor,
+              borderColor,
+              isDark,
+            ),
 
             const SizedBox(height: 24),
 
             // 2. SEKTÖR DAĞILIMI (FL CHART - PIE)
-            _buildSectorChart(cardColor, textColor, subTextColor, borderColor, isDark),
+            _buildSectorChart(
+              cardColor,
+              textColor,
+              subTextColor,
+              borderColor,
+              isDark,
+            ),
 
             const SizedBox(height: 24),
 
@@ -101,7 +190,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   // --- 1. KART: TOPLAM BAKİYE ---
-  Widget _buildTotalBalanceCard(Color cardBg, Color textColor, Color subTextColor, Color borderColor, bool isDark) {
+  Widget _buildTotalBalanceCard(
+    Color cardBg,
+    Color textColor,
+    Color subTextColor,
+    Color borderColor,
+    bool isDark,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
@@ -131,24 +226,46 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             style: TextStyle(color: subTextColor, fontSize: 14),
           ),
           const SizedBox(height: 8),
-          Text(
-            "250.000₺",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+
+          // --- GÜNCELLENEN KISIM: TIKLANABİLİR BAKİYE ---
+          GestureDetector(
+            onTap:
+                () => _showEditBalanceDialog(
+                  context,
+                ), // Tıklayınca pencere açılır
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${_totalBalance.toStringAsFixed(0)}₺", // Değişkeni buraya bağladık
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.edit,
+                  size: 18,
+                  color: subTextColor.withValues(alpha: .5),
+                ), // Düzenleme ikonu
+              ],
             ),
           ),
+
+          // ---------------------------------------------
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.trending_up, color: primaryGreen, size: 20),
+              // primaryGreen senin kodunda tanımlı değilse buraya Color(0xFF00C853) yazabilirsin
+              const Icon(Icons.trending_up, color: Color(0xFF00C853), size: 20),
               const SizedBox(width: 6),
-              Text(
+              const Text(
                 "+12.8%",
                 style: TextStyle(
-                  color: primaryGreen,
+                  color: Color(0xFF00C853),
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -165,7 +282,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   // --- 2. KART: SEKTÖR DAĞILIMI (FL CHART - PIE) ---
-  Widget _buildSectorChart(Color cardBg, Color textColor, Color subTextColor, Color borderColor, bool isDark) {
+  Widget _buildSectorChart(
+    Color cardBg,
+    Color textColor,
+    Color subTextColor,
+    Color borderColor,
+    bool isDark,
+  ) {
     // Grafik Verileri
     final List<ChartData> data = [
       ChartData("Teknoloji", 35, primaryGreen, "87.500₺"),
@@ -178,12 +301,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-          ]
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +342,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             touchedIndex = -1;
                             return;
                           }
-                          touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                          touchedIndex =
+                              pieTouchResponse
+                                  .touchedSection!
+                                  .touchedSectionIndex;
                         });
                       },
                     ),
@@ -236,7 +367,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           fontSize: fontSize,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],
+                          shadows: const [
+                            Shadow(color: Colors.black26, blurRadius: 2),
+                          ],
                         ),
                       );
                     }),
@@ -257,10 +390,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       ),
                       Text(
                         "Sektör",
-                        style: TextStyle(
-                          color: subTextColor,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: subTextColor, fontSize: 12),
                       ),
                     ],
                   ),
@@ -273,42 +403,43 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
           // Lejant (Liste)
           Column(
-            children: data.map((item) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: item.color,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+            children:
+                data.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: item.color,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          item.label,
+                          style: TextStyle(color: subTextColor, fontSize: 14),
+                        ),
+                        const Spacer(),
+                        Text(
+                          "${item.percent}%",
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          item.amount,
+                          style: TextStyle(color: subTextColor, fontSize: 12),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      item.label,
-                      style: TextStyle(color: subTextColor, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    Text(
-                      "${item.percent}%",
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      item.amount,
-                      style: TextStyle(color: subTextColor, fontSize: 12),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
         ],
       ),
@@ -316,10 +447,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   // --- 3. KART: KARŞILAŞTIRMA (FL CHART - BAR) ---
-  Widget _buildComparisonChart(Color cardBg, Color textColor, Color borderColor, bool isDark) {
+  Widget _buildComparisonChart(
+    Color cardBg,
+    Color textColor,
+    Color borderColor,
+    bool isDark,
+  ) {
     // Piyasa rengi
-    final marketBarColor = isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
-    final gridColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05);
+    final marketBarColor =
+        isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
+    final gridColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.05);
     final labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
 
     // Veri
@@ -330,12 +470,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-          ]
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,16 +514,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   show: true,
                   drawVerticalLine: true, // Dikey çizgiler (Sektörleri ayırır)
                   drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: gridColor,
-                    strokeWidth: 1,
-                    dashArray: [5, 5], // Kesikli Yatay
-                  ),
-                  getDrawingVerticalLine: (value) => FlLine(
-                    color: gridColor,
-                    strokeWidth: 1,
-                    dashArray: [5, 5], // Kesikli Dikey
-                  ),
+                  getDrawingHorizontalLine:
+                      (value) => FlLine(
+                        color: gridColor,
+                        strokeWidth: 1,
+                        dashArray: [5, 5], // Kesikli Yatay
+                      ),
+                  getDrawingVerticalLine:
+                      (value) => FlLine(
+                        color: gridColor,
+                        strokeWidth: 1,
+                        dashArray: [5, 5], // Kesikli Dikey
+                      ),
                 ),
 
                 // --- EKSEN BAŞLIKLARI (AXIS TITLES) ---
@@ -391,7 +538,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       reservedSize: 40,
                       getTitlesWidget: (double value, TitleMeta meta) {
                         final index = value.toInt();
-                        if (index < 0 || index >= labels.length) return const SizedBox();
+                        if (index < 0 || index >= labels.length)
+                          return const SizedBox();
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
                           space: 8,
@@ -431,15 +579,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       },
                     ),
                   ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
 
                 borderData: FlBorderData(
                   show: true,
                   border: Border(
-                    bottom: BorderSide(color: labelColor.withValues(alpha: 0.2), width: 1),
-                    left: BorderSide(color: labelColor.withValues(alpha: 0.2), width: 1),
+                    bottom: BorderSide(
+                      color: labelColor.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                    left: BorderSide(
+                      color: labelColor.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
                 ),
 
@@ -447,14 +605,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => isDark ? const Color(0xFF1E293B) : Colors.white,
+                    getTooltipColor:
+                        (group) =>
+                            isDark ? const Color(0xFF1E293B) : Colors.white,
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 8,
                     tooltipRoundedRadius: 8,
                     tooltipBorder: BorderSide(color: borderColor, width: 1),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       String label = rodIndex == 0 ? "Piyasa" : "Portföy";
-                      final tooltipTextColor = isDark ? Colors.white : Colors.black;
+                      final tooltipTextColor =
+                          isDark ? Colors.white : Colors.black;
 
                       return BarTooltipItem(
                         "$label\n",
@@ -497,7 +658,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: 100, // Max değer
-                          color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey.withValues(alpha: 0.05),
+                          color:
+                              isDark
+                                  ? Colors.white.withValues(alpha: 0.02)
+                                  : Colors.grey.withValues(alpha: 0.05),
                         ),
                       ),
                       // 2. Çubuk: Portföy
@@ -512,7 +676,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: 100,
-                          color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey.withValues(alpha: 0.05),
+                          color:
+                              isDark
+                                  ? Colors.white.withValues(alpha: 0.02)
+                                  : Colors.grey.withValues(alpha: 0.05),
                         ),
                       ),
                     ],
@@ -544,10 +711,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Text(
