@@ -1,9 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
+// Modeller
 import '../models/sector_model.dart';
+import '../models/valuation_model.dart';
 
 class DataService {
+
+  // --- MEVCUT SEKTÖR VERİLERİ  ---
   Future<List<SectorModel>> loadSectorData() async {
     try {
       // 1. Ana Sektör Verilerini Oku (sektor_analiz.json)
@@ -26,12 +31,26 @@ class DataService {
             .toList();
 
         // Modeli oluştururken eşleşen şirketleri de gönderiyoruz
-        // NOT: SectorModel.fromJson metodunu 2 parametre alacak şekilde güncellemiştik.
         return SectorModel.fromJson(sJson, matchingCompanies);
       }).toList();
 
     } catch (e) {
-      debugPrint("DataService HATA: $e");
+      debugPrint("DataService (Sector) HATA: $e");
+      return [];
+    }
+  }
+
+  // Değerleme verileri(En yeni Eklenen)
+  Future<List<ValuationModel>> loadValuationData() async {
+    try {
+
+      final String jsonString = await rootBundle.loadString('assets/hisse_degerleme_sonuclari.json');
+      final List<dynamic> jsonList = json.decode(jsonString);
+
+      // JSON listesini ValuationModel listesine çevir
+      return jsonList.map((jsonItem) => ValuationModel.fromJson(jsonItem)).toList();
+    } catch (e) {
+      debugPrint("DataService (Valuation) HATA: $e");
       return [];
     }
   }

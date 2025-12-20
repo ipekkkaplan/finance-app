@@ -49,7 +49,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Tema verilerini alıyoruz
+    // Tema verilerini aldığımız kısım
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -127,7 +127,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // --- YENİ YATAY PERFORMANS GRAFİĞİ ---
+                  // ---  PERFORMANS GRAFİĞİ ---
                   _buildHorizontalGraph(
                       allSectors, isDark, cardColor, textColor),
 
@@ -723,10 +723,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
       tagColor = red;
     }
 
-    // YENİ: Top 3 şirket ismini oluşturuyoruz
+    // YENİ: Top 3 şirket ismini oluşturduk
     String companiesText = "${sector.name} Endeks Şirketleri";
     if (sector.topCompanies.isNotEmpty) {
-      // Şirket isimlerini alıp araya nokta koyarak birleştiriyoruz
+      // Şirket isimlerini alıp araya nokta koyarak birleştirdik
       companiesText = sector.topCompanies
           .map((company) => company['ticker'].toString())
           .join(' • ');
