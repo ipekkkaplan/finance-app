@@ -71,6 +71,7 @@ flutter:
   assets:
     - assets/sektor_analiz.json
     - assets/sector_top3_6m.json
+    - assets/hisse_degerleme_sonuclari.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
