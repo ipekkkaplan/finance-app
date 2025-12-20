@@ -29,7 +29,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
     _sectorsFuture = _dataService.loadSectorData();
   }
 
- //Sektör Filtreleme
+  //Sektör Filtreleme
   List<SectorModel> getFilteredSectors(List<SectorModel> allSectors) {
     switch (_selectedFilterIndex) {
       case 0: // Tümü
@@ -61,10 +61,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
     // Kart kenarlığı
     final borderColor =
-    isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
+        isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
     // Metrik kutucukları rengi
     final metricCardBg =
-    isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+        isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -84,8 +84,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   children: [
                     Icon(Icons.error_outline, color: red, size: 40),
                     const SizedBox(height: 10),
-                    Text("Veri yüklenemedi",
-                        style: TextStyle(color: textColor)),
+                    Text(
+                      "Veri yüklenemedi",
+                      style: TextStyle(color: textColor),
+                    ),
                   ],
                 ),
               );
@@ -93,8 +95,11 @@ class _SectorsScreenState extends State<SectorsScreen> {
             // 3. Durum: Veri yok veya boş
             else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(
-                  child: Text("Veri bulunamadı",
-                      style: TextStyle(color: textColor)));
+                child: Text(
+                  "Veri bulunamadı",
+                  style: TextStyle(color: textColor),
+                ),
+              );
             }
 
             // Veri başarıyla geldi
@@ -129,7 +134,11 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
                   // ---  PERFORMANS GRAFİĞİ ---
                   _buildHorizontalGraph(
-                      allSectors, isDark, cardColor, textColor),
+                    allSectors,
+                    isDark,
+                    cardColor,
+                    textColor,
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -154,12 +163,27 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Row(
                       children: [
                         _filterButton("Tümü", 0, cardColor, textColor, isDark),
-                        _filterButton("Yüksek Potansiyel", 1, cardColor,
-                            textColor, isDark),
                         _filterButton(
-                            "Orta Potansiyel", 2, cardColor, textColor, isDark),
-                        _filterButton("Düşük Potansiyel", 3, cardColor,
-                            textColor, isDark),
+                          "Yüksek Potansiyel",
+                          1,
+                          cardColor,
+                          textColor,
+                          isDark,
+                        ),
+                        _filterButton(
+                          "Orta Potansiyel",
+                          2,
+                          cardColor,
+                          textColor,
+                          isDark,
+                        ),
+                        _filterButton(
+                          "Düşük Potansiyel",
+                          3,
+                          cardColor,
+                          textColor,
+                          isDark,
+                        ),
                       ],
                     ),
                   ),
@@ -168,26 +192,29 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   // Sektör kartları
                   filteredList.isEmpty
                       ? Container(
-                    padding: const EdgeInsets.all(16),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Kriterlere uygun sektör yok",
-                      style: TextStyle(color: subTextColor, fontSize: 16),
-                    ),
-                  )
+                        padding: const EdgeInsets.all(16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Kriterlere uygun sektör yok",
+                          style: TextStyle(color: subTextColor, fontSize: 16),
+                        ),
+                      )
                       : Column(
-                    children: filteredList
-                        .map((sector) => _buildSectorCard(
-                      sector,
-                      cardColor,
-                      textColor,
-                      subTextColor,
-                      metricCardBg,
-                      borderColor,
-                      isDark,
-                    ))
-                        .toList(),
-                  ),
+                        children:
+                            filteredList
+                                .map(
+                                  (sector) => _buildSectorCard(
+                                    sector,
+                                    cardColor,
+                                    textColor,
+                                    subTextColor,
+                                    metricCardBg,
+                                    borderColor,
+                                    isDark,
+                                  ),
+                                )
+                                .toList(),
+                      ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -199,8 +226,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
   }
 
   // --- YATAY PERFORMANS GRAFİĞİ (PROFESYONEL) ---
-  Widget _buildHorizontalGraph(List<SectorModel> sectors, bool isDark,
-      Color cardColor, Color textColor) {
+  Widget _buildHorizontalGraph(
+    List<SectorModel> sectors,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+  ) {
     // 1. Sıralama: En yüksekten en düşüğe
     final sortedSectors = List<SectorModel>.from(sectors);
     sortedSectors.sort((a, b) => b.sixMonthChange.compareTo(a.sixMonthChange));
@@ -209,11 +240,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
     final displayList = sortedSectors.take(6).toList();
 
     // En yüksek değeri bul (Çubukların boyunu buna göre oranlayacağız)
-    double maxValue = displayList.isNotEmpty
-        ? displayList
-        .map((e) => e.sixMonthChange.abs())
-        .reduce((a, b) => a > b ? a : b)
-        : 100.0;
+    double maxValue =
+        displayList.isNotEmpty
+            ? displayList
+                .map((e) => e.sixMonthChange.abs())
+                .reduce((a, b) => a > b ? a : b)
+            : 100.0;
     if (maxValue == 0) maxValue = 1;
 
     return Container(
@@ -221,8 +253,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        border:
-        Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+        ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
@@ -238,15 +271,21 @@ class _SectorsScreenState extends State<SectorsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Performans Liderleri",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: textColor)),
-              Text("6 Aylık",
-                  style: TextStyle(
-                      color: isDark ? Colors.white54 : Colors.grey.shade600,
-                      fontSize: 12)),
+              Text(
+                "Performans Liderleri",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: textColor,
+                ),
+              ),
+              Text(
+                "6 Aylık",
+                style: TextStyle(
+                  color: isDark ? Colors.white54 : Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -255,7 +294,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
           ...displayList.map((sector) {
             final isPositive = sector.sixMonthChange >= 0;
             final percentage =
-                sector.sixMonthChange.abs() / maxValue; // 0.0 ile 1.0 arası oran
+                sector.sixMonthChange.abs() /
+                maxValue; // 0.0 ile 1.0 arası oran
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
@@ -267,9 +307,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Text(
                       sector.name,
                       style: TextStyle(
-                          color: textColor.withValues(alpha: 0.8),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600),
+                        color: textColor.withValues(alpha: 0.8),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -284,9 +325,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                           height: 12,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.grey.withValues(alpha: 0.1),
+                            color:
+                                isDark
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : Colors.grey.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
@@ -297,28 +339,31 @@ class _SectorsScreenState extends State<SectorsScreen> {
                             height: 12,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: isPositive
-                                    ? [
-                                  const Color(0xFF00C853)
-                                      .withValues(alpha: 0.7),
-                                  const Color(0xFF00C853)
-                                ]
-                                    : [
-                                  const Color(0xFFFF5252)
-                                      .withValues(alpha: 0.7),
-                                  const Color(0xFFFF5252)
-                                ],
+                                colors:
+                                    isPositive
+                                        ? [
+                                          const Color(
+                                            0xFF00C853,
+                                          ).withValues(alpha: 0.7),
+                                          const Color(0xFF00C853),
+                                        ]
+                                        : [
+                                          const Color(
+                                            0xFFFF5252,
+                                          ).withValues(alpha: 0.7),
+                                          const Color(0xFFFF5252),
+                                        ],
                               ),
                               borderRadius: BorderRadius.circular(6),
                               boxShadow: [
                                 BoxShadow(
                                   color: (isPositive
-                                      ? const Color(0xFF00C853)
-                                      : const Color(0xFFFF5252))
+                                          ? const Color(0xFF00C853)
+                                          : const Color(0xFFFF5252))
                                       .withValues(alpha: 0.3),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
-                                )
+                                ),
                               ],
                             ),
                           ),
@@ -335,11 +380,13 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       "${isPositive ? '+' : ''}${sector.sixMonthChange.toStringAsFixed(1)}%",
                       textAlign: TextAlign.end,
                       style: TextStyle(
-                          color: isPositive
-                              ? const Color(0xFF00C853)
-                              : const Color(0xFFFF5252),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
+                        color:
+                            isPositive
+                                ? const Color(0xFF00C853)
+                                : const Color(0xFFFF5252),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -353,12 +400,17 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
   // --- TREND GRAFİĞİ (YENİ VERİLER) ---
   Widget _buildTrendChart(
-      bool isDark, Color bgColor, Color textColor, Color borderColor) {
+    bool isDark,
+    Color bgColor,
+    Color textColor,
+    Color borderColor,
+  ) {
     // RENKLER
     final Color techColor = const Color(0xFF9D46FF); // Teknoloji (Mor)
     final Color healthColor = const Color(0xFF00C853); // Sağlık (Yeşil)
-    final Color realEstateColor =
-    const Color(0xFFFF9100); // Gayrimenkul (Turuncu)
+    final Color realEstateColor = const Color(
+      0xFFFF9100,
+    ); // Gayrimenkul (Turuncu)
 
     // --- YENİ VERİ SETİ ---
     // HEDEF: Teknoloji: 8.9, Sağlık: 17.9, Gayrimenkul: 29.2
@@ -391,11 +443,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
     ];
 
     // Stil değişkenleri
-    final gridColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.05);
+    final gridColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.black.withValues(alpha: 0.05);
     final axisTextColor =
-    isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87;
+        isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -409,7 +462,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
               color: Colors.grey.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
-            )
+            ),
         ],
       ),
       child: Column(
@@ -418,7 +471,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
           Text(
             "Sektör Trendleri (2021-2025)",
             style: TextStyle(
-                color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
+              color: textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -457,9 +513,11 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 titlesData: FlTitlesData(
                   show: true,
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
 
                   // SOL EKSEN
                   leftTitles: AxisTitles(
@@ -612,8 +670,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 // Tooltip
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) =>
-                    isDark ? const Color(0xFF2C3246) : Colors.white,
+                    getTooltipColor:
+                        (_) => isDark ? const Color(0xFF2C3246) : Colors.white,
                     tooltipRoundedRadius: 8,
                     getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                       return touchedBarSpots.map((barSpot) {
@@ -629,9 +687,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                         return LineTooltipItem(
                           "$sectorName: ${barSpot.y.toStringAsFixed(1)}",
                           TextStyle(
-                              color: barSpot.bar.color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12),
+                            color: barSpot.bar.color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         );
                       }).toList();
                     },
@@ -656,23 +715,31 @@ class _SectorsScreenState extends State<SectorsScreen> {
             color: color,
             shape: BoxShape.circle,
             border: Border.all(
-                color: isDark ? Colors.white24 : Colors.black12, width: 1),
+              color: isDark ? Colors.white24 : Colors.black12,
+              width: 1,
+            ),
           ),
         ),
         const SizedBox(width: 6),
         Text(
           text,
           style: TextStyle(
-              color: isDark ? Colors.white70 : Colors.black87,
-              fontSize: 13,
-              fontWeight: FontWeight.w500),
-        )
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 
   Widget _filterButton(
-      String text, int index, Color cardColor, Color textColor, bool isDark) {
+    String text,
+    int index,
+    Color cardColor,
+    Color textColor,
+    bool isDark,
+  ) {
     final isSelected = _selectedFilterIndex == index;
     final unselectedBg = isDark ? cardColor : Colors.grey.shade200;
     final unselectedText = isDark ? Colors.white70 : Colors.black87;
@@ -701,14 +768,14 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
   // --- GÜNCELLENMİŞ SEKTÖR KARTI (Şirketler Eklendi) ---
   Widget _buildSectorCard(
-      SectorModel sector,
-      Color cardColor,
-      Color textColor,
-      Color? subTextColor,
-      Color metricBgColor,
-      Color borderColor,
-      bool isDark,
-      ) {
+    SectorModel sector,
+    Color cardColor,
+    Color textColor,
+    Color? subTextColor,
+    Color metricBgColor,
+    Color borderColor,
+    bool isDark,
+  ) {
     String tag = "Nötr";
     Color tagColor = Colors.grey;
 
@@ -736,16 +803,18 @@ class _SectorsScreenState extends State<SectorsScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor),
-          boxShadow: [
-            if (!isDark)
-              BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4))
-          ]),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -757,14 +826,17 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   Text(
                     sector.name,
                     style: TextStyle(
-                        color: textColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: tagColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
@@ -772,9 +844,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Text(
                       tag,
                       style: TextStyle(
-                          color: tagColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold),
+                        color: tagColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -782,31 +855,33 @@ class _SectorsScreenState extends State<SectorsScreen> {
               Text(
                 "${sector.sixMonthChange >= 0 ? '+' : ''}${sector.sixMonthChange.toStringAsFixed(1)}%",
                 style: TextStyle(
-                    color: sector.sixMonthChange >= 0 ? green : red,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
+                  color: sector.sixMonthChange >= 0 ? green : red,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
 
-          // --- GÜNCELLENEN KISIM ---
-          Text(companiesText,
-              style:
-              TextStyle(color: subTextColor, fontWeight: FontWeight.w500)),
-          // -------------------------
+          Text(
+            companiesText,
+            style: TextStyle(color: subTextColor, fontWeight: FontWeight.w500),
+          ),
 
+          // -------------------------
           const SizedBox(height: 20),
 
           Row(
             children: [
               _metricItem(
-                  "6 Aylık Performans",
-                  "%${sector.sixMonthChange.toStringAsFixed(1)}",
-                  metricBgColor,
-                  textColor,
-                  subTextColor,
-                  isGrowth: sector.sixMonthChange > 0),
+                "6 Aylık Performans",
+                "%${sector.sixMonthChange.toStringAsFixed(1)}",
+                metricBgColor,
+                textColor,
+                subTextColor,
+                isGrowth: sector.sixMonthChange > 0,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -816,12 +891,13 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CompanyDetailScreen(
-                      companyName: "${sector.name} Şirketleri",
-                      ticker:
-                      "X${sector.name.substring(0, (sector.name.length > 3 ? 3 : sector.name.length)).toUpperCase()}",
-                      sector: sector.name,
-                    ),
+                    builder:
+                        (context) => CompanyDetailScreen(
+                          companyName: "${sector.name} Şirketleri",
+                          ticker:
+                              "X${sector.name.substring(0, (sector.name.length > 3 ? 3 : sector.name.length)).toUpperCase()}",
+                          sector: sector.name,
+                        ),
                   ),
                 );
               },
@@ -841,9 +917,14 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  Widget _metricItem(String label, String value, Color bgColor, Color textColor,
-      Color? labelColor,
-      {bool isGrowth = false}) {
+  Widget _metricItem(
+    String label,
+    String value,
+    Color bgColor,
+    Color textColor,
+    Color? labelColor, {
+    bool isGrowth = false,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -860,7 +941,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
               value,
               style: TextStyle(
                 color:
-                isGrowth ? green : (value.contains('-') ? red : textColor),
+                    isGrowth ? green : (value.contains('-') ? red : textColor),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),

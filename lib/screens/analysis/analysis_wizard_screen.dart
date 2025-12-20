@@ -1,5 +1,5 @@
-import 'package:finance_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
 
 class AnalysisWizardScreen extends StatefulWidget {
   const AnalysisWizardScreen({super.key});
@@ -9,45 +9,36 @@ class AnalysisWizardScreen extends StatefulWidget {
 }
 
 class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
+  //sayfalar arası geçişi yönetir.
   final PageController _pageController = PageController();
+
   int _currentPage = 0;
 
-  // Sabit marka renkleri (Tema bağımsız)
+  // --- SABİT MARKA RENKLERİ ---
+  // Uygulamanın ana renkleri, tema bağımsız olarak burada tanımlanmıştır.
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
 
-  // Seçim Durumları
-  String? _selectedRisk;
-  String? _selectedDuration;
-  String? _selectedSize;
-  final List<String> _selectedSectors = [];
+  // --- SEÇİM DEĞİŞKENLERİ  --
 
-  // Sektör Listesi
-  final List<String> _sectors = [
-    "Teknoloji",
-    "Enerji",
-    "Bankacılık",
-    "İmalat",
-    "Perakende",
-    "Havacılık",
-    "Sağlık",
-    "Telekomünikasyon",
-  ];
+  String? _selectedVade; // 1. Soru: Vade Beklentisi
+  String? _selectedGetiri; // 2. Soru: Getiri Beklentisi
+  String? _selectedDusus; // 3. Soru: Düşüşe Bakış Açısı
+  String? _selectedBilgi; // 4. Soru: Finansal Bilgi Düzeyi
+  String? _selectedRiskYonetimi; // 5. Soru: Risk Yönetimi Tercihi
 
   @override
   Widget build(BuildContext context) {
-    // Tema verilerini alıyoruz
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Dinamik renkler
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final cardColor = theme.cardColor;
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final iconColor = theme.iconTheme.color ?? textColor;
 
-    // İlerleme çubuğu pasif rengi
-    final progressInactiveColor = isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
+    final progressInactiveColor =
+        isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -67,20 +58,30 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             }
           },
         ),
+
+        title: Text(
+          "Yatırımcı Profil Analizi",
+          style: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
-          // --- İLERLEME ÇUBUĞU ---
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
-              children: List.generate(4, (index) {
+              children: List.generate(5, (index) {
                 return Expanded(
                   child: Container(
                     height: 4,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
-                      color: index <= _currentPage ? green : progressInactiveColor,
+                      color:
+                          index <= _currentPage ? green : progressInactiveColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -88,32 +89,34 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               }),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
 
-          // --- SAYFA İÇERİKLERİ (PAGEVIEW) ---
           Expanded(
             child: PageView(
               controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(), // Elle kaydırmayı kapat
+              // Kullanıcı sadece butonla geçsin
+              physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) {
                 setState(() {
                   _currentPage = index;
                 });
               },
               children: [
-                _buildRiskPage(textColor, cardColor, isDark), // 1. Sayfa
-                _buildDurationPage(textColor, cardColor, isDark), // 2. Sayfa
-                _buildSectorPage(textColor, cardColor, isDark), // 3. Sayfa
-                _buildResultPage(textColor, cardColor, isDark), // 4. Sayfa
+                _buildStep1Vade(textColor, cardColor, isDark), // 1. Sayfa
+                _buildStep2Getiri(textColor, cardColor, isDark), // 2. Sayfa
+                _buildStep3Dusus(textColor, cardColor, isDark), // 3. Sayfa
+                _buildStep4Bilgi(textColor, cardColor, isDark), // 4. Sayfa
+                _buildStep5Risk(textColor, cardColor, isDark), // 5. Sayfa
               ],
             ),
           ),
 
-          // --- ALT BUTONLAR ---
+          // --- ALT BUTONLAR (GERİ / DEVAM ET) ---
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
+                // Geri Butonu (Sadece 1. sayfadan sonra görünür)
                 if (_currentPage > 0)
                   Expanded(
                     flex: 1,
@@ -133,13 +136,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: Text(
-                        "Geri",
-                        style: TextStyle(color: textColor),
-                      ),
+                      child: Text("Geri", style: TextStyle(color: textColor)),
                     ),
                   ),
+
+                // Aradaki boşluk (Geri butonu varsa)
                 if (_currentPage > 0) const SizedBox(width: 16),
+
+                // İleri / Tamamla Butonu
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
@@ -155,7 +159,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _currentPage == 3 ? "Tamamla" : "Devam Et",
+                          // Son sayfadaysak "Tamamla", değilse "Devam Et"
+                          _currentPage == 4 ? "Tamamla" : "Devam Et",
                           style: const TextStyle(
                             color: Colors.white, // Buton içi hep beyaz
                             fontSize: 16,
@@ -163,7 +168,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        if (_currentPage != 3)
+                        // Son sayfada değilsek ok ikonu göster
+                        if (_currentPage != 4)
                           const Icon(
                             Icons.arrow_forward,
                             color: Colors.white,
@@ -181,263 +187,311 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     );
   }
 
-  // --- BUTON FONKSİYONU ---
+  // --- İLERLEME VE TAMAMLAMA MANTIĞI ---
   void _nextPage() {
-    if (_currentPage < 3) {
+    if (_currentPage < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
+      _logUserSelections();
+
+      // 2. Yönlendir (PortfolioScreen'e git)
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => const HomeScreen(initialIndex: 1),
-        ),
-            (route) => false,
+        MaterialPageRoute(builder: (context) => const PortfolioScreen()),
+        (route) => false, // Geri tuşuyla sihirbaza dönülmesin
       );
     }
   }
 
-  // --- 1. SAYFA: RİSK SEÇİMİ ---
-  Widget _buildRiskPage(Color textColor, Color cardColor, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Yatırımcı Profili",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            "Risk İştahınızı Seçin",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildSelectableCard(
-            title: "Düşük Risk",
-            subtitle: "Güvenli, stabil yatırımlar",
-            value: "dusuk",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "Orta Risk",
-            subtitle: "Dengeli büyüme odaklı",
-            value: "orta",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "Yüksek Risk",
-            subtitle: "Agresif, yüksek getiri",
-            value: "yuksek",
-            groupValue: _selectedRisk,
-            onTap: (val) => setState(() => _selectedRisk = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-        ],
-      ),
+  // --- SEÇİMLERİ LOGLAMA ---
+  void _logUserSelections() {
+    debugPrint("--- RİSK PROFİL ANALİZİ SEÇİMLERİ ---");
+    debugPrint("1. Vade Beklentisi: $_selectedVade");
+    debugPrint("2. Getiri Beklentisi: $_selectedGetiri");
+    debugPrint("3. Düşüşe Bakış Açısı: $_selectedDusus");
+    debugPrint("4. Finans Piyasalarına Hakimiyet: $_selectedBilgi");
+    debugPrint("5. Risk Yönetimi: $_selectedRiskYonetimi");
+    debugPrint("---------------------------------------");
+    // Not: İlerleyen aşamada burada ağırlıklı puan hesaplaması yapılıcak.
+  }
+
+  // 1. ADIM: VADE BEKLENTİSİ
+  Widget _buildStep1Vade(Color textColor, Color cardColor, bool isDark) {
+    return _buildQuestionPage(
+      title: "Vade Beklentisi",
+      subtitle: "Yatırımınızı ne kadar süreyle değerlendirmeyi planlıyorsunuz?",
+      children: [
+        _buildSelectableCard(
+          title: "0 - 6 Ay",
+          subtitle: "Kısa vadeli nakit ihtiyacı",
+          value: "0-6 ay", // Arka planda tutulacak değer
+          groupValue: _selectedVade,
+          onTap: (val) => setState(() => _selectedVade = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "6 - 12 Ay",
+          subtitle: "Orta-Kısa vade",
+          value: "6-12 ay",
+          groupValue: _selectedVade,
+          onTap: (val) => setState(() => _selectedVade = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "1 - 3 Yıl",
+          subtitle: "Orta-Uzun vade",
+          value: "1-3 yıl",
+          groupValue: _selectedVade,
+          onTap: (val) => setState(() => _selectedVade = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "3+ Yıl",
+          subtitle: "Uzun vadeli birikim",
+          value: "3+ yıl",
+          groupValue: _selectedVade,
+          onTap: (val) => setState(() => _selectedVade = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+      ],
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
-  // --- 2. SAYFA: VADE SEÇİMİ ---
-  Widget _buildDurationPage(Color textColor, Color cardColor, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Yatırımcı Profili",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            "Yatırım Süreniz",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildSelectableCard(
-            title: "Kısa Vade",
-            subtitle: "3-6 ay",
-            icon: Icons.access_time,
-            value: "kisa",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "Orta Vade",
-            subtitle: "6-18 ay",
-            icon: Icons.show_chart,
-            value: "orta",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "Uzun Vade",
-            subtitle: "2+ yıl",
-            icon: Icons.gps_fixed,
-            value: "uzun",
-            groupValue: _selectedDuration,
-            onTap: (val) => setState(() => _selectedDuration = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-        ],
-      ),
+  // 2. ADIM: GETİRİ BEKLENTİSİ
+  Widget _buildStep2Getiri(Color textColor, Color cardColor, bool isDark) {
+    return _buildQuestionPage(
+      title: "Getiri Beklentisi",
+      subtitle: "Yatırımınızdan birincil beklentiniz nedir?",
+      children: [
+        _buildSelectableCard(
+          title: "Enflasyondan Korunmak",
+          subtitle: "Paramın değeri erimesin yeter",
+          value: "Enflasyondan Korunmak",
+          groupValue: _selectedGetiri,
+          onTap: (val) => setState(() => _selectedGetiri = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Enflasyonu Geçmek",
+          subtitle: "Reel bir getiri elde etmek",
+          value: "Enflasyonu Geçmek",
+          groupValue: _selectedGetiri,
+          onTap: (val) => setState(() => _selectedGetiri = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Endeksi Geçmek",
+          subtitle: "Borsa ortalamasından iyi kazanmak",
+          value: "Endeksi Geçmek",
+          groupValue: _selectedGetiri,
+          onTap: (val) => setState(() => _selectedGetiri = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Diğer Araçları Geçmek",
+          subtitle: "Maksimum getiri hedefi",
+          value: "Diğer Yatırım Araçlarını Geçmek",
+          groupValue: _selectedGetiri,
+          onTap: (val) => setState(() => _selectedGetiri = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+      ],
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
-  // --- 3. SAYFA: SEKTÖR SEÇİMİ ---
-  Widget _buildSectorPage(Color textColor, Color cardColor, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Yatırımcı Profili",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Size özel öneriler için birkaç soru yanıtlayın",
-            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
-          ),
-          const SizedBox(height: 30),
-          Text(
-            "Tercih Ettiğiniz Sektörler",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Birden fazla seçebilirsiniz",
-            style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600], fontSize: 12),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 2.5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: _sectors.length,
-              itemBuilder: (context, index) {
-                final sector = _sectors[index];
-                final isSelected = _selectedSectors.contains(sector);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedSectors.remove(sector);
-                      } else {
-                        _selectedSectors.add(sector);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.centerLeft,
-                    decoration: BoxDecoration(
-                        color: cardColor,
-                        border: Border.all(
-                          color: isSelected ? green : (isDark ? Colors.transparent : Colors.grey.shade300),
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))
-                        ]
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            sector,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        if (isSelected)
-                          Icon(Icons.check, color: green, size: 18),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+  // 3. ADIM: DÜŞÜŞE BAKIŞ AÇISI
+  Widget _buildStep3Dusus(Color textColor, Color cardColor, bool isDark) {
+    return _buildQuestionPage(
+      title: "Düşüşe Bakış Açısı",
+      subtitle: "Piyasa sert düştüğünde tepkiniz ne olur?",
+      children: [
+        _buildSelectableCard(
+          title: "Direkt Satış",
+          subtitle: "Panik yaparım, hemen satarım",
+          value: "Direkt Satış",
+          groupValue: _selectedDusus,
+          onTap: (val) => setState(() => _selectedDusus = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Kısmi Satış",
+          subtitle: "Riskimi azaltmak için biraz satarım",
+          value: "Kısmi Satış",
+          groupValue: _selectedDusus,
+          onTap: (val) => setState(() => _selectedDusus = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Durağan Pozisyon",
+          subtitle: "Beklerim, ellemem",
+          value: "Durağan Pozisyon",
+          groupValue: _selectedDusus,
+          onTap: (val) => setState(() => _selectedDusus = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Alım Fırsatı",
+          subtitle: "Düşüşü fırsat bilip ekleme yaparım",
+          value: "Alım Fırsatı",
+          groupValue: _selectedDusus,
+          onTap: (val) => setState(() => _selectedDusus = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+      ],
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
-  // --- 4. SAYFA: BÜYÜKLÜK VE SONUÇ ---
-  Widget _buildResultPage(Color textColor, Color cardColor, bool isDark) {
+  // 4. ADIM: FİNANS PİYASALARINA HAKİMİYET
+  Widget _buildStep4Bilgi(Color textColor, Color cardColor, bool isDark) {
+    return _buildQuestionPage(
+      title: "Finansal Bilgi",
+      subtitle: "Piyasalar hakkındaki bilginiz ne düzeyde?",
+      children: [
+        _buildSelectableCard(
+          title: "Hiç Bilgisi Yok",
+          subtitle: "Yatırıma yeni başlıyorum",
+          value: "Hiç Bilgisi Yok",
+          groupValue: _selectedBilgi,
+          onTap: (val) => setState(() => _selectedBilgi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Başlangıç Seviye Bilgi",
+          subtitle: "Temel kavramları biliyorum",
+          value: "Başlangıç Seviye Bilgi",
+          groupValue: _selectedBilgi,
+          onTap: (val) => setState(() => _selectedBilgi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Orta Düzey Bilgi",
+          subtitle: "Analiz yapabilirim, takip ederim",
+          value: "Orta Düzey Bilgi",
+          groupValue: _selectedBilgi,
+          onTap: (val) => setState(() => _selectedBilgi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "İleri Düzey Bilgi",
+          subtitle: "Profesyonel düzeyde hakimim",
+          value: "İleri Düzey Bilgi",
+          groupValue: _selectedBilgi,
+          onTap: (val) => setState(() => _selectedBilgi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+      ],
+      textColor: textColor,
+      isDark: isDark,
+    );
+  }
+
+  // 5. ADIM: RİSK YÖNETİMİ
+  Widget _buildStep5Risk(Color textColor, Color cardColor, bool isDark) {
+    return _buildQuestionPage(
+      title: "Risk Yönetimimiz Nasıldır",
+      subtitle: "Yatırım karakteriniz hangisine daha yakın?",
+      children: [
+        _buildSelectableCard(
+          title: "Hiç Risk Almam",
+          subtitle: "Ana param garantide olsun",
+          value: "Hiç Risk Almam",
+          groupValue: _selectedRiskYonetimi,
+          onTap: (val) => setState(() => _selectedRiskYonetimi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Gerektiğinde Risk Alırım",
+          subtitle: "Makul getiri için makul risk",
+          value: "Gerektiğinde Risk Alırım",
+          groupValue: _selectedRiskYonetimi,
+          onTap: (val) => setState(() => _selectedRiskYonetimi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Risk Almayı Severim",
+          subtitle: "Yüksek getiri hedeflerim",
+          value: "Risk Almayı Severim",
+          groupValue: _selectedRiskYonetimi,
+          onTap: (val) => setState(() => _selectedRiskYonetimi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+        _buildSelectableCard(
+          title: "Çok Yüksek Risk Almayı Severim",
+          subtitle: "Kazanmak için her şeyi göze alırım",
+          value: "Çok Yüksek Risk Almayı Severim",
+          groupValue: _selectedRiskYonetimi,
+          onTap: (val) => setState(() => _selectedRiskYonetimi = val),
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
+        ),
+      ],
+      textColor: textColor,
+      isDark: isDark,
+    );
+  }
+
+  Widget _buildQuestionPage({
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+    required Color textColor,
+    required bool isDark,
+  }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Yatırımcı Profili",
+            title,
             style: TextStyle(
               color: textColor,
               fontSize: 22,
@@ -446,96 +500,11 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Size özel öneriler için birkaç soru yanıtlayın",
+            subtitle,
             style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
-          const SizedBox(height: 30),
-
-          Text(
-            "Şirket Büyüklüğü Tercihi",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          _buildSelectableCard(
-            title: "BIST 30",
-            subtitle: "En büyük şirketler",
-            icon: Icons.apartment,
-            value: "bist30",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "BIST 100",
-            subtitle: "Büyük ve orta ölçekli",
-            icon: Icons.domain,
-            value: "bist100",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-          _buildSelectableCard(
-            title: "Küçük Şirketler",
-            subtitle: "Yüksek potansiyelli",
-            icon: Icons.storefront,
-            value: "small",
-            groupValue: _selectedSize,
-            onTap: (val) => setState(() => _selectedSize = val),
-            cardColor: cardColor,
-            textColor: textColor,
-            isDark: isDark,
-          ),
-
           const SizedBox(height: 24),
-
-          // PROFİL ÖZETİ KARTI
-          // Bu kart özel bir "vurgu" kartı olduğu için Light modda da renkli kalabilir
-          // veya hafif yeşil bir ton alabilir.
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              // Dark modda koyu yeşil, Light modda çok açık yeşil
-              color: isDark ? const Color(0xFF061D23) : const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: green.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.auto_awesome, color: green, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Profil Özeti",
-                      style: TextStyle(
-                        color: green,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Orta Risk profiline sahip, kısa vade odaklı bir yatırımcısınız. Havacılık sektörlerinde BIST 100 şirketlerini tercih ediyorsunuz.",
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ...children, // Seçenekleri buraya ekle
           const SizedBox(height: 20),
         ],
       ),
@@ -543,19 +512,24 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }
 
   // --- ORTAK KART BİLEŞENİ ---
+  // Seçenek kartlarını oluşturur
   Widget _buildSelectableCard({
     required String title,
     required String subtitle,
-    IconData? icon,
     required String value,
     required String? groupValue,
     required Function(String) onTap,
     required Color cardColor,
     required Color textColor,
     required bool isDark,
+    IconData? icon,
   }) {
     final isSelected = groupValue == value;
-    final iconBgColor = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
+
+    // İkon arka plan rengi
+    final iconBgColor =
+        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
+    // İkon rengi
     final iconColor = isDark ? Colors.white70 : Colors.grey.shade700;
 
     return GestureDetector(
@@ -564,15 +538,25 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? primary : (isDark ? Colors.transparent : Colors.grey.shade300),
-              width: 1.5,
-            ),
-            boxShadow: [
-              if (!isDark) BoxShadow(color: Colors.grey.withValues(alpha: 0.05), blurRadius: 5, offset: const Offset(0, 2))
-            ]
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          // Seçili ise yeşil çerçeve, değilse silik çerçeve
+          border: Border.all(
+            color:
+                isSelected
+                    ? green
+                    : (isDark ? Colors.transparent : Colors.grey.shade300),
+            width: 1.5,
+          ),
+          // Hafif gölge efekti (Sadece light modda)
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Row(
           children: [
@@ -602,11 +586,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600], fontSize: 13),
+                    style: TextStyle(
+                      color: isDark ? Colors.grey : Colors.grey[600],
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
             ),
+            // Seçili ise sağ tarafta yeşil tik işareti
             if (isSelected) Icon(Icons.check, color: primary, size: 20),
           ],
         ),
