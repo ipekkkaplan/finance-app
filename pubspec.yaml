@@ -31,6 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
   fl_chart: ^0.69.0
+  lottie: ^3.1.0
+  google_fonts: ^6.1.0
   provider: ^6.0.0
   shared_preferences: ^2.2.0
   csv: ^6.0.0 # CSV dosyalarını okumak için gerekli paket
@@ -72,6 +74,7 @@ flutter:
     - assets/sektor_analiz.json
     - assets/sector_top3_6m.json
     - assets/hisse_degerleme_sonuclari.json
+    - assets/splash_anim.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

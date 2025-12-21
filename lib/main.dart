@@ -51,20 +51,20 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
 
-        // TÜM SAYFALAR İÇİN VARSAYILAN APPBAR AYARI
+        // Tüm sayfalar için appbar ayarı
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(
             0xFF102C57,
           ), // PROFESYONEL RENK: Derin Lacivert
           foregroundColor:
-              Colors.white, // Yazılar ve İkonlar BEYAZ (En iyi kontrast)
-          // Hafif bir derinlik hissi
+              Colors.white,
+
           elevation: 2,
           shadowColor: Colors.black12,
 
           // Material 3'te kaydırma yapınca rengin grileşmesini/bozulmasını engeller
           scrolledUnderElevation: 0,
-          surfaceTintColor: Colors.transparent, // Rengi korumak için kritik
+          surfaceTintColor: Colors.transparent,
 
           centerTitle: false,
 
