@@ -10,7 +10,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -24,13 +25,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       duration: const Duration(milliseconds: 1500),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
@@ -67,11 +70,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           gradient: LinearGradient(
             begin: Alignment.topCenter, // Işık yukarıdan vuruyor gibi olsun
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF000428),
-              Color(0xFF001535),
-              Color(0xFF002650),
-            ],
+            colors: [Color(0xFF000428), Color(0xFF001535), Color(0xFF002650)],
           ),
         ),
         child: Column(
@@ -104,7 +103,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         shadows: [
                           Shadow(
                             blurRadius: 15.0, // Gölgeyi biraz daha yumuşattım
-                            color: Colors.blueAccent.withOpacity(0.5), // Gölge rengini maviye çektim
+                            color: Colors.blueAccent.withValues(
+                              alpha: 0.5,
+                            ), // Gölge rengini maviye çektim
                             offset: const Offset(0, 0),
                           ),
                         ],
@@ -118,7 +119,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.white70, // Gri yerine hafif şeffaf beyaz daha şık durur
+                          color:
+                              Colors
+                                  .white70, // Gri yerine hafif şeffaf beyaz daha şık durur
                           height: 1.5,
                         ),
                       ),
@@ -136,7 +139,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 width: 30,
                 height: 30,
                 child: CircularProgressIndicator(
-                  color: Colors.white, // Koyu zeminde beyaz veya çok açık mavi daha net görünür
+                  color:
+                      Colors
+                          .white, // Koyu zeminde beyaz veya çok açık mavi daha net görünür
                   strokeWidth: 2,
                 ),
               ),

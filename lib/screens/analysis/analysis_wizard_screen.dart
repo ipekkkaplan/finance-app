@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
+import 'package:finance_app/screens/portfolio/portfolio_screen.dart'; // Dosya yolunun doğru olduğundan emin olun
 
 class AnalysisWizardScreen extends StatefulWidget {
   const AnalysisWizardScreen({super.key});
@@ -9,34 +11,29 @@ class AnalysisWizardScreen extends StatefulWidget {
 }
 
 class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
-  //sayfalar arası geçişi yönetir.
   final PageController _pageController = PageController();
-
   int _currentPage = 0;
+  bool _isLoading = false; // Firebase işlemi sırasında loading göstermek için
 
   // --- SABİT MARKA RENKLERİ ---
-  // Uygulamanın ana renkleri, tema bağımsız olarak burada tanımlanmıştır.
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
 
   // --- SEÇİM DEĞİŞKENLERİ  --
-
-  String? _selectedVade; // 1. Soru: Vade Beklentisi
-  String? _selectedGetiri; // 2. Soru: Getiri Beklentisi
-  String? _selectedDusus; // 3. Soru: Düşüşe Bakış Açısı
-  String? _selectedBilgi; // 4. Soru: Finansal Bilgi Düzeyi
-  String? _selectedRiskYonetimi; // 5. Soru: Risk Yönetimi Tercihi
+  String? _selectedVade;
+  String? _selectedGetiri;
+  String? _selectedDusus;
+  String? _selectedBilgi;
+  String? _selectedRiskYonetimi;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final cardColor = theme.cardColor;
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final iconColor = theme.iconTheme.color ?? textColor;
-
     final progressInactiveColor =
         isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
 
@@ -58,7 +55,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             }
           },
         ),
-
         title: Text(
           "Yatırımcı Profil Analizi",
           style: TextStyle(
@@ -69,153 +65,380 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              children: List.generate(5, (index) {
-                return Expanded(
-                  child: Container(
-                    height: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color:
-                          index <= _currentPage ? green : progressInactiveColor,
-                      borderRadius: BorderRadius.circular(2),
+      body:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(),
+              ) // Yükleniyor göstergesi
+              : Column(
+                children: [
+                  // ÜST KISIMDAKİ PROGRESS BAR (İlerleme Çubuğu)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
                     ),
-                  ),
-                );
-              }),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              // Kullanıcı sadece butonla geçsin
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              children: [
-                _buildStep1Vade(textColor, cardColor, isDark), // 1. Sayfa
-                _buildStep2Getiri(textColor, cardColor, isDark), // 2. Sayfa
-                _buildStep3Dusus(textColor, cardColor, isDark), // 3. Sayfa
-                _buildStep4Bilgi(textColor, cardColor, isDark), // 4. Sayfa
-                _buildStep5Risk(textColor, cardColor, isDark), // 5. Sayfa
-              ],
-            ),
-          ),
-
-          // --- ALT BUTONLAR (GERİ / DEVAM ET) ---
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Geri Butonu (Sadece 1. sayfadan sonra görünür)
-                if (_currentPage > 0)
-                  Expanded(
-                    flex: 1,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: isDark ? Colors.grey[800]! : Colors.grey[400]!,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      },
-                      child: Text("Geri", style: TextStyle(color: textColor)),
-                    ),
-                  ),
-
-                // Aradaki boşluk (Geri butonu varsa)
-                if (_currentPage > 0) const SizedBox(width: 16),
-
-                // İleri / Tamamla Butonu
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: green,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _nextPage,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return Expanded(
+                          child: Container(
+                            height: 4,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color:
+                                  index <= _currentPage
+                                      ? green
+                                      : progressInactiveColor,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // SAYFA İÇERİĞİ (PageView)
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
                       children: [
-                        Text(
-                          // Son sayfadaysak "Tamamla", değilse "Devam Et"
-                          _currentPage == 4 ? "Tamamla" : "Devam Et",
-                          style: const TextStyle(
-                            color: Colors.white, // Buton içi hep beyaz
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Son sayfada değilsek ok ikonu göster
-                        if (_currentPage != 4)
-                          const Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                        _buildStep1Vade(textColor, cardColor, isDark),
+                        _buildStep2Getiri(textColor, cardColor, isDark),
+                        _buildStep3Dusus(textColor, cardColor, isDark),
+                        _buildStep4Bilgi(textColor, cardColor, isDark),
+                        _buildStep5Risk(textColor, cardColor, isDark),
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+
+                  // ALT BUTONLAR (Geri / Devam Et)
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        if (_currentPage > 0)
+                          Expanded(
+                            flex: 1,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color:
+                                      isDark
+                                          ? Colors.grey[800]!
+                                          : Colors.grey[400]!,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: () {
+                                _pageController.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              },
+                              child: Text(
+                                "Geri",
+                                style: TextStyle(color: textColor),
+                              ),
+                            ),
+                          ),
+                        if (_currentPage > 0) const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: green,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _nextPage,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _currentPage == 4 ? "Tamamla" : "Devam Et",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (_currentPage != 4)
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 
-  // --- İLERLEME VE TAMAMLAMA MANTIĞI ---
+  // --- İLERLEME VE MANTIK ---
   void _nextPage() {
+    // Mevcut sayfada seçim yapılmamışsa ilerletme
+    if (_currentPage == 0 && _selectedVade == null) {
+      return _showError("Lütfen vade seçiniz");
+    }
+
+    if (_currentPage == 1 && _selectedGetiri == null) {
+      return _showError("Lütfen beklentinizi seçiniz");
+    }
+
+    if (_currentPage == 2 && _selectedDusus == null) {
+      return _showError("Lütfen bir seçenek işaretleyiniz");
+    }
+
+    if (_currentPage == 3 && _selectedBilgi == null) {
+      return _showError("Lütfen bilgi düzeyinizi seçiniz");
+    }
+
+    if (_currentPage == 4 && _selectedRiskYonetimi == null) {
+      return _showError("Lütfen risk tercihinizi seçiniz");
+    }
+
     if (_currentPage < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      _logUserSelections();
-
-      // 2. Yönlendir (PortfolioScreen'e git)
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const PortfolioScreen()),
-        (route) => false, // Geri tuşuyla sihirbaza dönülmesin
-      );
+      // SON AŞAMA: Hesapla ve Kaydet
+      _calculateAndSaveProfile();
     }
   }
 
-  // --- SEÇİMLERİ LOGLAMA ---
-  void _logUserSelections() {
-    debugPrint("--- RİSK PROFİL ANALİZİ SEÇİMLERİ ---");
-    debugPrint("1. Vade Beklentisi: $_selectedVade");
-    debugPrint("2. Getiri Beklentisi: $_selectedGetiri");
-    debugPrint("3. Düşüşe Bakış Açısı: $_selectedDusus");
-    debugPrint("4. Finans Piyasalarına Hakimiyet: $_selectedBilgi");
-    debugPrint("5. Risk Yönetimi: $_selectedRiskYonetimi");
-    debugPrint("---------------------------------------");
-    // Not: İlerleyen aşamada burada ağırlıklı puan hesaplaması yapılıcak.
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> _calculateAndSaveProfile() async {
+    setState(() => _isLoading = true);
+
+    //Puanlama
+    double totalScore = 0;
+
+    // Soru 1: Vade
+    if (_selectedVade == "0-6 ay") {
+      totalScore += 100;
+    } else if (_selectedVade == "6-12 ay") {
+      totalScore += 75;
+    } else if (_selectedVade == "1-3 yıl") {
+      totalScore += 50;
+    } else if (_selectedVade == "3+ yıl") {
+      totalScore += 25;
+    }
+
+    // Soru 2: Getiri
+    if (_selectedGetiri == "Enflasyondan Korunmak") {
+      totalScore += 25;
+    } else if (_selectedGetiri == "Enflasyonu Geçmek") {
+      totalScore += 50;
+    } else if (_selectedGetiri == "Endeksi Geçmek") {
+      totalScore += 75;
+    } else if (_selectedGetiri == "Diğer Yatırım Araçlarını Geçmek") {
+      totalScore += 100;
+    }
+
+    // Soru 3: Düşüş
+    if (_selectedDusus == "Direkt Satış") {
+      totalScore += 25;
+    } else if (_selectedDusus == "Kısmi Satış") {
+      totalScore += 50;
+    } else if (_selectedDusus == "Durağan Pozisyon") {
+      totalScore += 75;
+    } else if (_selectedDusus == "Alım Fırsatı") {
+      totalScore += 100;
+    }
+
+    // Soru 4: Bilgi
+    if (_selectedBilgi == "Hiç Bilgisi Yok") {
+      totalScore += 25;
+    } else if (_selectedBilgi == "Başlangıç Seviye Bilgi") {
+      totalScore += 50;
+    } else if (_selectedBilgi == "Orta Düzey Bilgi") {
+      totalScore += 75;
+    } else if (_selectedBilgi == "İleri Düzey Bilgi") {
+      totalScore += 100;
+    }
+
+    // Soru 5: Risk Tercihi
+    if (_selectedRiskYonetimi == "Hiç Risk Almam") {
+      totalScore += 25;
+    } else if (_selectedRiskYonetimi == "Gerektiğinde Risk Alırım") {
+      totalScore += 50;
+    } else if (_selectedRiskYonetimi == "Risk Almayı Severim") {
+      totalScore += 75;
+    } else if (_selectedRiskYonetimi == "Çok Yüksek Risk Almayı Severim") {
+      totalScore += 100;
+    }
+
+    // Ortalama Skor
+    int finalScore = (totalScore / 5).round();
+
+    //  Segment Belirleme
+    String segment;
+    if (finalScore <= 30) {
+      segment = "Defansif";
+    } else if (finalScore <= 70) {
+      segment = "Dengeli";
+    } else {
+      segment = "Agresif";
+    }
+
+    //  Hisse Seçimi
+    List<String> recommendedStocks = _getMockStocksForSegment(segment);
+
+    // Firebase Kayıt
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('risk_profile')
+            .add({
+              'score': finalScore,
+              'segment': segment,
+              'answers': {
+                'vade': _selectedVade,
+                'getiri': _selectedGetiri,
+                'dusus': _selectedDusus,
+                'bilgi': _selectedBilgi,
+                'risk': _selectedRiskYonetimi,
+              },
+              'recommended_stocks': recommendedStocks,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+
+        debugPrint("Kayıt Başarılı: Skor $finalScore, Segment: $segment");
+
+        if (mounted) {
+          // Loading'i kapat
+          setState(() => _isLoading = false);
+
+          // SONUÇ EKRANINI GÖSTER (YENİ EKLENEN KISIM)
+          _showResultDialog(finalScore, segment);
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+        _showError("Kullanıcı oturumu bulunamadı.");
+      }
+    } catch (e) {
+      debugPrint("Hata: $e");
+      if (mounted) setState(() => _isLoading = false);
+      _showError("Profil kaydedilirken bir hata oluştu.");
+    }
+  }
+
+  // --- SONUÇ GÖSTERME POPUP'I ---
+  void _showResultDialog(int score, String segment) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Boşluğa basınca kapanmasın
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Text("Analiz Tamamlandı"),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Yatırımcı Puanınız: $score",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Profil Segmentiniz: $segment",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.blue[700],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Bu sonuçlara göre size özel portföy önerileri hazırlanmıştır. Portföy ekranına yönlendiriliyorsunuz.",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: green,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                // Dialog'u kapat
+                Navigator.of(context).pop();
+
+                // Portföy Ekranına Git ve Geri Dönüşü Engelle
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PortfolioScreen(),
+                  ),
+                  (route) => false,
+                );
+              },
+              child: const Text("Portföyüme Git"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  List<String> _getMockStocksForSegment(String segment) {
+    switch (segment) {
+      case "Defansif":
+        return ["ALTINS1", "USDT", "PETKM"];
+      case "Dengeli":
+        return ["THYAO", "KCHOL", "SISE"];
+      case "Agresif":
+        return ["SASA", "HEKTS", "KONTR"];
+      default:
+        return [];
+    }
   }
 
   // 1. ADIM: VADE BEKLENTİSİ
@@ -227,7 +450,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         _buildSelectableCard(
           title: "0 - 6 Ay",
           subtitle: "Kısa vadeli nakit ihtiyacı",
-          value: "0-6 ay", // Arka planda tutulacak değer
+          value: "0-6 ay",
           groupValue: _selectedVade,
           onTap: (val) => setState(() => _selectedVade = val),
           cardColor: cardColor,
@@ -504,15 +727,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
           ),
           const SizedBox(height: 24),
-          ...children, // Seçenekleri buraya ekle
+          ...children,
           const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  // --- ORTAK KART BİLEŞENİ ---
-  // Seçenek kartlarını oluşturur
   Widget _buildSelectableCard({
     required String title,
     required String subtitle,
@@ -525,12 +746,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     IconData? icon,
   }) {
     final isSelected = groupValue == value;
-
-    // İkon arka plan rengi
     final iconBgColor =
-        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
-    // İkon rengi
-    final iconColor = isDark ? Colors.white70 : Colors.grey.shade700;
+        isDark ? Colors.white.withValues(alpha: .05) : Colors.grey.shade100;
+    final iconColorCard = isDark ? Colors.white70 : Colors.grey.shade700;
 
     return GestureDetector(
       onTap: () => onTap(value),
@@ -540,7 +758,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
-          // Seçili ise yeşil çerçeve, değilse silik çerçeve
           border: Border.all(
             color:
                 isSelected
@@ -548,7 +765,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                     : (isDark ? Colors.transparent : Colors.grey.shade300),
             width: 1.5,
           ),
-          // Hafif gölge efekti (Sadece light modda)
           boxShadow: [
             if (!isDark)
               BoxShadow(
@@ -567,7 +783,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   color: iconBgColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColorCard, size: 20),
               ),
               const SizedBox(width: 16),
             ],
@@ -594,7 +810,6 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                 ],
               ),
             ),
-            // Seçili ise sağ tarafta yeşil tik işareti
             if (isSelected) Icon(Icons.check, color: primary, size: 20),
           ],
         ),
