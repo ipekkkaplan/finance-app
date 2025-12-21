@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // fl_chart paketini import et
-import 'package:finance_app/screens/home/home_screen.dart'; // HomeScreen importu eklendi
+import 'package:fl_chart/fl_chart.dart'; 
+import 'package:finance_app/screens/home/home_screen.dart'; 
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -104,10 +106,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final cardColor = theme.cardColor;
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
-    final borderColor =
-        isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.grey.withValues(alpha: 0.2);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.05)
+        : Colors.grey.withOpacity(0.2);
     final balanceCardInnerColor =
         isDark ? const Color(0xFF0F162C) : Colors.white;
 
@@ -118,11 +119,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        // --- GERİ BUTONU EKLENDİ ---
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () {
-            // Ana Sayfaya Yönlendir
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -146,12 +145,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.notifications_none, color: textColor),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -165,6 +158,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               borderColor,
               isDark,
             ),
+
+            const SizedBox(height: 24),
+
+            // --- YENİ BÖLÜM: YAPAY ZEKA ÖNERİLİ HİSSE LİSTESİ ---
+            _buildRecommendedPortfolio(cardColor, textColor, subTextColor, isDark),
+            // ----------------------------------------------------
 
             const SizedBox(height: 24),
 
@@ -189,6 +188,164 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
+  // --- YENİ: FIREBASE'DEN VERİ ÇEKEN VE HESAPLAYAN WIDGET ---
+  Widget _buildRecommendedPortfolio(Color cardBg, Color textColor, Color subTextColor, bool isDark) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            "Yapay Zeka Önerili Dağılım",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('user_match')
+              .doc(user.uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            // Loading Durumu
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // Hata veya Veri Yoksa
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    "Henüz bir analiz yapılmamış. Analiz Sihirbazını tamamlayın.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: subTextColor),
+                  ),
+                ),
+              );
+            }
+
+            // Veriyi Al
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+            List portfolio = data['recommendedPortfolio'] ?? [];
+
+            if (portfolio.isEmpty) {
+              return const Center(child: Text("Önerilen hisse bulunamadı."));
+            }
+
+            // Listeyi Oluştur
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(), // Scroll dışta var
+              itemCount: portfolio.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                var stock = portfolio[index];
+                
+                // --- MATEMATİKSEL HESAPLAMA ---
+                // Firebase'den gelen yüzdelik ağırlık
+                double weight = (stock['Onerilen_Agirlik'] ?? 0).toDouble();
+                
+                // Senin değişkeninle anlık çarpma işlemi
+                double amountTL = (_totalBalance * weight) / 100;
+                // ------------------------------
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      if (!isDark)
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Sol İkon (Hisse Baş Harfi)
+                      CircleAvatar(
+                        backgroundColor: primaryBlue.withOpacity(0.1),
+                        child: Text(
+                          stock['Hisse'].substring(0, 1),
+                          style: TextStyle(
+                            color: primaryBlue, 
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      
+                      // Orta Kısım (Hisse Adı ve Sektör)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              stock['Hisse'],
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              stock['Sektor'] ?? 'Genel',
+                              style: TextStyle(
+                                color: subTextColor, 
+                                fontSize: 12
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Sağ Kısım (Hesaplanan TL ve Yüzde)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            "₺${amountTL.toStringAsFixed(2)}", // CANLI HESAPLANAN DEĞER
+                            style: const TextStyle(
+                              color: Color(0xFF00C853), // Kazanç yeşili
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            "Pay: %${weight.toStringAsFixed(1)}", // Yüzdelik Oran
+                            style: TextStyle(
+                              color: subTextColor, 
+                              fontSize: 12
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   // --- 1. KART: TOPLAM BAKİYE ---
   Widget _buildTotalBalanceCard(
     Color cardBg,
@@ -207,13 +364,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.grey.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             )
           else
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -227,17 +384,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 8),
 
-          // --- GÜNCELLENEN KISIM: TIKLANABİLİR BAKİYE ---
+          // TIKLANABİLİR BAKİYE
           GestureDetector(
-            onTap:
-                () => _showEditBalanceDialog(
-                  context,
-                ), // Tıklayınca pencere açılır
+            onTap: () => _showEditBalanceDialog(context),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "${_totalBalance.toStringAsFixed(0)}₺", // Değişkeni buraya bağladık
+                  "${_totalBalance.toStringAsFixed(0)}₺",
                   style: TextStyle(
                     color: textColor,
                     fontSize: 32,
@@ -248,18 +402,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 Icon(
                   Icons.edit,
                   size: 18,
-                  color: subTextColor.withValues(alpha: .5),
-                ), // Düzenleme ikonu
+                  color: subTextColor.withOpacity(0.5),
+                ),
               ],
             ),
           ),
 
-          // ---------------------------------------------
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // primaryGreen senin kodunda tanımlı değilse buraya Color(0xFF00C853) yazabilirsin
               const Icon(Icons.trending_up, color: Color(0xFF00C853), size: 20),
               const SizedBox(width: 6),
               const Text(
@@ -289,7 +441,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     Color borderColor,
     bool isDark,
   ) {
-    // Grafik Verileri
     final List<ChartData> data = [
       ChartData("Teknoloji", 35, primaryGreen, "87.500₺"),
       ChartData("Enerji", 25, primaryYellow, "62.500₺"),
@@ -307,7 +458,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.grey.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -317,7 +468,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Sektör Dağılımı",
+            "Sektör Dağılımı (Örnek)",
             style: TextStyle(
               color: textColor,
               fontSize: 16,
@@ -326,7 +477,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 30),
 
-          // --- FL CHART: PIE CHART ---
           SizedBox(
             height: 220,
             child: Stack(
@@ -350,8 +500,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       },
                     ),
                     borderData: FlBorderData(show: false),
-                    sectionsSpace: 2, // Dilimler arası boşluk
-                    centerSpaceRadius: 60, // Donut boşluğu
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 60,
                     sections: List.generate(data.length, (i) {
                       final isTouched = i == touchedIndex;
                       final fontSize = isTouched ? 18.0 : 14.0;
@@ -375,7 +525,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     }),
                   ),
                 ),
-                // Ortadaki Metin
                 Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -401,7 +550,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
           const SizedBox(height: 30),
 
-          // Lejant (Liste)
           Column(
             children:
                 data.map((item) {
@@ -431,11 +579,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          item.amount,
-                          style: TextStyle(color: subTextColor, fontSize: 12),
-                        ),
                       ],
                     ),
                   );
@@ -453,16 +596,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     Color borderColor,
     bool isDark,
   ) {
-    // Piyasa rengi
     final marketBarColor =
         isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
     final gridColor =
         isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.05);
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05);
     final labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
 
-    // Veri
     final labels = ["Teknoloji", "Enerji", "Bankacılık", "Havacılık", "Diğer"];
     final marketValues = [60.0, 50.0, 80.0, 40.0, 30.0];
     final myValues = [90.0, 40.0, 50.0, 40.0, 15.0];
@@ -476,7 +617,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.grey.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -489,7 +630,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Performans Analizi",
+                "Performans Analizi (Örnek)",
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -501,37 +642,31 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 30),
 
-          // --- FL CHART: BAR CHART ---
           SizedBox(
-            height: 250, // Grafik alanını biraz büyüttük
+            height: 250,
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
                 maxY: 100,
-
-                // --- ARKA PLAN IZGARALARI ---
                 gridData: FlGridData(
                   show: true,
-                  drawVerticalLine: true, // Dikey çizgiler (Sektörleri ayırır)
+                  drawVerticalLine: true,
                   drawHorizontalLine: true,
                   getDrawingHorizontalLine:
                       (value) => FlLine(
                         color: gridColor,
                         strokeWidth: 1,
-                        dashArray: [5, 5], // Kesikli Yatay
+                        dashArray: [5, 5],
                       ),
                   getDrawingVerticalLine:
                       (value) => FlLine(
                         color: gridColor,
                         strokeWidth: 1,
-                        dashArray: [5, 5], // Kesikli Dikey
+                        dashArray: [5, 5],
                       ),
                 ),
-
-                // --- EKSEN BAŞLIKLARI (AXIS TITLES) ---
                 titlesData: FlTitlesData(
                   show: true,
-                  // ALT EKSEN (Kategoriler)
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -558,12 +693,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       },
                     ),
                   ),
-                  // SOL EKSEN (Değerler - 0, 20, 40...)
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 30, // Sayılar için yer ayır
-                      interval: 20, // 20'şer artış
+                      reservedSize: 30,
+                      interval: 20,
                       getTitlesWidget: (value, meta) {
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
@@ -586,22 +720,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     sideTitles: SideTitles(showTitles: false),
                   ),
                 ),
-
                 borderData: FlBorderData(
                   show: true,
                   border: Border(
                     bottom: BorderSide(
-                      color: labelColor.withValues(alpha: 0.2),
+                      color: labelColor.withOpacity(0.2),
                       width: 1,
                     ),
                     left: BorderSide(
-                      color: labelColor.withValues(alpha: 0.2),
+                      color: labelColor.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
                 ),
-
-                // --- TOOLTIP (İPUCU) AYARLARI ---
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
@@ -638,14 +769,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     },
                   ),
                 ),
-
-                // --- ÇUBUKLAR ---
                 barGroups: List.generate(labels.length, (index) {
                   return BarChartGroupData(
                     x: index,
-                    barsSpace: 4, // Çubuklar arası boşluk
+                    barsSpace: 4,
                     barRods: [
-                      // 1. Çubuk: Piyasa
                       BarChartRodData(
                         toY: marketValues[index],
                         color: marketBarColor,
@@ -654,17 +782,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           topLeft: Radius.circular(4),
                           topRight: Radius.circular(4),
                         ),
-                        // Arka planda silik çubuk (Background Bar) efekti
-                        backDrawRodData: BackgroundBarChartRodData(
-                          show: true,
-                          toY: 100, // Max değer
-                          color:
-                              isDark
-                                  ? Colors.white.withValues(alpha: 0.02)
-                                  : Colors.grey.withValues(alpha: 0.05),
-                        ),
                       ),
-                      // 2. Çubuk: Portföy
                       BarChartRodData(
                         toY: myValues[index],
                         color: primaryGreen,
@@ -673,14 +791,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           topLeft: Radius.circular(4),
                           topRight: Radius.circular(4),
                         ),
-                        backDrawRodData: BackgroundBarChartRodData(
-                          show: true,
-                          toY: 100,
-                          color:
-                              isDark
-                                  ? Colors.white.withValues(alpha: 0.02)
-                                  : Colors.grey.withValues(alpha: 0.05),
-                        ),
                       ),
                     ],
                   );
@@ -688,10 +798,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          // Lejant
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -727,7 +834,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 }
 
-// --- MODELLER ---
 class ChartData {
   final String label;
   final double percent;
