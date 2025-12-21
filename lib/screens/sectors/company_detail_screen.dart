@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
 class CompanyDetailScreen extends StatefulWidget {
-  final String companyName;
-  final String ticker;
-  final String sector;
+  // ARTIK TEK BİR TİCKER YERİNE, SEKTÖR ADI VE ŞİRKET LİSTESİ ALIYORUZ
+  final String sectorName;
+  final List<Map<String, dynamic>> companies;
+  final int initialIndex;
 
   const CompanyDetailScreen({
     super.key,
-    required this.companyName,
-    required this.ticker,
-    required this.sector,
+    required this.sectorName,
+    required this.companies,
+    this.initialIndex = 0,
   });
 
   @override
@@ -17,11 +18,23 @@ class CompanyDetailScreen extends StatefulWidget {
 }
 
 class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
+  late int _selectedCompanyIndex;
   int _selectedTabIndex = 0; // 0: AI Özet, 1: Finansal, 2: Teknik
 
-  // Marka Renkleri (Sabit kalabilir)
+  // Marka Renkleri
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
+  final Color red = const Color(0xFFFF5252);
+
+  @override
+  void initState() {
+    super.initState();
+    // İlk açılışta hangi şirketin seçili geleceğini belirliyoruz
+    _selectedCompanyIndex = widget.initialIndex;
+  }
+
+  // Şu an seçili olan şirketin verisine kolay erişim
+  Map<String, dynamic> get currentCompany => widget.companies[_selectedCompanyIndex];
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +48,19 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
     final iconColor = theme.iconTheme.color ?? textColor;
-
-    // Border ve Divider renkleri
     final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.3);
+
+    // --- SEÇİLİ ŞİRKET VERİLERİNİ HAZIRLAMA ---
+    // JSON'da veri eksik olsa bile hata vermemesi için "?? '...'" ile varsayılan değer atıyoruz
+    final String ticker = currentCompany['ticker'] ?? '???';
+    final String companyName = currentCompany['name'] ?? ticker;
+
+    // Fiyat verisi JSON'da varsa al, yoksa simüle et (Mock)
+    final String currentPrice = currentCompany['currentPrice']?.toString() ?? '142.5';
+    final double changeRate = double.tryParse(currentCompany['changeRate']?.toString() ?? '1.25') ?? 0.0;
+
+    // Şirkete özel detay verisi (AI Yorumu vb. simüle ediyoruz)
+    final Map<String, dynamic> mockDetails = _getMockDetails(ticker);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -49,7 +72,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Sektörler",
+          widget.sectorName, // Başlık artık Sektör Adı
           style: TextStyle(color: textColor, fontSize: 18),
         ),
       ),
@@ -58,20 +81,37 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ÜSTTEKİ CHIP LISTESI ---
+
+            // --- 1. DİNAMİK ŞİRKET SEÇİM BUTONLARI (CHIPS) ---
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  _buildTopChip(widget.ticker, isSelected: true, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
-                  _buildTopChip("THYAO", isSelected: false, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
-                  _buildTopChip("GARAN", isSelected: false, cardColor: cardColor, textColor: textColor, borderColor: borderColor, isDark: isDark),
-                ],
+                children: widget.companies.asMap().entries.map((entry) {
+                  int idx = entry.key;
+                  Map<String, dynamic> company = entry.value;
+                  bool isSelected = idx == _selectedCompanyIndex;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedCompanyIndex = idx;
+                      });
+                    },
+                    child: _buildTopChip(
+                      company['ticker'] ?? '',
+                      isSelected: isSelected,
+                      cardColor: cardColor,
+                      textColor: textColor,
+                      borderColor: borderColor,
+                      isDark: isDark,
+                    ),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 20),
 
-            // --- ŞİRKET ÖZET KARTI ---
+            // --- 2. ŞİRKET ÖZET KARTI ---
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -88,53 +128,73 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            widget.companyName,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: green.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              "A+",
-                              style: TextStyle(
-                                color: green,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                companyName,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: green.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                "A+",
+                                style: TextStyle(
+                                  color: green,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const Icon(Icons.star_border, color: Colors.amber),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${widget.ticker} • ${widget.sector}",
+                    "$ticker • ${widget.sectorName}",
                     style: TextStyle(color: subTextColor, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    "32.5B ₺",
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  // Fiyat ve Değişim
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "$currentPrice ₺",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "${changeRate >= 0 ? '+' : ''}%$changeRate",
+                        style: TextStyle(
+                          color: changeRate >= 0 ? green : red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   Row(
@@ -203,9 +263,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             const SizedBox(height: 20),
 
             // --- TAB İÇERİK DEĞİŞTİRİCİ ---
-            if (_selectedTabIndex == 0) _buildAISummaryTab(cardColor, textColor, subTextColor, isDark),
+            // İçeriğe seçili şirketin verilerini (mockDetails) gönderiyoruz
+            if (_selectedTabIndex == 0) _buildAISummaryTab(mockDetails['aiSummary'], cardColor, textColor, subTextColor, isDark),
             if (_selectedTabIndex == 1) _buildFinancialTab(cardColor, textColor, subTextColor, borderColor, isDark),
-            if (_selectedTabIndex == 2) _buildTechnicalTab(cardColor, textColor, isDark, borderColor),
+            if (_selectedTabIndex == 2) _buildTechnicalTab(ticker, cardColor, textColor, isDark, borderColor),
 
             const SizedBox(height: 40),
           ],
@@ -214,8 +275,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  Widget _buildAISummaryTab(Color cardColor, Color textColor, Color? subTextColor, bool isDark) {
-    // AI Tabı için özel arka plan (Dark mode: Koyu Mavi, Light Mode: Açık Mavi)
+  // --- WIDGET YAPICILAR (BUILDERS) ---
+
+  Widget _buildAISummaryTab(String summary, Color cardColor, Color textColor, Color? subTextColor, bool isDark) {
+    // AI Tabı için özel arka plan
     final aiCardBg = isDark ? const Color(0xFF0D1B3E) : Colors.blue.shade50;
 
     return Container(
@@ -243,12 +306,13 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
+          // Dinamik gelen metin buraya yazılıyor
           Text(
-            "ASELS güçlü borç yönetimine sahip ancak orta düzeyde gelir büyümesi göstermektedir. Savunma sanayi portföyü ve AR-GE yatırımları pozitif sinyal veriyor.",
+            summary,
             style: TextStyle(color: textColor, height: 1.5),
           ),
           const SizedBox(height: 24),
-          // Güçlü Yönler
+          // Güçlü Yönler (Sabit Örnek)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -266,32 +330,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          // Dikkat Edilmesi Gerekenler
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? cardColor.withValues(alpha: 0.5) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Dikkat Edilmesi Gerekenler",
-                  style: TextStyle(color: subTextColor),
-                ),
-                const SizedBox(height: 8),
-                _buildBulletPoint("Orta düzey gelir büyümesi", Colors.amber, textColor),
-              ],
-            ),
-          ),
         ],
       ),
     );
   }
-
-  // 2. TAB: FİNANSAL İÇERİK
 
   Widget _buildFinancialTab(Color cardColor, Color textColor, Color? subTextColor, Color borderColor, bool isDark) {
     return Column(
@@ -318,22 +360,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              _buildHorizontalBar("Likidite", 0.1, subTextColor, borderColor),
+              _buildHorizontalBar("Likidite", 0.7, subTextColor, borderColor),
               const SizedBox(height: 12),
               _buildHorizontalBar("Karlılık", 0.6, subTextColor, borderColor),
               const SizedBox(height: 12),
-              _buildHorizontalBar("Borç Oranı", 0.9, subTextColor, borderColor),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("0", style: TextStyle(color: subTextColor, fontSize: 12)),
-                  Text("9", style: TextStyle(color: subTextColor, fontSize: 12)),
-                  Text("18", style: TextStyle(color: subTextColor, fontSize: 12)),
-                  Text("27", style: TextStyle(color: subTextColor, fontSize: 12)),
-                  Text("36", style: TextStyle(color: subTextColor, fontSize: 12)),
-                ],
-              ),
+              _buildHorizontalBar("Borç Oranı", 0.4, subTextColor, borderColor),
             ],
           ),
         ),
@@ -352,9 +383,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  // 3. TAB: TEKNİK İÇERİK
-
-  Widget _buildTechnicalTab(Color cardColor, Color textColor, bool isDark, Color borderColor) {
+  Widget _buildTechnicalTab(String ticker, Color cardColor, Color textColor, bool isDark, Color borderColor) {
     return Column(
       children: [
         // 6 Aylık Tahmin Grafiği
@@ -369,7 +398,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "6 Aylık Tahmin",
+                "$ticker - 6 Aylık Tahmin",
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -388,119 +417,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-
-        // AI Teknik Yorum
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0D1B3E) : Colors.blue.shade50, // AI Kartı
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: Colors.blue, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    "AI Teknik Yorum",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Mevcut RSI kısa vadeli konsolidasyona işaret ediyor. Destek seviyesi 138₺ civarında.",
-                style: TextStyle(color: textColor, height: 1.4),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text("RSI: ", style: TextStyle(color: isDark ? Colors.grey : Colors.grey[700])),
-                  Text(
-                    "58 ",
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      "Nötr",
-                      style: TextStyle(color: Colors.blue, fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // AI Risk Skoru
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: borderColor),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "AI Risk Skoru",
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    "92/100",
-                    style: TextStyle(
-                      color: const Color(0xFF00C853),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: 0.92,
-                  backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
-                  color: green,
-                  minHeight: 10,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "Yüksek skor daha iyi finansal sağlığı gösterir",
-                style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 12),
-              ),
-            ],
-          ),
-        ),
+        // ... (Diğer teknik detaylar eklenebilir)
       ],
     );
   }
@@ -519,7 +436,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
       child: Text(
         text,
         style: TextStyle(
-          // Seçiliyse (yeşilse) yazı siyah, değilse dinamik text rengi (beyaz/siyah)
           color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
           fontWeight: FontWeight.bold,
         ),
@@ -529,7 +445,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
 
   Widget _buildTabButton(String text, int index, Color textColor) {
     bool isSelected = _selectedTabIndex == index;
-    // Seçili olmayanlar daha soluk
     final color = isSelected ? textColor : textColor.withValues(alpha: 0.5);
 
     return GestureDetector(
@@ -632,6 +547,32 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
       ),
     );
   }
+
+  // --- MOCK DATA (Şirket değiştiğinde metinleri değiştirmek için) ---
+  Map<String, dynamic> _getMockDetails(String ticker) {
+    switch (ticker) {
+      case 'THYAO':
+        return {
+          'aiSummary': 'Türk Hava Yolları, yaz sezonu beklentileri ve artan yolcu trafiği ile güçlü bir görünüm sergiliyor. Yakıt maliyetlerindeki değişimler marjları etkileyebilir.'
+        };
+      case 'PGSUS':
+        return {
+          'aiSummary': 'Pegasus, düşük maliyetli iş modeli sayesinde operasyonel verimliliğini koruyor. Yeni uçak siparişleri büyüme potansiyelini destekliyor.'
+        };
+      case 'ASELS':
+        return {
+          'aiSummary': 'ASELSAN, artan savunma sanayi harcamaları ve yeni ihracat anlaşmaları ile backlogunu büyütmeye devam ediyor.'
+        };
+      case 'KCHOL':
+        return {
+          'aiSummary': 'Koç Holding, çeşitlendirilmiş portföyü, enerji ve otomotiv grubundaki güçlü nakit akışı ile sağlam duruşunu koruyor.'
+        };
+      default:
+        return {
+          'aiSummary': '$ticker güçlü bir finansal yapıya sahip ancak piyasa koşulları yakından takip edilmeli. Şirketin büyüme potansiyeli sektör ortalamasının üzerinde.'
+        };
+    }
+  }
 }
 
 class SimpleLineChartPainter extends CustomPainter {
@@ -654,36 +595,26 @@ class SimpleLineChartPainter extends CustomPainter {
 
     final Paint dotPaint = Paint()..color = lineColor;
 
-    // Izgara Çizgileri (Dikey)
+    // Izgara Çizgileri
     double stepX = size.width / 5;
     for (int i = 0; i <= 5; i++) {
-      canvas.drawLine(
-        Offset(i * stepX, 0),
-        Offset(i * stepX, size.height),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(i * stepX, 0), Offset(i * stepX, size.height), gridPaint);
     }
-    // Izgara Çizgileri (Yatay)
     double stepY = size.height / 4;
     for (int i = 0; i <= 4; i++) {
-      canvas.drawLine(
-        Offset(0, i * stepY),
-        Offset(size.width, i * stepY),
-        gridPaint,
-      );
+      canvas.drawLine(Offset(0, i * stepY), Offset(size.width, i * stepY), gridPaint);
     }
 
     final Path path = Path();
-    path.moveTo(0, size.height * 0.8); // Başlangıç
+    path.moveTo(0, size.height * 0.8);
     path.lineTo(size.width * 0.2, size.height * 0.65);
     path.lineTo(size.width * 0.4, size.height * 0.75);
     path.lineTo(size.width * 0.6, size.height * 0.45);
     path.lineTo(size.width * 0.8, size.height * 0.30);
-    path.lineTo(size.width, size.height * 0.20); // Bitiş
+    path.lineTo(size.width, size.height * 0.20);
 
     canvas.drawPath(path, linePaint);
 
-    // Noktalar
     final points = [
       Offset(0, size.height * 0.8),
       Offset(size.width * 0.2, size.height * 0.65),

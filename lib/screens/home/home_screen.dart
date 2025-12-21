@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
+  // Sayfalar listesi
   static const List<Widget> _pages = [
     DashboardPage(),
     SectorsScreen(),
@@ -54,7 +55,16 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
-      body: _pages[_selectedIndex],
+
+      // --- DÜZELTME BURADA YAPILDI ---
+      // IndexedStack kullanılarak sayfaların durumu korunur (Dispose olmaz).
+      // Böylece sekmeler arası geçişte loading bar çıkmaz, anında geçiş sağlanır.
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
+      // -------------------------------
+
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: theme.cardColor,
         currentIndex: _selectedIndex,
@@ -518,6 +528,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return Center(
       child: GestureDetector(
         onTap: () {
+         //Push yerine Index kullanabiliriz
           Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 1)));
         },
         child: Container(
