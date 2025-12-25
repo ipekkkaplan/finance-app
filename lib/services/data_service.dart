@@ -5,32 +5,25 @@ import 'package:flutter/services.dart';
 // Modeller
 import '../models/sector_model.dart';
 import '../models/valuation_model.dart';
+import '../models/stock_model.dart'; // <--- 1. YENİ MODELİ IMPORT ETTİK
 
 class DataService {
 
-  // --- MEVCUT SEKTÖR VERİLERİ  ---
+  // --- 1. MEVCUT SEKTÖR VERİLERİ ---
   Future<List<SectorModel>> loadSectorData() async {
     try {
-      // 1. Ana Sektör Verilerini Oku (sektor_analiz.json)
       final String sectorString = await rootBundle.loadString('assets/sektor_analiz.json');
       final List<dynamic> sectorJsonList = json.decode(sectorString);
 
-      // 2. Top 3 Şirket Verilerini Oku (sector_top3_6m.json)
       final String companyString = await rootBundle.loadString('assets/sector_top3_6m.json');
       final List<dynamic> companyJsonList = json.decode(companyString);
 
-      // 3. Verileri Birleştir
       return sectorJsonList.map((sJson) {
-        // Ana dosyadaki sektör adını al ('Sektor' key'i ile)
         String sectorName = sJson['Sektor'] ?? '';
-
-        // Diğer listeden bu sektöre ait olan şirketleri bul
         List<Map<String, dynamic>> matchingCompanies = companyJsonList
             .where((c) => c['sector'] == sectorName)
             .map((c) => c as Map<String, dynamic>)
             .toList();
-
-        // Modeli oluştururken eşleşen şirketleri de gönderiyoruz
         return SectorModel.fromJson(sJson, matchingCompanies);
       }).toList();
 
@@ -40,18 +33,68 @@ class DataService {
     }
   }
 
-  // Değerleme verileri(En yeni Eklenen)
+  // --- 2. DEĞERLEME VERİLERİ ---
   Future<List<ValuationModel>> loadValuationData() async {
     try {
-
       final String jsonString = await rootBundle.loadString('assets/hisse_degerleme_sonuclari.json');
       final List<dynamic> jsonList = json.decode(jsonString);
-
-      // JSON listesini ValuationModel listesine çevir
       return jsonList.map((jsonItem) => ValuationModel.fromJson(jsonItem)).toList();
     } catch (e) {
       debugPrint("DataService (Valuation) HATA: $e");
       return [];
     }
+  }
+
+  // --- GÜÇLENDİRİLMİŞ VERİ ÇEKME FONKSİYONU ---
+  Future<List<StockModel>> getStocksBySector(String sectorName) async {
+    String jsonString = "";
+
+    try {
+      // 1. Önce 'assets/json/' klasörünü dene
+      jsonString = await rootBundle.loadString('assets/json/hisse_ayrinti.json');
+      debugPrint("Dosya 'assets/json/' klasöründen okundu.");
+    } catch (e) {
+      debugPrint("assets/json/ içinde bulunamadı. Alternatif yol deneniyor...");
+      try {
+        // 2. Bulamazsa direkt 'assets/' klasörünü dene
+        jsonString = await rootBundle.loadString('assets/hisse_ayrinti.json');
+        debugPrint("Dosya 'assets/' klasöründen okundu.");
+      } catch (e2) {
+        debugPrint("KRİTİK HATA: JSON dosyası okunamadı! Pubspec.yaml'ı kontrol et.");
+        debugPrint("Hata 1: $e");
+        debugPrint("Hata 2: $e2");
+        return []; // Dosya yoksa boş dön
+      }
+    }
+
+    try {
+      final List<dynamic> data = json.decode(jsonString);
+
+      // Türkçe karakter sorunu yaşamamak için özel karşılaştırma
+      final results = data.map((json) => StockModel.fromJson(json)).where((stock) {
+        return _normalize(stock.sektor) == _normalize(sectorName);
+      }).toList();
+
+      debugPrint("$sectorName için ${results.length} şirket bulundu.");
+      return results;
+    } catch (e) {
+      debugPrint("JSON Ayrıştırma Hatası: $e");
+      return [];
+    }
+  }
+
+  // Türkçe karakterleri İngilizceye çeviren yardımcı fonksiyon
+  // (Örn: "Sağlık" -> "saglik", "ENERJİ" -> "enerji")
+  String _normalize(String text) {
+    return text
+        .trim()
+        .toLowerCase()
+        .replaceAll('ğ', 'g')
+        .replaceAll('ü', 'u')
+        .replaceAll('ş', 's')
+        .replaceAll('ı', 'i')
+        .replaceAll('İ', 'i')
+        .replaceAll('ö', 'o')
+        .replaceAll('ç', 'c');
   }
 }

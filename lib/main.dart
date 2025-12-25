@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
 
           centerTitle: false,
 
-          // Status Bar İkonlarını (Saat, Pil) Beyaz Yapar
+
           systemOverlayStyle: SystemUiOverlayStyle.light,
 
           iconTheme: IconThemeData(color: Colors.white, size: 24),
@@ -117,10 +117,10 @@ class MyApp extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
           centerTitle: false,
 
-          // Status Bar İkonlarını Beyaz Yapar
+
           systemOverlayStyle: SystemUiOverlayStyle.light,
 
-          // Profesyonel Dokunuş: Başlık ile içeriği ayıran çok ince bir çizgi
+
           shape: Border(
             bottom: BorderSide(
               color: Colors.white.withValues(

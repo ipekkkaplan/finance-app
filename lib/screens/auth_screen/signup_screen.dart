@@ -345,7 +345,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             // İsim alanı
                             TextFormField(
                               controller: _isimController,
-                              // ForceLightMode sayesinde text rengi siyah olur, 
+                              // ForceLightMode sayesinde text rengi siyah olur,
                               // ama explicit belirtmekte zarar yok.
                               style: const TextStyle(color: Colors.black87),
                               decoration: InputDecoration(
