@@ -2,7 +2,7 @@ import 'package:finance_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:finance_app/screens/auth_screen/signup_screen.dart';
 import 'package:finance_app/services/auth_service.dart';
-// ÖNEMLİ: Yukarıda oluşturduğun widget dosyasını import etmeyi unutma.
+
 // Eğer dosya yolun farklıysa (örneğin utils içinde) burayı güncelle.
 import 'package:finance_app/widgets/force_light_mode.dart';
 
@@ -74,38 +74,39 @@ class _LoginScreenState extends State<LoginScreen> {
               showDialog(
                 context: context,
                 builder:
-                    (context) => AlertDialog(
-                  title: const Text('Email Doğrulanmamış'),
-                  content: const Text(
-                    'Email adresiniz henüz doğrulanmamış. Lütfen email adresinizi kontrol edip doğrulama linkine tıklayın. Veya doğrulama mailini yeniden göndermek ister misiniz?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('İptal'),
+                    (context) =>
+                    AlertDialog(
+                      title: const Text('Email Doğrulanmamış'),
+                      content: const Text(
+                        'Email adresiniz henüz doğrulanmamış. Lütfen email adresinizi kontrol edip doğrulama linkine tıklayın. Veya doğrulama mailini yeniden göndermek ister misiniz?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('İptal'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            Navigator.pop(context);
+                            final resendResult =
+                            await _authService.resendVerificationEmail();
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  resendResult['message'] ?? 'İşlem tamamlandı',
+                                ),
+                                backgroundColor:
+                                resendResult['success'] == true
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
+                            );
+                          },
+                          child: const Text('Yeniden Gönder'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () async {
-                        final messenger = ScaffoldMessenger.of(context);
-                        Navigator.pop(context);
-                        final resendResult =
-                        await _authService.resendVerificationEmail();
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              resendResult['message'] ?? 'İşlem tamamlandı',
-                            ),
-                            backgroundColor:
-                            resendResult['success'] == true
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                        );
-                      },
-                      child: const Text('Yeniden Gönder'),
-                    ),
-                  ],
-                ),
               );
             }
           } else {
@@ -147,7 +148,10 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             // Üstteki koyu mavi başlık bölümü
             Container(
-              height: MediaQuery.of(context).size.height * 0.25,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height * 0.25,
               decoration: const BoxDecoration(
                 color: Color(0xFF0D47A1),
                 borderRadius: BorderRadius.only(
@@ -200,7 +204,10 @@ class _LoginScreenState extends State<LoginScreen> {
             // Login kartı
             Padding(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.22,
+                top: MediaQuery
+                    .of(context)
+                    .size
+                    .height * 0.22,
               ),
               child: Center(
                 child: SingleChildScrollView(
@@ -240,7 +247,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   horizontal: 16,
                                   vertical: 12,
                                 ),
-                                constraints: const BoxConstraints(minHeight: 48),
+                                constraints: const BoxConstraints(
+                                    minHeight: 48),
                                 prefixIcon: const Icon(Icons.email_outlined),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(18),
@@ -263,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   return 'Lütfen email adresinizi giriniz';
                                 }
                                 if (!RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                  r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
                                 ).hasMatch(value)) {
                                   return 'Geçerli bir email adresi giriniz';
                                 }
@@ -284,7 +292,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   horizontal: 16,
                                   vertical: 12,
                                 ),
-                                constraints: const BoxConstraints(minHeight: 48),
+                                constraints: const BoxConstraints(
+                                    minHeight: 48),
                                 prefixIcon: const Icon(Icons.lock_outlined),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -341,7 +350,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         });
                                       },
                                       activeColor: const Color(0xFF0D47A1),
-                                      checkColor: Colors.white, // Tik rengi beyaz
+                                      checkColor: Colors.white,
+                                      // Tik rengi beyaz
                                       materialTapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                     ),

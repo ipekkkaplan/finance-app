@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../models/sector_model.dart';
+import '../../models/stock_model.dart';
 import '../../services/data_service.dart';
 import 'company_detail_screen.dart';
 
@@ -31,14 +32,16 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
   // Sektör Filtreleme Mantığı
   List<SectorModel> getFilteredSectors(List<SectorModel> allSectors) {
+    const double threshold = 8.0;
+
     switch (_selectedFilterIndex) {
       case 0: // Tümü
         return allSectors;
-      case 1: // Yükselenler (> %10)
-        return allSectors.where((s) => s.sixMonthChange > 10.0).toList();
-      case 2: // Durağan (%0 - %10)
+      case 1: // Yükselenler (> %8)
+        return allSectors.where((s) => s.sixMonthChange > threshold).toList();
+      case 2: // Durağan (%0 - %8)
         return allSectors
-            .where((s) => s.sixMonthChange > 0 && s.sixMonthChange <= 10.0)
+            .where((s) => s.sixMonthChange > 0 && s.sixMonthChange <= threshold)
             .toList();
       case 3: // Düşenler (<= %0)
         return allSectors.where((s) => s.sixMonthChange <= 0).toList();
@@ -59,7 +62,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = isDark ? Colors.grey : Colors.grey[600];
 
-    // Kart kenarlığı
+    // Kart kenarlığı (withValues kullanıldı)
     final borderColor =
     isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
     // Metrik kutucukları rengi
@@ -127,7 +130,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ---  PERFORMANS GRAFİĞİ ---
+                  // --- PERFORMANS GRAFİĞİ ---
                   _buildHorizontalGraph(
                       allSectors, isDark, cardColor, textColor),
 
@@ -154,12 +157,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Row(
                       children: [
                         _filterButton("Tümü", 0, cardColor, textColor, isDark),
-                        _filterButton("Yükselenler", 1, cardColor,
-                            textColor, isDark),
+                        _filterButton(
+                            "Yükselenler", 1, cardColor, textColor, isDark),
                         _filterButton(
                             "Durağan", 2, cardColor, textColor, isDark),
-                        _filterButton("Düşenler", 3, cardColor,
-                            textColor, isDark),
+                        _filterButton(
+                            "Düşenler", 3, cardColor, textColor, isDark),
                       ],
                     ),
                   ),
@@ -178,6 +181,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       : Column(
                     children: filteredList
                         .map((sector) => _buildSectorCard(
+                      // Context'i burada parametre olarak geçiriyoruz
+                      context,
                       sector,
                       cardColor,
                       textColor,
@@ -221,12 +226,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
-        border:
-        Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+        border: Border.all(
+            color: isDark ? Colors.white10 : Colors.grey.shade200),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -254,8 +259,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           // Çubukları Listele
           ...displayList.map((sector) {
             final isPositive = sector.sixMonthChange >= 0;
-            final percentage =
-                sector.sixMonthChange.abs() / maxValue;
+            final percentage = sector.sixMonthChange.abs() / maxValue;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
@@ -266,7 +270,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Text(
                       sector.name,
                       style: TextStyle(
-                          color: textColor.withValues(alpha: 0.8),
+                          color: textColor.withValues(alpha: 0.8), // DÜZELTİLDİ
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                       maxLines: 1,
@@ -281,8 +285,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.grey.withValues(alpha: 0.1),
+                                ? Colors.white.withValues(alpha: 0.05) // DÜZELTİLDİ
+                                : Colors.grey.withValues(alpha: 0.1), // DÜZELTİLDİ
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
@@ -295,12 +299,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
                                 colors: isPositive
                                     ? [
                                   const Color(0xFF00C853)
-                                      .withValues(alpha: 0.7),
+                                      .withValues(alpha: 0.7), // DÜZELTİLDİ
                                   const Color(0xFF00C853)
                                 ]
                                     : [
                                   const Color(0xFFFF5252)
-                                      .withValues(alpha: 0.7),
+                                      .withValues(alpha: 0.7), // DÜZELTİLDİ
                                   const Color(0xFFFF5252)
                                 ],
                               ),
@@ -310,7 +314,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                                   color: (isPositive
                                       ? const Color(0xFF00C853)
                                       : const Color(0xFFFF5252))
-                                      .withValues(alpha: 0.3),
+                                      .withValues(alpha: 0.3), // DÜZELTİLDİ
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 )
@@ -374,8 +378,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
     ];
 
     final gridColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.05);
+        ? Colors.white.withValues(alpha: 0.08) // DÜZELTİLDİ
+        : Colors.black.withValues(alpha: 0.05); // DÜZELTİLDİ
     final axisTextColor =
     isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87;
 
@@ -388,7 +392,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
               blurRadius: 10,
               offset: const Offset(0, 4),
             )
@@ -507,8 +511,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          techColor.withValues(alpha: 0.3),
-                          techColor.withValues(alpha: 0.0),
+                          techColor.withValues(alpha: 0.3), // DÜZELTİLDİ
+                          techColor.withValues(alpha: 0.0), // DÜZELTİLDİ
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -526,8 +530,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          healthColor.withValues(alpha: 0.3),
-                          healthColor.withValues(alpha: 0.0),
+                          healthColor.withValues(alpha: 0.3), // DÜZELTİLDİ
+                          healthColor.withValues(alpha: 0.0), // DÜZELTİLDİ
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -545,8 +549,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          realEstateColor.withValues(alpha: 0.3),
-                          realEstateColor.withValues(alpha: 0.0),
+                          realEstateColor.withValues(alpha: 0.3), // DÜZELTİLDİ
+                          realEstateColor.withValues(alpha: 0.0), // DÜZELTİLDİ
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -617,7 +621,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
   }
 
   // --- SEKTÖR KARTI ---
+  // DÜZELTME: BuildContext parametre olarak eklendi
   Widget _buildSectorCard(
+      BuildContext context,
       SectorModel sector,
       Color cardColor,
       Color textColor,
@@ -629,7 +635,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
     String tag = "Yatay";
     Color tagColor = Colors.grey;
 
-    if (sector.sixMonthChange > 10.0) {
+    // Eşik değeri %8
+    if (sector.sixMonthChange > 8.0) {
       tag = "Yükselişte";
       tagColor = green;
     } else if (sector.sixMonthChange > 0) {
@@ -657,7 +664,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           boxShadow: [
             if (!isDark)
               BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.05),
+                  color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
                   blurRadius: 10,
                   offset: const Offset(0, 4))
           ]),
@@ -681,7 +688,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: tagColor.withValues(alpha: 0.15),
+                      color: tagColor.withValues(alpha: 0.15), // DÜZELTİLDİ
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -753,21 +760,38 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
           const SizedBox(height: 16),
 
-          // --- GÜNCELLENEN BUTON (NAVIGATION) ---
+          // --- BUTON (NAVIGATION) ---
           Center(
             child: TextButton.icon(
-              onPressed: () {
+              onPressed: () async {
+                // 1. Verileri servisten çekiyoruz (Async işlem)
+                List<StockModel> detailedStocks =
+                await _dataService.getStocksBySector(sector.name);
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CompanyDetailScreen(
-                      sectorName: sector.name,         // Sektör Adı
-                      companies: sector.topCompanies,  // Şirket Listesi
-                      initialIndex: 0,                 // İlk şirketten başla
+                // DÜZELTME: "context.mounted" kontrolü yapılıyor.
+                // context, bu fonksiyona parametre olarak geldiği için linter bunu doğru algılar.
+                if (!context.mounted) return;
+
+                if (detailedStocks.isNotEmpty) {
+                  // 2. Veri varsa Detay sayfasına gidiyoruz
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CompanyDetailScreen(
+                        sectorName: sector.name,
+                        companies: detailedStocks,
+                        initialIndex: 0,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  // 3. Veri yoksa kullanıcıya bilgi veriyoruz
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            "${sector.name} sektörü için detay verisi bulunamadı.")),
+                  );
+                }
               },
               icon: const Text(
                 "Şirketleri İncele",
