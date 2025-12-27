@@ -13,6 +13,8 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
+  late Stream<DocumentSnapshot> _portfolioStream;
+
   double _totalBalance = 250000.0;
   final currencyFormatter = NumberFormat.currency(
     locale: 'tr_TR',
@@ -27,6 +29,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   final Color primaryGrey = const Color(0xFF90A4AE);
 
   int touchedIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _portfolioStream = FirebaseFirestore.instance
+        .collection('user_match')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .snapshots();
+  }
 
   void _showEditBalanceDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController(
@@ -112,8 +123,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
-  Color _getSectorColor(String? sector) {
-    switch (sector?.toLowerCase()) {
+  Color? _getKnownSectorColor(String? sector) {
+    switch (sector?.trim().toLowerCase()) {
       case 'teknoloji':
         return primaryBlue;
       case 'enerji':
@@ -125,7 +136,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       case 'sanayi':
         return Colors.orange;
       default:
-        return primaryGrey;
+        return null;
     }
   }
 
@@ -140,12 +151,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
 
     final borderColor =
-        isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.grey.withValues(alpha: 0.2);
+    isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.grey.withValues(alpha: 0.2);
 
     final balanceCardInnerColor =
-        isDark ? const Color(0xFF0F162C) : Colors.white;
+    isDark ? const Color(0xFF0F162C) : Colors.white;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -194,11 +205,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
             const SizedBox(height: 24),
             StreamBuilder<DocumentSnapshot>(
-              stream:
-                  FirebaseFirestore.instance
-                      .collection('user_match')
-                      .doc(FirebaseAuth.instance.currentUser?.uid)
-                      .snapshots(),
+              stream: _portfolioStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
@@ -261,12 +268,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildTotalBalanceCard(
-    Color cardBg,
-    Color textColor,
-    Color subTextColor,
-    Color borderColor,
-    bool isDark,
-  ) {
+      Color cardBg,
+      Color textColor,
+      Color subTextColor,
+      Color borderColor,
+      bool isDark,
+      ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
@@ -277,9 +284,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         boxShadow: [
           BoxShadow(
             color:
-                isDark
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : Colors.grey.withValues(alpha: 0.1),
+            isDark
+                ? Colors.black.withValues(alpha: 0.2)
+                : Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -340,12 +347,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildRecommendedPortfolio(
-    List portfolio,
-    Color cardBg,
-    Color textColor,
-    Color subTextColor,
-    bool isDark,
-  ) {
+      List portfolio,
+      Color cardBg,
+      Color textColor,
+      Color subTextColor,
+      bool isDark,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -368,8 +375,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           itemBuilder: (context, index) {
             var stock = portfolio[index];
 
-            double weight = (stock['Onerilen_Agirlik'] ?? 0).toDouble();
-            double stockPrice = (stock['Fiyat'] ?? 1.0).toDouble();
+            double weight = double.tryParse(stock['Onerilen_Agirlik'].toString()) ?? 0.0;
+            double stockPrice = double.tryParse(stock['Fiyat'].toString()) ?? 1.0;
 
             double amountTL = (_totalBalance * weight) / 100;
 
@@ -442,21 +449,40 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildSectorChart(
-    List portfolio,
-    Color cardBg,
-    Color textColor,
-    Color subTextColor,
-    Color borderColor,
-    bool isDark,
-  ) {
+      List portfolio,
+      Color cardBg,
+      Color textColor,
+      Color subTextColor,
+      Color borderColor,
+      bool isDark,
+      ) {
     Map<String, double> sectorAmountMap = {};
+
     for (var item in portfolio) {
-      String sector = item['Sektor'] ?? 'Diğer';
-      double weight = (item['Onerilen_Agirlik'] ?? 0).toDouble();
+      String rawSector = item['Sektor']?.toString() ?? 'Diğer';
+      String sector = rawSector.trim();
+
+      double weight = double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
 
       double amount = (_totalBalance * weight) / 100;
       sectorAmountMap[sector] = (sectorAmountMap[sector] ?? 0) + amount;
     }
+
+    final List<MapEntry<String, double>> sortedSectors = sectorAmountMap.entries.toList();
+    sortedSectors.sort((a, b) => b.value.compareTo(a.value));
+
+    final List<Color> fallbackPalette = [
+      primaryBlue,
+      primaryGreen,
+      primaryYellow,
+      primaryPurple,
+      Colors.orange,
+      Colors.redAccent,
+      Colors.teal,
+      Colors.indigo,
+      Colors.pink,
+      Colors.cyan,
+    ];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -510,22 +536,27 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     borderData: FlBorderData(show: false),
                     sectionsSpace: 2,
                     centerSpaceRadius: 60,
-                    sections: List.generate(sectorAmountMap.length, (i) {
+                    sections: List.generate(sortedSectors.length, (i) {
                       final isTouched = i == touchedIndex;
                       final radius = isTouched ? 60.0 : 50.0;
 
-                      String sectorName = sectorAmountMap.keys.elementAt(i);
-                      double amount = sectorAmountMap.values.elementAt(i);
+                      final entry = sortedSectors[i];
+                      final sectorName = entry.key;
+                      final amount = entry.value;
+
+                      Color sliceColor = _getKnownSectorColor(sectorName) ??
+                          fallbackPalette[i % fallbackPalette.length];
 
                       double percentage = (amount / _totalBalance) * 100;
 
                       return PieChartSectionData(
-                        color: _getSectorColor(sectorName),
+                        color: sliceColor,
                         value: amount,
-                        title: isTouched ? '%${percentage.toInt()}' : '',
+                        // DEĞİŞİKLİK: title her zaman gösteriliyor
+                        title: '%${percentage.toStringAsFixed(0)}',
                         radius: radius,
-                        titleStyle: const TextStyle(
-                          fontSize: 14,
+                        titleStyle: TextStyle(
+                          fontSize: isTouched ? 18 : 14, // Dokunulunca büyüsün
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -538,7 +569,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        sectorAmountMap.length.toString(),
+                        sortedSectors.length.toString(),
                         style: TextStyle(
                           color: textColor,
                           fontSize: 28,
@@ -557,51 +588,56 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 30),
           Column(
-            children:
-                sectorAmountMap.entries.map((entry) {
-                  double percentage = (entry.value / _totalBalance) * 100;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
+            children: sortedSectors.asMap().entries.map((entry) {
+              int index = entry.key;
+              MapEntry<String, double> data = entry.value;
+
+              Color legendColor = _getKnownSectorColor(data.key) ??
+                  fallbackPalette[index % fallbackPalette.length];
+
+              double percentage = (data.value / _totalBalance) * 100;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: legendColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      data.key,
+                      style: TextStyle(color: subTextColor, fontSize: 14),
+                    ),
+                    const Spacer(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: _getSectorColor(entry.key),
-                            borderRadius: BorderRadius.circular(4),
+                        Text(
+                          currencyFormatter.format(data.value),
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         ),
-                        const SizedBox(width: 10),
                         Text(
-                          entry.key,
-                          style: TextStyle(color: subTextColor, fontSize: 14),
-                        ),
-                        const Spacer(),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              currencyFormatter.format(entry.value),
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              "%${percentage.toStringAsFixed(1)}",
-                              style: TextStyle(
-                                color: subTextColor,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                          "%${percentage.toStringAsFixed(1)}",
+                          style: TextStyle(
+                            color: subTextColor,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -609,25 +645,26 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildComparisonChart(
-    List portfolio,
-    Color cardBg,
-    Color textColor,
-    Color borderColor,
-    bool isDark,
-  ) {
+      List portfolio,
+      Color cardBg,
+      Color textColor,
+      Color borderColor,
+      bool isDark,
+      ) {
     final marketBarColor =
-        isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
+    isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
     final gridColor =
-        isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.05);
+    isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
     final labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
 
     Map<String, double> mySectorValues = {};
     for (var item in portfolio) {
-      String sector = item['Sektor'] ?? 'Diğer';
-      double weight = (item['Onerilen_Agirlik'] ?? 0).toDouble();
-      double performance = (item['Yillik_Getiri'] ?? 50.0).toDouble();
+      String sector = item['Sektor']?.toString().trim() ?? 'Diğer';
+
+      double weight = double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
+      double performance = double.tryParse(item['Yillik_Getiri'].toString()) ?? 50.0;
 
       double contributedValue = (weight * performance) / 100;
       mySectorValues[sector] = (mySectorValues[sector] ?? 0) + contributedValue;
@@ -689,16 +726,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   drawHorizontalLine: true,
                   getDrawingHorizontalLine:
                       (value) => FlLine(
-                        color: gridColor,
-                        strokeWidth: 1,
-                        dashArray: [5, 5],
-                      ),
+                    color: gridColor,
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  ),
                   getDrawingVerticalLine:
                       (value) => FlLine(
-                        color: gridColor,
-                        strokeWidth: 1,
-                        dashArray: [5, 5],
-                      ),
+                    color: gridColor,
+                    strokeWidth: 1,
+                    dashArray: [5, 5],
+                  ),
                 ),
                 titlesData: FlTitlesData(
                   show: true,
@@ -774,7 +811,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipColor:
                         (group) =>
-                            isDark ? const Color(0xFF1E293B) : Colors.white,
+                    isDark ? const Color(0xFF1E293B) : Colors.white,
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 8,
                     tooltipRoundedRadius: 8,
@@ -782,7 +819,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       String label = rodIndex == 0 ? "Piyasa" : "Portföy";
                       final tooltipTextColor =
-                          isDark ? Colors.white : Colors.black;
+                      isDark ? Colors.white : Colors.black;
 
                       return BarTooltipItem(
                         "$label\n",
