@@ -13,7 +13,7 @@ class AnalysisWizardScreen extends StatefulWidget {
 class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool _isLoading = false; 
+  bool _isLoading = false;
 
   // --- SABİT MARKA RENKLERİ ---
   final Color primary = const Color(0xFF3D8BFF);
@@ -142,19 +142,22 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                                       ? Colors.grey[800]!
                                       : Colors.grey[400]!,
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: _isLoading ? null : () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
+                          onPressed:
+                              _isLoading
+                                  ? null
+                                  : () {
+                                    _pageController.previousPage(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
                           child: Text(
                             "Geri",
                             style: TextStyle(color: textColor),
@@ -173,32 +176,38 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           ),
                         ),
                         onPressed: _isLoading ? null : _nextPage,
-                        child: _isLoading 
-                          ? const SizedBox(
-                              height: 20, 
-                              width: 20, 
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _currentPage == 4 ? "Tamamla" : "Devam Et",
-                                  style: const TextStyle(
+                        child:
+                            _isLoading
+                                ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
                                     color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    strokeWidth: 2,
                                   ),
+                                )
+                                : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _currentPage == 4
+                                          ? "Tamamla"
+                                          : "Devam Et",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    if (_currentPage != 4)
+                                      const Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                if (_currentPage != 4)
-                                  const Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                              ],
-                            ),
                       ),
                     ),
                   ],
@@ -210,10 +219,8 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           // 2. KATMAN: Yükleme Ekranı (Varsa en üste biner)
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              color: Colors.black.withValues(alpha: 0.5),
+              child: const Center(child: CircularProgressIndicator()),
             ),
         ],
       ),
@@ -223,11 +230,16 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   // --- İLERLEME VE MANTIK ---
   void _nextPage() {
     // Validasyonlar
-    if (_currentPage == 0 && _selectedVade == null) return _showError("Lütfen vade seçiniz");
-    if (_currentPage == 1 && _selectedGetiri == null) return _showError("Lütfen beklentinizi seçiniz");
-    if (_currentPage == 2 && _selectedDusus == null) return _showError("Lütfen bir seçenek işaretleyiniz");
-    if (_currentPage == 3 && _selectedBilgi == null) return _showError("Lütfen bilgi düzeyinizi seçiniz");
-    if (_currentPage == 4 && _selectedRiskYonetimi == null) return _showError("Lütfen risk tercihinizi seçiniz");
+    if (_currentPage == 0 && _selectedVade == null)
+      return _showError("Lütfen vade seçiniz");
+    if (_currentPage == 1 && _selectedGetiri == null)
+      return _showError("Lütfen beklentinizi seçiniz");
+    if (_currentPage == 2 && _selectedDusus == null)
+      return _showError("Lütfen bir seçenek işaretleyiniz");
+    if (_currentPage == 3 && _selectedBilgi == null)
+      return _showError("Lütfen bilgi düzeyinizi seçiniz");
+    if (_currentPage == 4 && _selectedRiskYonetimi == null)
+      return _showError("Lütfen risk tercihinizi seçiniz");
 
     if (_currentPage < 4) {
       _pageController.nextPage(
@@ -251,38 +263,61 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
 
     // --- PUANLAMA ---
     double totalScore = 0;
-    
-    if (_selectedVade == "0-6 ay") totalScore += 100;
-    else if (_selectedVade == "6-12 ay") totalScore += 75;
-    else if (_selectedVade == "1-3 yıl") totalScore += 50;
-    else if (_selectedVade == "3+ yıl") totalScore += 25;
 
-    if (_selectedGetiri == "Enflasyondan Korunmak") totalScore += 25;
-    else if (_selectedGetiri == "Enflasyonu Geçmek") totalScore += 50;
-    else if (_selectedGetiri == "Endeksi Geçmek") totalScore += 75;
-    else if (_selectedGetiri == "Diğer Yatırım Araçlarını Geçmek") totalScore += 100;
+    if (_selectedVade == "0-6 ay")
+      totalScore += 100;
+    else if (_selectedVade == "6-12 ay")
+      totalScore += 75;
+    else if (_selectedVade == "1-3 yıl")
+      totalScore += 50;
+    else if (_selectedVade == "3+ yıl")
+      totalScore += 25;
 
-    if (_selectedDusus == "Direkt Satış") totalScore += 25;
-    else if (_selectedDusus == "Kısmi Satış") totalScore += 50;
-    else if (_selectedDusus == "Durağan Pozisyon") totalScore += 75;
-    else if (_selectedDusus == "Alım Fırsatı") totalScore += 100;
+    if (_selectedGetiri == "Enflasyondan Korunmak")
+      totalScore += 25;
+    else if (_selectedGetiri == "Enflasyonu Geçmek")
+      totalScore += 50;
+    else if (_selectedGetiri == "Endeksi Geçmek")
+      totalScore += 75;
+    else if (_selectedGetiri == "Diğer Yatırım Araçlarını Geçmek")
+      totalScore += 100;
 
-    if (_selectedBilgi == "Hiç Bilgisi Yok") totalScore += 25;
-    else if (_selectedBilgi == "Başlangıç Seviye Bilgi") totalScore += 50;
-    else if (_selectedBilgi == "Orta Düzey Bilgi") totalScore += 75;
-    else if (_selectedBilgi == "İleri Düzey Bilgi") totalScore += 100;
+    if (_selectedDusus == "Direkt Satış")
+      totalScore += 25;
+    else if (_selectedDusus == "Kısmi Satış")
+      totalScore += 50;
+    else if (_selectedDusus == "Durağan Pozisyon")
+      totalScore += 75;
+    else if (_selectedDusus == "Alım Fırsatı")
+      totalScore += 100;
 
-    if (_selectedRiskYonetimi == "Hiç Risk Almam") totalScore += 25;
-    else if (_selectedRiskYonetimi == "Gerektiğinde Risk Alırım") totalScore += 50;
-    else if (_selectedRiskYonetimi == "Risk Almayı Severim") totalScore += 75;
-    else if (_selectedRiskYonetimi == "Çok Yüksek Risk Almayı Severim") totalScore += 100;
+    if (_selectedBilgi == "Hiç Bilgisi Yok")
+      totalScore += 25;
+    else if (_selectedBilgi == "Başlangıç Seviye Bilgi")
+      totalScore += 50;
+    else if (_selectedBilgi == "Orta Düzey Bilgi")
+      totalScore += 75;
+    else if (_selectedBilgi == "İleri Düzey Bilgi")
+      totalScore += 100;
+
+    if (_selectedRiskYonetimi == "Hiç Risk Almam")
+      totalScore += 25;
+    else if (_selectedRiskYonetimi == "Gerektiğinde Risk Alırım")
+      totalScore += 50;
+    else if (_selectedRiskYonetimi == "Risk Almayı Severim")
+      totalScore += 75;
+    else if (_selectedRiskYonetimi == "Çok Yüksek Risk Almayı Severim")
+      totalScore += 100;
 
     int finalScore = (totalScore / 5).round();
 
     String segment;
-    if (finalScore <= 30) segment = "Defansif";
-    else if (finalScore <= 70) segment = "Dengeli";
-    else segment = "Agresif";
+    if (finalScore <= 30)
+      segment = "Defansif";
+    else if (finalScore <= 70)
+      segment = "Dengeli";
+    else
+      segment = "Agresif";
 
     List<String> recommendedStocks = _getMockStocksForSegment(segment);
 
@@ -291,10 +326,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     // FIREBASE KAYIT
     try {
       final user = FirebaseAuth.instance.currentUser;
-      
+
       if (user != null) {
-        debugPrint(">>> KULLANICI BULUNDU: ${user.uid}. Veritabanına yazılıyor...");
-        
+        debugPrint(
+          ">>> KULLANICI BULUNDU: ${user.uid}. Veritabanına yazılıyor...",
+        );
+
         // 10 Saniye Timeout Ekli Kayıt İşlemi
         await FirebaseFirestore.instance
             .collection('users')
@@ -314,9 +351,12 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               'recommended_stocks': recommendedStocks,
               'createdAt': FieldValue.serverTimestamp(),
             })
-            .timeout(const Duration(seconds: 10), onTimeout: () {
-               throw "Zaman aşımı! İnternet bağlantınızı kontrol edin.";
-            });
+            .timeout(
+              const Duration(seconds: 10),
+              onTimeout: () {
+                throw "Zaman aşımı! İnternet bağlantınızı kontrol edin.";
+              },
+            );
 
         debugPrint(">>> KAYIT BAŞARILI! Dialog açılıyor...");
 
@@ -335,16 +375,17 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         setState(() => _isLoading = false);
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Hata"),
-            content: Text("İşlem başarısız oldu:\n$e"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Kapat"),
-              )
-            ],
-          ),
+          builder:
+              (context) => AlertDialog(
+                title: const Text("Hata"),
+                content: Text("İşlem başarısız oldu:\n$e"),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Kapat"),
+                  ),
+                ],
+              ),
         );
       }
     }
@@ -422,10 +463,14 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
 
   List<String> _getMockStocksForSegment(String segment) {
     switch (segment) {
-      case "Defansif": return ["ALTINS1", "USDT", "PETKM"];
-      case "Dengeli": return ["THYAO", "KCHOL", "SISE"];
-      case "Agresif": return ["SASA", "HEKTS", "KONTR"];
-      default: return [];
+      case "Defansif":
+        return ["ALTINS1", "USDT", "PETKM"];
+      case "Dengeli":
+        return ["THYAO", "KCHOL", "SISE"];
+      case "Agresif":
+        return ["SASA", "HEKTS", "KONTR"];
+      default:
+        return [];
     }
   }
 
@@ -441,7 +486,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "0-6 ay",
           groupValue: _selectedVade,
           onTap: (val) => setState(() => _selectedVade = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "6 - 12 Ay",
@@ -449,7 +496,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "6-12 ay",
           groupValue: _selectedVade,
           onTap: (val) => setState(() => _selectedVade = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "1 - 3 Yıl",
@@ -457,7 +506,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "1-3 yıl",
           groupValue: _selectedVade,
           onTap: (val) => setState(() => _selectedVade = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "3+ Yıl",
@@ -465,10 +516,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "3+ yıl",
           groupValue: _selectedVade,
           onTap: (val) => setState(() => _selectedVade = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
       ],
-      textColor: textColor, isDark: isDark,
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
@@ -483,7 +537,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Enflasyondan Korunmak",
           groupValue: _selectedGetiri,
           onTap: (val) => setState(() => _selectedGetiri = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Enflasyonu Geçmek",
@@ -491,7 +547,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Enflasyonu Geçmek",
           groupValue: _selectedGetiri,
           onTap: (val) => setState(() => _selectedGetiri = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Endeksi Geçmek",
@@ -499,7 +557,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Endeksi Geçmek",
           groupValue: _selectedGetiri,
           onTap: (val) => setState(() => _selectedGetiri = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Diğer Araçları Geçmek",
@@ -507,10 +567,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Diğer Yatırım Araçlarını Geçmek",
           groupValue: _selectedGetiri,
           onTap: (val) => setState(() => _selectedGetiri = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
       ],
-      textColor: textColor, isDark: isDark,
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
@@ -525,7 +588,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Direkt Satış",
           groupValue: _selectedDusus,
           onTap: (val) => setState(() => _selectedDusus = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Kısmi Satış",
@@ -533,7 +598,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Kısmi Satış",
           groupValue: _selectedDusus,
           onTap: (val) => setState(() => _selectedDusus = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Durağan Pozisyon",
@@ -541,7 +608,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Durağan Pozisyon",
           groupValue: _selectedDusus,
           onTap: (val) => setState(() => _selectedDusus = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Alım Fırsatı",
@@ -549,10 +618,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Alım Fırsatı",
           groupValue: _selectedDusus,
           onTap: (val) => setState(() => _selectedDusus = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
       ],
-      textColor: textColor, isDark: isDark,
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
@@ -567,7 +639,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Hiç Bilgisi Yok",
           groupValue: _selectedBilgi,
           onTap: (val) => setState(() => _selectedBilgi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Başlangıç Seviye Bilgi",
@@ -575,7 +649,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Başlangıç Seviye Bilgi",
           groupValue: _selectedBilgi,
           onTap: (val) => setState(() => _selectedBilgi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Orta Düzey Bilgi",
@@ -583,7 +659,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Orta Düzey Bilgi",
           groupValue: _selectedBilgi,
           onTap: (val) => setState(() => _selectedBilgi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "İleri Düzey Bilgi",
@@ -591,10 +669,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "İleri Düzey Bilgi",
           groupValue: _selectedBilgi,
           onTap: (val) => setState(() => _selectedBilgi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
       ],
-      textColor: textColor, isDark: isDark,
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
@@ -609,7 +690,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Hiç Risk Almam",
           groupValue: _selectedRiskYonetimi,
           onTap: (val) => setState(() => _selectedRiskYonetimi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Gerektiğinde Risk Alırım",
@@ -617,7 +700,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Gerektiğinde Risk Alırım",
           groupValue: _selectedRiskYonetimi,
           onTap: (val) => setState(() => _selectedRiskYonetimi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Risk Almayı Severim",
@@ -625,7 +710,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Risk Almayı Severim",
           groupValue: _selectedRiskYonetimi,
           onTap: (val) => setState(() => _selectedRiskYonetimi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
         _buildSelectableCard(
           title: "Çok Yüksek Risk Almayı Severim",
@@ -633,10 +720,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           value: "Çok Yüksek Risk Almayı Severim",
           groupValue: _selectedRiskYonetimi,
           onTap: (val) => setState(() => _selectedRiskYonetimi = val),
-          cardColor: cardColor, textColor: textColor, isDark: isDark,
+          cardColor: cardColor,
+          textColor: textColor,
+          isDark: isDark,
         ),
       ],
-      textColor: textColor, isDark: isDark,
+      textColor: textColor,
+      isDark: isDark,
     );
   }
 
@@ -686,7 +776,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }) {
     final isSelected = groupValue == value;
     final iconBgColor =
-        isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100;
+        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
     final iconColorCard = isDark ? Colors.white70 : Colors.grey.shade700;
 
     return GestureDetector(
@@ -707,7 +797,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           boxShadow: [
             if (!isDark)
               BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
+                color: Colors.grey.withValues(alpha: 0.05),
                 blurRadius: 5,
                 offset: const Offset(0, 2),
               ),

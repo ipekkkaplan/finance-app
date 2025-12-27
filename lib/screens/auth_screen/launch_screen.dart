@@ -32,7 +32,10 @@ class _LaunchScreenState extends State<LaunchScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -47,7 +50,9 @@ class _LaunchScreenState extends State<LaunchScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1), // Hafif gölge
+                          color: Colors.black.withValues(
+                            alpha: 0.1,
+                          ), // Hafif gölge
                           blurRadius: 20,
                           spreadRadius: 1,
                           offset: const Offset(0, 8),
@@ -83,7 +88,9 @@ class _LaunchScreenState extends State<LaunchScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.5,
-                      color: Colors.black.withOpacity(0.7), // Hafif grileştirilmiş siyah
+                      color: Colors.black.withValues(
+                        alpha: 0.7,
+                      ), // Hafif grileştirilmiş siyah
                     ),
                   ),
 
@@ -110,7 +117,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
                             backgroundColor: Colors.black,
                             foregroundColor: Colors.white,
                             elevation: 8, // Buton gölgesi
-                            shadowColor: Colors.black.withOpacity(0.2),
+                            shadowColor: Colors.black.withValues(alpha: 0.2),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -141,9 +148,14 @@ class _LaunchScreenState extends State<LaunchScreen> {
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.6), // Hafif transparan beyaz zemin
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.6,
+                            ), // Hafif transparan beyaz zemin
                             foregroundColor: Colors.black,
-                            side: const BorderSide(color: Colors.black, width: 2),
+                            side: const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
