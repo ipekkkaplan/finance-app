@@ -80,6 +80,7 @@ flutter:
     - assets/hisse_degerleme_sonuclari.json
     - assets/splash_anim.json
     - assets/hisse_ayrinti.json
+    - assets/sector_yearly_returns_2020_2025.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
