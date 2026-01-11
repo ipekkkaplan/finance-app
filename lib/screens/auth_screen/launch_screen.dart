@@ -1,7 +1,7 @@
 import 'package:finance_app/screens/auth_screen/login_screen.dart';
 import 'package:finance_app/screens/auth_screen/signup_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:finance_app/widgets/force_light_mode.dart'; // Dark mode'dan etkilenmesin diye widget
+import 'package:finance_app/widgets/force_light_mode.dart'; // Launch sayfası dark mode'dan etkilenmesin diye widget ekledim
 
 class LaunchScreen extends StatefulWidget {
   const LaunchScreen({super.key});
@@ -16,7 +16,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
     // Scaffold'ı ForceLightMode ile sarmalıyoruz
     return ForceLightMode(
       child: Scaffold(
-        // Arka plan rengini ve gradient'i burada yönetiyoruz
+        // Arka plan rengini ve gradient'i yönettiğimiz kısım
         body: Container(
           width: double.infinity,
           height: double.infinity,
@@ -25,8 +25,8 @@ class _LaunchScreenState extends State<LaunchScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFE6E9F0), // Fintech Trust: Metalik/Gri-Mavi
-                Color(0xFFEEF1F5), // Fintech Trust: Açık Baza Geçiş
+                Color(0xFFE6E9F0),
+                Color(0xFFEEF1F5),
               ],
             ),
           ),
@@ -90,7 +90,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
                       height: 1.5,
                       color: Colors.black.withValues(
                         alpha: 0.7,
-                      ), // Hafif grileştirilmiş siyah
+                      ),
                     ),
                   ),
 
@@ -150,7 +150,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white.withValues(
                               alpha: 0.6,
-                            ), // Hafif transparan beyaz zemin
+                            ), // Ekrana beyaz bir zemin hazırladım
                             foregroundColor: Colors.black,
                             side: const BorderSide(
                               color: Colors.black,
@@ -171,7 +171,7 @@ class _LaunchScreenState extends State<LaunchScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20), // En alttan güvenli boşluk
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

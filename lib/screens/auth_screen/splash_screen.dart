@@ -66,9 +66,8 @@ class _SplashScreenState extends State<SplashScreen>
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          // GÜNCELLENEN KISIM: Derin Lacivert (Navy Blue) Gradient
           gradient: LinearGradient(
-            begin: Alignment.topCenter, // Işık yukarıdan vuruyor gibi olsun
+            begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFF000428), Color(0xFF001535), Color(0xFF002650)],
           ),
@@ -79,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen>
             SizedBox(
               height: 250,
               child: Lottie.asset(
-                'assets/splash_anim.json', // Dosya yolunun doğruluğundan emin ol
+                'assets/splash_anim.json',
                 fit: BoxFit.contain,
               ),
             ),
@@ -102,10 +101,10 @@ class _SplashScreenState extends State<SplashScreen>
                         letterSpacing: 1.5,
                         shadows: [
                           Shadow(
-                            blurRadius: 15.0, // Gölgeyi biraz daha yumuşattım
+                            blurRadius: 15.0,
                             color: Colors.blueAccent.withValues(
                               alpha: 0.5,
-                            ), // Gölge rengini maviye çektim
+                            ),
                             offset: const Offset(0, 0),
                           ),
                         ],
@@ -121,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                           fontSize: 16,
                           color:
                               Colors
-                                  .white70, // Gri yerine hafif şeffaf beyaz daha şık durur
+                                  .white70,
                           height: 1.5,
                         ),
                       ),
@@ -141,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: CircularProgressIndicator(
                   color:
                       Colors
-                          .white, // Koyu zeminde beyaz veya çok açık mavi daha net görünür
+                          .white,
                   strokeWidth: 2,
                 ),
               ),

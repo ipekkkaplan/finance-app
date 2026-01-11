@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../models/sector_model.dart';
 import '../../models/valuation_model.dart';
 import '../../services/data_service.dart';
+import '../../services/favorites_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -24,9 +25,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+
+   // Uygulama açıldığında kullanıcıya göre favori hisselerini getirir
+    FavoritesService.instance.loadFavorites();
+    // ----------------------------
   }
 
-  // Sayfalar listesi
   static const List<Widget> _pages = [
     DashboardPage(),
     SectorsScreen(),
@@ -55,16 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
-
-      // --- DÜZELTME BURADA YAPILDI ---
-      // IndexedStack kullanılarak sayfaların durumu korunur (Dispose olmaz).
-      // Böylece sekmeler arası geçişte loading bar çıkmaz, anında geçiş sağlanır.
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
-      // -------------------------------
-
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: theme.cardColor,
         currentIndex: _selectedIndex,
@@ -93,11 +91,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   String _selectedPeriod = 'Günlük';
   final List<String> _periods = ['Günlük', 'Haftalık', 'Aylık', '6 Aylık'];
-
-  // Değerleme filtresi
   String _valuationFilter = 'Ucuz';
 
-  // Verileri hafızada tutmak için Future değişkenleri
   late Future<List<ValuationModel>> _valuationFuture;
   late Future<List<SectorModel>> _sectorFuture;
   final DataService _dataService = DataService();
@@ -124,7 +119,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- 1. Üst Buton (Sadece Analize Başla) ---
+          // --- 1. Üst Buton ---
           Row(
             children: [
               Expanded(
@@ -143,13 +138,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: const Text("Analize Başla", style: TextStyle(color: Colors.white, fontSize: 16)),
                 ),
               ),
-              // Giriş Yap butonu kaldırıldı.
             ],
           ),
 
           const SizedBox(height: 20),
 
-          // --- 2. Sektör Performansı Başlığı ---
+          // --- 2. Sektör Performansı ---
           Text(
             "Sektör Performansı",
             style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
@@ -267,15 +261,140 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             },
           ),
-
           const SizedBox(height: 24),
 
-          // =============================================================
-          // DEĞERLEME RADARI
-          // =============================================================
+          // --- 5. Değerleme Radarı ---
           _buildValuationSection(cardColor, innerCardColor, textColor, subTextColor),
 
           const SizedBox(height: 24),
+
+          // =============================================================
+          // FAVORİLERİM
+          // =============================================================
+          ValueListenableBuilder<List<FavoriteItem>>(
+            valueListenable: FavoritesService.instance.favoritesNotifier,
+            builder: (context, favorites, _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Favorilerim",
+                    style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (favorites.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.star_border_rounded, color: primary, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Listeniz Boş",
+                                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Hisse detay sayfalarından yıldız ikonuna basarak ekleme yapabilirsiniz.",
+                                  style: TextStyle(color: subTextColor, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      height: 80,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: favorites.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          final item = favorites[index];
+                          final isPositive = item.changeRate >= 0;
+
+                          final bg = isPositive
+                              ? const Color(0xFFE8F5E9)
+                              : const Color(0xFFFFEBEE);
+
+                          final darkBg = isPositive
+                              ? const Color(0xFF1B5E20).withValues(alpha: 0.3)
+                              : const Color(0xFFB71C1C).withValues(alpha: 0.3);
+
+                          final iconColor = isPositive ? Colors.green[700] : Colors.red[700];
+                          final textCol = isDark ? Colors.white : Colors.black87;
+
+                          return Container(
+                            width: 140,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isDark ? darkBg : bg,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  item.symbol,
+                                  style: TextStyle(
+                                      color: textCol,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isPositive ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                                      color: isDark ? (isPositive ? Colors.greenAccent : Colors.redAccent) : iconColor,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "%${item.changeRate.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        color: isDark ? (isPositive ? Colors.greenAccent : Colors.redAccent) : iconColor,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                ],
+              );
+            },
+          ),
+          // =============================================================
 
           // --- 6. Akıllı Para Takibi ---
           _sectionTitle("Akıllı Para Takibi", textColor),
@@ -318,30 +437,18 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // --- WIDGET: DEĞERLEME RADARI ---
-  Widget _buildValuationSection(
-      Color cardColor,
-      Color innerCardColor,
-      Color? textColor,
-      Color? subTextColor
-      ) {
+  // --- Yardımcı Metodlar ---
+  Widget _buildValuationSection(Color cardColor, Color innerCardColor, Color? textColor, Color? subTextColor) {
     return Column(
       children: [
-        // Başlık ve Toggle
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Değerleme Radarı",
-              style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text("Değerleme Radarı", style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
             Container(
               height: 32,
               padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: innerCardColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: innerCardColor, borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
                   _buildToggleOption("Fırsat", "Ucuz", Colors.green),
@@ -352,47 +459,23 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Liste
         SizedBox(
           height: 140,
           child: FutureBuilder<List<ValuationModel>>(
             future: _valuationFuture,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator(strokeWidth: 2));
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text("Hata oluştu", style: TextStyle(color: subTextColor)));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Veri yok", style: TextStyle(color: subTextColor)),
-                      Text("(assets/hisse_degerleme_sonuclari.json?)",
-                          style: TextStyle(color: subTextColor, fontSize: 10)),
-                    ],
-                  ),
-                );
-              }
+              if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator(strokeWidth: 2));
+              if (snapshot.hasError) return Center(child: Text("Hata oluştu", style: TextStyle(color: subTextColor)));
+              if (!snapshot.hasData || snapshot.data!.isEmpty) return Center(child: Text("Veri yok", style: TextStyle(color: subTextColor)));
 
-              // Filtreleme
               var filteredList = snapshot.data!.where((item) => item.etiket == _valuationFilter).toList();
-
-              // Sıralama
               if (_valuationFilter == 'Ucuz') {
                 filteredList.sort((a, b) => b.finalSkor.compareTo(a.finalSkor));
               } else {
                 filteredList.sort((a, b) => a.finalSkor.compareTo(b.finalSkor));
               }
-
               var displayList = filteredList.take(10).toList();
-
-              if (displayList.isEmpty) {
-                return Center(child: Text("Bu kriterde hisse yok.", style: TextStyle(color: subTextColor)));
-              }
+              if (displayList.isEmpty) return Center(child: Text("Bu kriterde hisse yok.", style: TextStyle(color: subTextColor)));
 
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -402,81 +485,36 @@ class _DashboardPageState extends State<DashboardPage> {
                   var stock = displayList[index];
                   bool isOpportunity = _valuationFilter == 'Ucuz';
                   Color themeColor = isOpportunity ? Colors.green : Colors.redAccent;
-
                   return Container(
                     width: 140,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: themeColor.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: themeColor.withValues(alpha: 0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          )
-                        ]
-                    ),
+                        border: Border.all(color: themeColor.withValues(alpha: 0.3), width: 1.5),
+                        boxShadow: [BoxShadow(color: themeColor.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))]),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Üst Kısım
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              stock.hisseKodu,
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
+                            Text(stock.hisseKodu, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: themeColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                stock.finalSkor.toStringAsFixed(2),
-                                style: TextStyle(
-                                  color: themeColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
-                              ),
+                              decoration: BoxDecoration(color: themeColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                              child: Text(stock.finalSkor.toStringAsFixed(2), style: TextStyle(color: themeColor, fontWeight: FontWeight.bold, fontSize: 11)),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          stock.sektor,
-                          style: TextStyle(color: subTextColor, fontSize: 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(stock.sektor, style: TextStyle(color: subTextColor, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                         const Spacer(),
                         Row(
                           children: [
-                            Icon(
-                                isOpportunity ? Icons.trending_up : Icons.warning_amber_rounded,
-                                color: themeColor,
-                                size: 16
-                            ),
+                            Icon(isOpportunity ? Icons.trending_up : Icons.warning_amber_rounded, color: themeColor, size: 16),
                             const SizedBox(width: 4),
-                            Text(
-                              isOpportunity ? "Fırsat" : "Riskli",
-                              style: TextStyle(
-                                color: themeColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 11,
-                              ),
-                            ),
+                            Text(isOpportunity ? "Fırsat" : "Riskli", style: TextStyle(color: themeColor, fontWeight: FontWeight.w600, fontSize: 11)),
                           ],
                         )
                       ],
@@ -491,7 +529,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // --- Helper Metodlar ---
   Widget _buildToggleOption(String label, String value, Color activeColor) {
     bool isSelected = _valuationFilter == value;
     return GestureDetector(
@@ -502,14 +539,7 @@ class _DashboardPageState extends State<DashboardPage> {
           color: isSelected ? activeColor.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? activeColor : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 12,
-          ),
-        ),
+        child: Text(label, style: TextStyle(color: isSelected ? activeColor : Colors.grey, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 12)),
       ),
     );
   }
@@ -528,17 +558,12 @@ class _DashboardPageState extends State<DashboardPage> {
     return Center(
       child: GestureDetector(
         onTap: () {
-         //Push yerine Index kullanabiliriz
           Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 1)));
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [primary.withValues(alpha: 0.15), primary.withValues(alpha: 0.05)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: LinearGradient(colors: [primary.withValues(alpha: 0.15), primary.withValues(alpha: 0.05)], begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: primary.withValues(alpha: 0.3)),
           ),
@@ -565,26 +590,16 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _sectorItem(String rank, String title, String change, String desc, Color? bgColor, Color? titleColor, Color? descColor, Color primary, {bool isPositive = true}) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: bgColor ?? Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: bgColor ?? Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: primary,
-            radius: 14,
-            child: Text(rank, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-          ),
+          CircleAvatar(backgroundColor: primary, radius: 14, child: Text(rank, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w600)),
-                Text(desc, style: TextStyle(color: descColor, fontSize: 12)),
-              ],
-            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(desc, style: TextStyle(color: descColor, fontSize: 12)),
+            ]),
           ),
           Text(change, style: TextStyle(color: isPositive ? Colors.greenAccent : Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
         ],

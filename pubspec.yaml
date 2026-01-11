@@ -35,7 +35,7 @@ dependencies:
   lottie: ^3.1.0
   google_fonts: ^6.1.0
   provider: ^6.0.0
-  shared_preferences: ^2.2.0
+  shared_preferences: ^2.3.2
   csv: ^6.0.0 # CSV dosyalarını okumak için gerekli paket
 
   # The following adds the Cupertino Icons font to your application.
@@ -57,6 +57,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  # Logo oluşturucu paket buraya eklendi
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -72,6 +74,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   # Dosyalarımızı projeye tanıtıyoruz. Girintilere dikkat et!
   assets:
+    - assets/images/
     - assets/sektor_analiz.json
     - assets/sector_top3_6m.json
     - assets/hisse_degerleme_sonuclari.json
@@ -103,3 +106,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Logo ayarları buraya eklendi
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png" # Logonu buraya koyduğundan emin ol!
+  min_sdk_android: 21

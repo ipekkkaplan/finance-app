@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../models/stock_model.dart';
+import '../../services/favorites_service.dart';
 
 class CompanyDetailScreen extends StatefulWidget {
   final String sectorName;
   final List<StockModel> companies;
   final int initialIndex;
+  final double dailyChange;
 
   const CompanyDetailScreen({
     super.key,
     required this.sectorName,
     required this.companies,
     this.initialIndex = 0,
+    required this.dailyChange,
   });
 
   @override
@@ -24,9 +27,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   // Tema Renkleri
   final Color primary = const Color(0xFF3D8BFF);
   final Color green = const Color(0xFF00C853);
-
-  // Fiyat/Değişim kalktığı için kırmızı renge artık ihtiyacımız kalmadı ama
-  // genel kullanım için tutabiliriz veya silebiliriz.
   final Color red = const Color(0xFFFF5252);
 
   @override
@@ -38,11 +38,9 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   StockModel get currentCompany => widget.companies[_selectedCompanyIndex];
 
   // --- YARDIMCI FORMAT FONKSİYONLARI ---
-
-  // DÜZELTME: Negatif sayıları (örn: zarar eden FAVÖK) doğru formatlamak için güncellendi.
   String formatCompactNumber(double number) {
-    double value = number.abs(); // Sayının mutlak değerini al
-    String sign = number < 0 ? "-" : ""; // İşareti sakla
+    double value = number.abs();
+    String sign = number < 0 ? "-" : "";
 
     if (value >= 1e9) {
       return "$sign${(value / 1e9).toStringAsFixed(1)}B";
@@ -68,7 +66,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
 
-    // Kenarlık rengi (withValues kullanıldı - Flutter 3.27+)
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
         : Colors.grey.withValues(alpha: 0.3);
@@ -77,12 +74,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     final String hisseKodu = currentCompany.hisseKodu;
     final String sirketIsmi = currentCompany.sirketIsmi;
     final String sektor = currentCompany.sektor;
-
-    // Talimat 1 & 2: Fiyat simülasyonu tamamen kaldırıldı.
-    // Talimat 3: Ortaya PD (Piyasa Değeri) gelecek.
     final double piyasaDegeri = currentCompany.pd;
-
-    // Talimat 4: Altta Aktif Karlılık (ROA) olacak.
     final double aktifKarlilik = currentCompany.roa;
 
     return Scaffold(
@@ -94,6 +86,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
+        // Yıldız buradan kaldırıldı
         title: Text(
           sektor,
           style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
@@ -148,19 +141,52 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Şirket İsmi
-                  Text(
-                    sirketIsmi,
-                    style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Sol Taraf: İsim ve Sektör
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sirketIsmi,
+                              style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text("$hisseKodu • $sektor", style: TextStyle(color: subTextColor, fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                      // Sağ Taraf: Favori Yıldızı
+                      IconButton(
+                        onPressed: () {
+                          FavoritesService.instance.toggleFavorite(
+                              currentCompany.hisseKodu,
+                              widget.dailyChange
+                          );
+                        },
+                        icon: ValueListenableBuilder(
+                          valueListenable: FavoritesService.instance.favoritesNotifier,
+                          builder: (context, _, __) {
+                            final isFav = FavoritesService.instance.isFavorite(currentCompany.hisseKodu);
+                            return Icon(
+                              isFav ? Icons.star : Icons.star_border_outlined,
+                              color: isFav ? Colors.amber : subTextColor,
+                              size: 32,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text("$hisseKodu • $sektor", style: TextStyle(color: subTextColor, fontSize: 14)),
+                  // -----------------------------------------------------------
 
                   const SizedBox(height: 25),
 
-                  // --- YENİ DÜZEN: FİYAT YERİNE PD ---
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -180,7 +206,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   Divider(color: borderColor),
                   const SizedBox(height: 15),
 
-                  // Alt Metrikler: Hacim | Aktif Karlılık
                   Row(
                     children: [
                       _buildHeaderInfoCard(
@@ -190,11 +215,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                           textColor, subTextColor
                       ),
                       Container(height: 30, width: 1, color: borderColor, margin: const EdgeInsets.symmetric(horizontal: 10)),
-                      // BURASI DEĞİŞTİ: Piyasa Değeri yerine Aktif Karlılık geldi
                       _buildHeaderInfoCard(
                           "Aktif Karlılık",
                           "%${formatDouble(aktifKarlilik)}",
-                          Icons.trending_up, // İkonu karlılığa uygun değiştirdim
+                          Icons.trending_up,
                           textColor, subTextColor
                       ),
                     ],
@@ -208,7 +232,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTabButton("AI Özet", 0, textColor),
+                _buildTabButton("Özet", 0, textColor),
                 const SizedBox(width: 40),
                 _buildTabButton("Finansal", 1, textColor),
               ],
@@ -338,7 +362,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  // Fiyat/Trend bilgisi kalktığı için AI metnini genel finansal veriye göre güncelledim
   Widget _buildAISummaryTab(Color textColor, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -354,7 +377,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             children: [
               Icon(Icons.auto_awesome, color: primary, size: 20),
               const SizedBox(width: 10),
-              Text("AI Analizi", style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+              Text("Rasyo Analizi", style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 10),

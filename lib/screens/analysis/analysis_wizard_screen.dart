@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:finance_app/screens/portfolio/portfolio_screen.dart'; // Dosya yolunun doğruluğundan emin olun
+import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
 
 class AnalysisWizardScreen extends StatefulWidget {
   const AnalysisWizardScreen({super.key});
@@ -35,7 +35,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final iconColor = theme.iconTheme.color ?? textColor;
     final progressInactiveColor =
-        isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
+    isDark ? const Color(0xFF0F162C) : Colors.grey.shade300;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -94,9 +94,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           color:
-                              index <= _currentPage
-                                  ? green
-                                  : progressInactiveColor,
+                          index <= _currentPage
+                              ? green
+                              : progressInactiveColor,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -138,9 +138,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
                               color:
-                                  isDark
-                                      ? Colors.grey[800]!
-                                      : Colors.grey[400]!,
+                              isDark
+                                  ? Colors.grey[800]!
+                                  : Colors.grey[400]!,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -148,16 +148,16 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                             ),
                           ),
                           onPressed:
-                              _isLoading
-                                  ? null
-                                  : () {
-                                    _pageController.previousPage(
-                                      duration: const Duration(
-                                        milliseconds: 300,
-                                      ),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  },
+                          _isLoading
+                              ? null
+                              : () {
+                            _pageController.previousPage(
+                              duration: const Duration(
+                                milliseconds: 300,
+                              ),
+                              curve: Curves.easeInOut,
+                            );
+                          },
                           child: Text(
                             "Geri",
                             style: TextStyle(color: textColor),
@@ -177,37 +177,37 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                         ),
                         onPressed: _isLoading ? null : _nextPage,
                         child:
-                            _isLoading
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _currentPage == 4
-                                          ? "Tamamla"
-                                          : "Devam Et",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    if (_currentPage != 4)
-                                      const Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
-                                  ],
-                                ),
+                        _isLoading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentPage == 4
+                                  ? "Tamamla"
+                                  : "Devam Et",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (_currentPage != 4)
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -230,16 +230,21 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   // --- İLERLEME VE MANTIK ---
   void _nextPage() {
     // Validasyonlar
-    if (_currentPage == 0 && _selectedVade == null)
+    if (_currentPage == 0 && _selectedVade == null) {
       return _showError("Lütfen vade seçiniz");
-    if (_currentPage == 1 && _selectedGetiri == null)
+    }
+    if (_currentPage == 1 && _selectedGetiri == null) {
       return _showError("Lütfen beklentinizi seçiniz");
-    if (_currentPage == 2 && _selectedDusus == null)
+    }
+    if (_currentPage == 2 && _selectedDusus == null) {
       return _showError("Lütfen bir seçenek işaretleyiniz");
-    if (_currentPage == 3 && _selectedBilgi == null)
+    }
+    if (_currentPage == 3 && _selectedBilgi == null) {
       return _showError("Lütfen bilgi düzeyinizi seçiniz");
-    if (_currentPage == 4 && _selectedRiskYonetimi == null)
+    }
+    if (_currentPage == 4 && _selectedRiskYonetimi == null) {
       return _showError("Lütfen risk tercihinizi seçiniz");
+    }
 
     if (_currentPage < 4) {
       _pageController.nextPage(
@@ -264,60 +269,66 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
     // --- PUANLAMA ---
     double totalScore = 0;
 
-    if (_selectedVade == "0-6 ay")
+    if (_selectedVade == "0-6 ay") {
       totalScore += 100;
-    else if (_selectedVade == "6-12 ay")
+    } else if (_selectedVade == "6-12 ay") {
       totalScore += 75;
-    else if (_selectedVade == "1-3 yıl")
+    } else if (_selectedVade == "1-3 yıl") {
       totalScore += 50;
-    else if (_selectedVade == "3+ yıl")
+    } else if (_selectedVade == "3+ yıl") {
       totalScore += 25;
+    }
 
-    if (_selectedGetiri == "Enflasyondan Korunmak")
+    if (_selectedGetiri == "Enflasyondan Korunmak") {
       totalScore += 25;
-    else if (_selectedGetiri == "Enflasyonu Geçmek")
+    } else if (_selectedGetiri == "Enflasyonu Geçmek") {
       totalScore += 50;
-    else if (_selectedGetiri == "Endeksi Geçmek")
+    } else if (_selectedGetiri == "Endeksi Geçmek") {
       totalScore += 75;
-    else if (_selectedGetiri == "Diğer Yatırım Araçlarını Geçmek")
+    } else if (_selectedGetiri == "Diğer Yatırım Araçlarını Geçmek") {
       totalScore += 100;
+    }
 
-    if (_selectedDusus == "Direkt Satış")
+    if (_selectedDusus == "Direkt Satış") {
       totalScore += 25;
-    else if (_selectedDusus == "Kısmi Satış")
+    } else if (_selectedDusus == "Kısmi Satış") {
       totalScore += 50;
-    else if (_selectedDusus == "Durağan Pozisyon")
+    } else if (_selectedDusus == "Durağan Pozisyon") {
       totalScore += 75;
-    else if (_selectedDusus == "Alım Fırsatı")
+    } else if (_selectedDusus == "Alım Fırsatı") {
       totalScore += 100;
+    }
 
-    if (_selectedBilgi == "Hiç Bilgisi Yok")
+    if (_selectedBilgi == "Hiç Bilgisi Yok") {
       totalScore += 25;
-    else if (_selectedBilgi == "Başlangıç Seviye Bilgi")
+    } else if (_selectedBilgi == "Başlangıç Seviye Bilgi") {
       totalScore += 50;
-    else if (_selectedBilgi == "Orta Düzey Bilgi")
+    } else if (_selectedBilgi == "Orta Düzey Bilgi") {
       totalScore += 75;
-    else if (_selectedBilgi == "İleri Düzey Bilgi")
+    } else if (_selectedBilgi == "İleri Düzey Bilgi") {
       totalScore += 100;
+    }
 
-    if (_selectedRiskYonetimi == "Hiç Risk Almam")
+    if (_selectedRiskYonetimi == "Hiç Risk Almam") {
       totalScore += 25;
-    else if (_selectedRiskYonetimi == "Gerektiğinde Risk Alırım")
+    } else if (_selectedRiskYonetimi == "Gerektiğinde Risk Alırım") {
       totalScore += 50;
-    else if (_selectedRiskYonetimi == "Risk Almayı Severim")
+    } else if (_selectedRiskYonetimi == "Risk Almayı Severim") {
       totalScore += 75;
-    else if (_selectedRiskYonetimi == "Çok Yüksek Risk Almayı Severim")
+    } else if (_selectedRiskYonetimi == "Çok Yüksek Risk Almayı Severim") {
       totalScore += 100;
+    }
 
     int finalScore = (totalScore / 5).round();
 
     String segment;
-    if (finalScore <= 30)
+    if (finalScore <= 30) {
       segment = "Defansif";
-    else if (finalScore <= 70)
+    } else if (finalScore <= 70) {
       segment = "Dengeli";
-    else
+    } else {
       segment = "Agresif";
+    }
 
     List<String> recommendedStocks = _getMockStocksForSegment(segment);
 
@@ -338,25 +349,25 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
             .doc(user.uid)
             .collection('risk_profile')
             .add({
-              'score': finalScore,
-              'segment': segment,
-              'investmentAmount': 250000,
-              'answers': {
-                'vade': _selectedVade,
-                'getiri': _selectedGetiri,
-                'dusus': _selectedDusus,
-                'bilgi': _selectedBilgi,
-                'risk': _selectedRiskYonetimi,
-              },
-              'recommended_stocks': recommendedStocks,
-              'createdAt': FieldValue.serverTimestamp(),
-            })
+          'score': finalScore,
+          'segment': segment,
+          'investmentAmount': 250000,
+          'answers': {
+            'vade': _selectedVade,
+            'getiri': _selectedGetiri,
+            'dusus': _selectedDusus,
+            'bilgi': _selectedBilgi,
+            'risk': _selectedRiskYonetimi,
+          },
+          'recommended_stocks': recommendedStocks,
+          'createdAt': FieldValue.serverTimestamp(),
+        })
             .timeout(
-              const Duration(seconds: 10),
-              onTimeout: () {
-                throw "Zaman aşımı! İnternet bağlantınızı kontrol edin.";
-              },
-            );
+          const Duration(seconds: 10),
+          onTimeout: () {
+            throw "Zaman aşımı! İnternet bağlantınızı kontrol edin.";
+          },
+        );
 
         debugPrint(">>> KAYIT BAŞARILI! Dialog açılıyor...");
 
@@ -377,15 +388,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           context: context,
           builder:
               (context) => AlertDialog(
-                title: const Text("Hata"),
-                content: Text("İşlem başarısız oldu:\n$e"),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Kapat"),
-                  ),
-                ],
+            title: const Text("Hata"),
+            content: Text("İşlem başarısız oldu:\n$e"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Kapat"),
               ),
+            ],
+          ),
         );
       }
     }
@@ -450,7 +461,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                   MaterialPageRoute(
                     builder: (context) => const PortfolioScreen(),
                   ),
-                  (route) => false,
+                      (route) => false,
                 );
               },
               child: const Text("Portföyüme Git"),
@@ -776,7 +787,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
   }) {
     final isSelected = groupValue == value;
     final iconBgColor =
-        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
+    isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100;
     final iconColorCard = isDark ? Colors.white70 : Colors.grey.shade700;
 
     return GestureDetector(
@@ -789,9 +800,9 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color:
-                isSelected
-                    ? green
-                    : (isDark ? Colors.transparent : Colors.grey.shade300),
+            isSelected
+                ? green
+                : (isDark ? Colors.transparent : Colors.grey.shade300),
             width: 1.5,
           ),
           boxShadow: [

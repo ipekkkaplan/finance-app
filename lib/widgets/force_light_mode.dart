@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // SystemUiOverlayStyle için gerekli
 
-/// Bu widget ile sarmalanan her ekran, telefonun veya uygulamanın
-/// genel teması ne olursa olsun (Dark Mode olsa bile)
-/// zorla AYDINLIK MOD (Light Mode) olarak görünür.
-///
-/// Ayrıca AppBar rengini kurumsal lacivert (0xFF0D47A1) olarak sabitler.
+// Bazı sayfaların dark mode'dan etkilenmemesi için gerekli widget
 class ForceLightMode extends StatelessWidget {
   final Widget child;
 

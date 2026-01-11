@@ -14,13 +14,13 @@ class SectorModel {
     required this.weeklyChange,
     required this.monthlyChange,
     required this.sixMonthChange,
-    required this.topCompanies, // Constructor'a ekledik
+    required this.topCompanies,
   });
 
-  // JSON'dan nesne üretme (GÜNCELLENDİ: Artık 2 parametre alıyor)
+  // JSON'dan nesne üretme 2 parametre alıyor
   factory SectorModel.fromJson(Map<String, dynamic> json, List<Map<String, dynamic>> companies) {
 
-    // Sayısal değerleri güvenli bir şekilde double'a çevirme (Senin yazdığın helper)
+    // Sayısal değerleri güvenli bir şekilde double'a çevirdiğimiz kısım
     double toDouble(dynamic val) {
       if (val is double) return val;
       if (val is int) return val.toDouble();
@@ -29,12 +29,12 @@ class SectorModel {
     }
 
     return SectorModel(
-      name: json['Sektor'] ?? 'Bilinmiyor', // Senin JSON anahtarların
+      name: json['Sektor'] ?? 'Bilinmiyor', // JSON ANAHTARLARI
       dailyChange: toDouble(json['1 Gunluk Degisim (%)']),
       weeklyChange: toDouble(json['1 Haftalik Degisim (%)']),
       monthlyChange: toDouble(json['1 Aylik Degisim (%)']),
       sixMonthChange: toDouble(json['6 Aylik Degisim (%)']),
-      topCompanies: companies, // Dışarıdan gelen eşleşmiş şirket listesi
+      topCompanies: companies, // Eşleşmiş şirket litesi
     );
   }
 }
