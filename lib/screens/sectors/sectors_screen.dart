@@ -1,7 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'dart:math'; // Min/Max hesaplaması için gerekli
 import '../../models/sector_model.dart';
 import '../../models/stock_model.dart';
+import '../../models/sector_trend_model.dart';
 import '../../services/data_service.dart';
 import 'company_detail_screen.dart';
 
@@ -18,6 +20,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
   // Servis ve Future Tanımları
   final DataService _dataService = DataService();
   Future<List<SectorModel>>? _sectorsFuture;
+  Future<List<SectorTrendModel>>? _trendsFuture;
 
   // Marka Renkleri (Sabit)
   final Color primary = const Color(0xFF3D8BFF);
@@ -28,6 +31,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
   void initState() {
     super.initState();
     _sectorsFuture = _dataService.loadSectorData();
+    _trendsFuture = _dataService.getSectorTrends();
   }
 
   // Sektör Filtreleme Mantığı
@@ -62,7 +66,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = isDark ? Colors.grey : Colors.grey[600];
 
-    // Kart kenarlığı (withValues kullanıldı)
+    // Kart kenarlığı
     final borderColor =
     isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
     // Metrik kutucukları rengi
@@ -72,116 +76,145 @@ class _SectorsScreenState extends State<SectorsScreen> {
     return Scaffold(
       backgroundColor: scaffoldBg,
       body: SafeArea(
-        child: FutureBuilder<List<SectorModel>>(
-          future: _sectorsFuture,
-          builder: (context, snapshot) {
-            // 1. Durum: Veri yükleniyor
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: primary));
-            }
-            // 2. Durum: Hata var
-            else if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, color: red, size: 40),
-                    const SizedBox(height: 10),
-                    Text("Veri yüklenemedi",
-                        style: TextStyle(color: textColor)),
-                  ],
-                ),
-              );
-            }
-            // 3. Durum: Veri yok veya boş
-            else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                  child: Text("Veri bulunamadı",
-                      style: TextStyle(color: textColor)));
-            }
-
-            // Veri başarıyla geldi
-            final allSectors = snapshot.data!;
-            final filteredList = getFilteredSectors(allSectors);
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Başlık ve filtre ikonu
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Başlık ve filtre ikonu
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Sektör Analizi",
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Icon(Icons.filter_list, color: primary),
-                    ],
-                  ),
                   Text(
-                    "6 aylık piyasa performansı",
-                    style: TextStyle(color: subTextColor, fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // --- PERFORMANS GRAFİĞİ ---
-                  _buildHorizontalGraph(
-                      allSectors, isDark, cardColor, textColor),
-
-                  const SizedBox(height: 16),
-
-                  // --- TREND GRAFİĞİ ---
-                  _buildTrendChart(isDark, cardColor, textColor, borderColor),
-
-                  const SizedBox(height: 24),
-
-                  Text(
-                    "Sektörler",
+                    "Sektör Analizi",
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  Icon(Icons.filter_list, color: primary),
+                ],
+              ),
+              Text(
+                "6 aylık piyasa performansı",
+                style: TextStyle(color: subTextColor, fontSize: 14),
+              ),
+              const SizedBox(height: 20),
 
-                  // Filtre Butonları
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _filterButton("Tümü", 0, cardColor, textColor, isDark),
-                        _filterButton(
-                            "Yükselenler", 1, cardColor, textColor, isDark),
-                        _filterButton(
-                            "Durağan", 2, cardColor, textColor, isDark),
-                        _filterButton(
-                            "Düşenler", 3, cardColor, textColor, isDark),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+              // --- PERFORMANS GRAFİĞİ ---
+              FutureBuilder<List<SectorModel>>(
+                future: _sectorsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SizedBox(
+                        height: 200,
+                        child: Center(
+                            child: CircularProgressIndicator(color: primary)));
+                  } else if (snapshot.hasError ||
+                      !snapshot.hasData ||
+                      snapshot.data!.isEmpty) {
+                    return const SizedBox();
+                  }
+                  return _buildHorizontalGraph(
+                      snapshot.data!, isDark, cardColor, textColor);
+                },
+              ),
 
-                  // Sektör kartları
-                  filteredList.isEmpty
-                      ? Container(
-                    padding: const EdgeInsets.all(16),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Kriterlere uygun sektör yok",
-                      style: TextStyle(color: subTextColor, fontSize: 16),
-                    ),
-                  )
-                      : Column(
+              const SizedBox(height: 16),
+
+              // --- TREND GRAFİĞİ ---
+              FutureBuilder<List<SectorTrendModel>>(
+                future: _trendsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                        height: 250,
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                            child: CircularProgressIndicator(color: primary)));
+                  } else if (snapshot.hasError ||
+                      !snapshot.hasData ||
+                      snapshot.data!.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(16)),
+                      child: Center(
+                          child: Text("Trend verisi bulunamadı",
+                              style: TextStyle(color: subTextColor))),
+                    );
+                  }
+
+                  return _buildTrendChart(snapshot.data!, isDark, cardColor,
+                      textColor, borderColor, subTextColor);
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              Text(
+                "Sektörler",
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Filtre Butonları
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _filterButton("Tümü", 0, cardColor, textColor, isDark),
+                    _filterButton(
+                        "Yükselenler", 1, cardColor, textColor, isDark),
+                    _filterButton("Durağan", 2, cardColor, textColor, isDark),
+                    _filterButton("Düşenler", 3, cardColor, textColor, isDark),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // --- SEKTÖR KARTLARI LİSTESİ ---
+              FutureBuilder<List<SectorModel>>(
+                future: _sectorsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                        child: CircularProgressIndicator(color: primary));
+                  } else if (snapshot.hasError) {
+                    return Center(
+                        child: Text("Veri yüklenemedi",
+                            style: TextStyle(color: textColor)));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                        child: Text("Veri bulunamadı",
+                            style: TextStyle(color: textColor)));
+                  }
+
+                  final filteredList = getFilteredSectors(snapshot.data!);
+
+                  if (filteredList.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Kriterlere uygun sektör yok",
+                        style: TextStyle(color: subTextColor, fontSize: 16),
+                      ),
+                    );
+                  }
+
+                  return Column(
                     children: filteredList
                         .map((sector) => _buildSectorCard(
-                      // Context'i burada parametre olarak geçiriyoruz
                       context,
                       sector,
                       cardColor,
@@ -192,12 +225,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       isDark,
                     ))
                         .toList(),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                  );
+                },
               ),
-            );
-          },
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -206,14 +239,11 @@ class _SectorsScreenState extends State<SectorsScreen> {
   // --- YATAY PERFORMANS GRAFİĞİ ---
   Widget _buildHorizontalGraph(List<SectorModel> sectors, bool isDark,
       Color cardColor, Color textColor) {
-    // 1. Sıralama: En yüksekten en düşüğe
     final sortedSectors = List<SectorModel>.from(sectors);
     sortedSectors.sort((a, b) => b.sixMonthChange.compareTo(a.sixMonthChange));
 
-    // İlk 6 tanesi
     final displayList = sortedSectors.take(6).toList();
 
-    // En yüksek değeri bul
     double maxValue = displayList.isNotEmpty
         ? displayList
         .map((e) => e.sixMonthChange.abs())
@@ -256,7 +286,6 @@ class _SectorsScreenState extends State<SectorsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Çubukları Listele
           ...displayList.map((sector) {
             final isPositive = sector.sixMonthChange >= 0;
             final percentage = sector.sixMonthChange.abs() / maxValue;
@@ -348,96 +377,159 @@ class _SectorsScreenState extends State<SectorsScreen> {
     );
   }
 
-  // --- TREND GRAFİĞİ ---
-  Widget _buildTrendChart(
-      bool isDark, Color bgColor, Color textColor, Color borderColor) {
-    final Color techColor = const Color(0xFF9D46FF);
-    final Color healthColor = const Color(0xFF00C853);
-    final Color realEstateColor = const Color(0xFFFF9100);
+  // --- DİNAMİK TREND GRAFİĞİ (GÜZELLEŞTİRİLMİŞ & TOP 3) ---
+  Widget _buildTrendChart(List<SectorTrendModel> allTrends, bool isDark,
+      Color bgColor, Color textColor, Color borderColor, Color? subTextColor) {
+    // 1. Filtreleme ve Sıralama
+    List<SectorTrendModel> sortedList = List.from(allTrends);
+    sortedList.sort((a, b) {
+      double lastA = a.yearlyPoints.isNotEmpty ? a.yearlyPoints.last : 0;
+      double lastB = b.yearlyPoints.isNotEmpty ? b.yearlyPoints.last : 0;
+      return lastB.compareTo(lastA);
+    });
+    final top3Trends = sortedList.take(3).toList();
 
-    final List<FlSpot> techSpots = [
-      const FlSpot(0, 55),
-      const FlSpot(1, 45),
-      const FlSpot(2, 30),
-      const FlSpot(3, 15),
-      const FlSpot(4, 8.9),
-    ];
-    final List<FlSpot> healthSpots = [
-      const FlSpot(0, 14),
-      const FlSpot(1, 15),
-      const FlSpot(2, 13),
-      const FlSpot(3, 16),
-      const FlSpot(4, 17.9),
-    ];
-    final List<FlSpot> realEstateSpots = [
-      const FlSpot(0, 10),
-      const FlSpot(1, 18),
-      const FlSpot(2, 15),
-      const FlSpot(3, 24),
-      const FlSpot(4, 29.2),
-    ];
+    // 2. Dinamik Min/Max Hesabı (Grafiğin düzgün görünmesi için)
+    double minData = double.infinity;
+    double maxData = double.negativeInfinity;
+
+    for (var trend in top3Trends) {
+      for (var point in trend.yearlyPoints) {
+        if (point < minData) minData = point;
+        if (point > maxData) maxData = point;
+      }
+    }
+    // Biraz boşluk bırakalım ki çizgiler tavana/tabana yapışmasın
+    final double padding = (maxData - minData) * 0.1;
+    final double finalMinY = (minData - padding).floorToDouble();
+    final double finalMaxY = (maxData + padding).ceilToDouble();
+    final double yInterval = (finalMaxY - finalMinY) / 5; // Aralığı hesapla
+
+    // Renk Haritası
+    final Map<String, Color> colorMap = {
+      "Teknoloji": const Color(0xFF9D46FF),
+      "Sağlık": const Color(0xFF00C853),
+      "Gayrimenkul": const Color(0xFFFF9100),
+      "Enerji": Colors.blueAccent,
+      "Bankacılık": Colors.redAccent,
+      "Sanayi": Colors.cyan,
+      "Turizm": Colors.pinkAccent,
+    };
 
     final gridColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.03);
     final axisTextColor =
-    isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87;
+    isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54;
+
+    final double maxX = top3Trends.isNotEmpty
+        ? (top3Trends.first.yearlyPoints.length - 1).toDouble()
+        : 4.0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20), // Padding artırıldı
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: borderColor),
         boxShadow: [
           if (!isDark)
             BoxShadow(
               color: Colors.grey.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             )
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Sektör Trendleri (2021-2025)",
-            style: TextStyle(
-                color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Trend Liderleri (Top 3)",
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(6)),
+                child: Text(
+                  "2020-2025",
+                  style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // LEJANT
+          // Lejant (Daha temiz görünüm)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildLegendItem("Teknoloji", techColor, isDark),
-                const SizedBox(width: 12),
-                _buildLegendItem("Sağlık", healthColor, isDark),
-                const SizedBox(width: 12),
-                _buildLegendItem("Gayrimenkul", realEstateColor, isDark),
-              ],
+              children: top3Trends.map((trend) {
+                final color = colorMap[trend.sectorName] ?? primary;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: _buildLegendItem(trend.sectorName, color, isDark),
+                );
+              }).toList(),
             ),
           ),
 
-          const SizedBox(height: 25),
+          const SizedBox(height: 30),
+
+          // GRAFİK ALANI
           AspectRatio(
-            aspectRatio: 1.5,
+            aspectRatio: 1.6,
             child: LineChart(
               LineChartData(
+                // -------------------------------------------------------------
+                // EKLENEN KISIM BAŞLANGIÇ: Tooltip'teki sayıyı formatlıyoruz
+                // -------------------------------------------------------------
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) =>
+                        Colors.blueGrey.withValues(alpha: 0.8),
+                    getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                      return touchedBarSpots.map((barSpot) {
+                        return LineTooltipItem(
+                          barSpot.y.toStringAsFixed(1), // BURADA 1. VİRGÜL AYARI
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+                // -------------------------------------------------------------
+                // EKLENEN KISIM BİTİŞ
+                // -------------------------------------------------------------
+
+                clipData: const FlClipData
+                    .all(), // Çizgilerin dışarı taşmasını engeller
                 gridData: FlGridData(
                   show: true,
-                  drawVerticalLine: true,
-                  horizontalInterval: 10,
-                  verticalInterval: 1,
+                  drawVerticalLine:
+                  false, // Dikey çizgileri kaldırdım, daha temiz
+                  horizontalInterval: yInterval, // Izgara aralığı
                   getDrawingHorizontalLine: (value) {
-                    return FlLine(color: gridColor, strokeWidth: 1);
-                  },
-                  getDrawingVerticalLine: (value) {
-                    return FlLine(color: gridColor, strokeWidth: 1);
+                    return FlLine(
+                      color: gridColor,
+                      strokeWidth: 1,
+                      dashArray: [5, 5], // Kesikli çizgi
+                    );
                   },
                 ),
                 titlesData: FlTitlesData(
@@ -448,20 +540,25 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 45,
-                      interval: 10,
+                      showTitles: true, // SOL EKSEN DEĞERLERİNİ AÇTIK
+                      reservedSize:
+                      48, // Ondalık basamak için alanı genişlettik
+                      interval: yInterval,
                       getTitlesWidget: (value, meta) {
-                        if (value < 0) return const SizedBox();
+                        // Alt ve üst sınırları yazma ki kesilmesin
+                        if (value <= finalMinY || value >= finalMaxY) {
+                          return const SizedBox();
+                        }
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
-                          space: 8,
+                          space: 12, // Grafikten biraz daha uzağa
                           child: Text(
-                            "${value.toInt()}",
+                            value.toStringAsFixed(1), // Örn: 110.4
                             style: TextStyle(
                               color: axisTextColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 11, // Biraz daha şık, kompakt font
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.5, // Rakamları toplu gösterir
                             ),
                           ),
                         );
@@ -475,12 +572,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       interval: 1,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
-                        if (index >= 0 && index <= 4) {
+                        if (index >= 0 && index <= maxX) {
                           return SideTitleWidget(
                             axisSide: meta.axisSide,
-                            space: 8,
+                            space: 10,
                             child: Text(
-                              (2021 + index).toString(),
+                              (2020 + index).toString(),
                               style: TextStyle(
                                 color: axisTextColor,
                                 fontSize: 12,
@@ -496,68 +593,51 @@ class _SectorsScreenState extends State<SectorsScreen> {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: 4,
-                minY: 0,
-                maxY: 80,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: techSpots,
+                maxX: maxX,
+                minY: finalMinY,
+                maxY: finalMaxY,
+                lineBarsData: top3Trends.map((trend) {
+                  final color = colorMap[trend.sectorName] ?? primary;
+
+                  final spots = trend.yearlyPoints
+                      .asMap()
+                      .entries
+                      .map((e) => FlSpot(e.key.toDouble(), e.value))
+                      .toList();
+
+                  return LineChartBarData(
+                    spots: spots,
                     isCurved: true,
-                    color: techColor,
-                    barWidth: 4,
+                    curveSmoothness: 0.35, // Daha doğal kıvrım
+                    preventCurveOverShooting:
+                    true, // ÖNEMLİ: Çizginin taşmasını engeller
+                    color: color,
+                    barWidth: 3,
                     isStrokeCapRound: true,
-                    dotData: FlDotData(show: false),
+                    dotData: FlDotData(
+                      show: true, // Noktaları göster
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 3,
+                          color: Colors.white,
+                          strokeWidth: 2,
+                          strokeColor: color,
+                        );
+                      },
+                    ),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          techColor.withValues(alpha: 0.3),
-                          techColor.withValues(alpha: 0.0),
+                          color.withValues(alpha: 0.15), // Çok daha şeffaf
+                          color.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
                     ),
-                  ),
-                  LineChartBarData(
-                    spots: healthSpots,
-                    isCurved: true,
-                    color: healthColor,
-                    barWidth: 4,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          healthColor.withValues(alpha: 0.3),
-                          healthColor.withValues(alpha: 0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  LineChartBarData(
-                    spots: realEstateSpots,
-                    isCurved: true,
-                    color: realEstateColor,
-                    barWidth: 4,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          realEstateColor.withValues(alpha: 0.3),
-                          realEstateColor.withValues(alpha: 0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -570,22 +650,26 @@ class _SectorsScreenState extends State<SectorsScreen> {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(
-                color: isDark ? Colors.white24 : Colors.black12, width: 1),
-          ),
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                )
+              ]),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Text(
           text,
           style: TextStyle(
               color: isDark ? Colors.white70 : Colors.black87,
               fontSize: 13,
-              fontWeight: FontWeight.w500),
+              fontWeight: FontWeight.w600),
         )
       ],
     );
@@ -634,7 +718,6 @@ class _SectorsScreenState extends State<SectorsScreen> {
     String tag = "Yatay";
     Color tagColor = Colors.grey;
 
-    // Eşik değeri %8
     if (sector.sixMonthChange > 8.0) {
       tag = "Yükselişte";
       tagColor = green;
@@ -776,10 +859,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                         sectorName: sector.name,
                         companies: detailedStocks,
                         initialIndex: 0,
-
-                        // --- DÜZELTME BURADA YAPILDI ---
                         dailyChange: sector.dailyChange,
-                        // -------------------------------
                       ),
                     ),
                   );

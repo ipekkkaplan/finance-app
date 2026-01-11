@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../models/sector_model.dart';
 import '../models/valuation_model.dart';
 import '../models/stock_model.dart';
+import '../models/sector_trend_model.dart'; // Yeni eklenen model importu
 
 class DataService {
 
@@ -45,24 +46,69 @@ class DataService {
     }
   }
 
-  // --- GÜÇLENDİRİLMİŞ VERİ ÇEKME FONKSİYONU ---
+  // --- 3. SEKTÖR TREND VERİLERİ (YENİ EKLENEN KISIM) ---
+  Future<List<SectorTrendModel>> getSectorTrends() async {
+    try {
+      // Dosya isminin doğru olduğundan emin ol (pubspec.yaml'da tanımlı olmalı)
+      final String jsonString = await rootBundle.loadString('assets/sector_yearly_returns_2020_2025.json');
+      final List<dynamic> rawList = json.decode(jsonString);
+
+      // 1. ADIM: Verileri Sektör adına göre grupla
+      // Örn: { "Enerji": [ {2020 verisi}, {2021 verisi}... ], "Teknoloji": [...] }
+      Map<String, List<Map<String, dynamic>>> groupedData = {};
+
+      for (var item in rawList) {
+        String sector = item['sector'];
+        // Eğer map'te bu sektör yoksa listesini oluştur
+        if (!groupedData.containsKey(sector)) {
+          groupedData[sector] = [];
+        }
+        // Veriyi listeye ekle
+        groupedData[sector]!.add(item as Map<String, dynamic>);
+      }
+
+      // 2. ADIM: Gruplanmış veriyi Modele çevir
+      List<SectorTrendModel> trends = [];
+
+      groupedData.forEach((sectorName, dataList) {
+        // Yılları küçükten büyüğe sıraladık
+        dataList.sort((a, b) => a['year'].compareTo(b['year']));
+
+        // Sadece 'annual_return_pct' değerlerini alıp double listesi yap
+        List<double> points = dataList
+            .map((e) => (e['annual_return_pct'] as num).toDouble())
+            .toList();
+
+        trends.add(SectorTrendModel(
+          sectorName: sectorName,
+          yearlyPoints: points,
+        ));
+      });
+
+      return trends;
+
+    } catch (e) {
+      debugPrint("DataService (Trend Parse) HATA: $e");
+      return [];
+    }
+  }
+
+  // --- 4. GÜÇLENDİRİLMİŞ VERİ ÇEKME FONKSİYONU ---
   Future<List<StockModel>> getStocksBySector(String sectorName) async {
     String jsonString = "";
 
     try {
       // 1. Önce 'assets/json/' klasörünü dene
       jsonString = await rootBundle.loadString('assets/json/hisse_ayrinti.json');
-      debugPrint("Dosya 'assets/json/' klasöründen okundu.");
+      // debugPrint("Dosya 'assets/json/' klasöründen okundu.");
     } catch (e) {
-      debugPrint("assets/json/ içinde bulunamadı. Alternatif yol deneniyor...");
+      // debugPrint("assets/json/ içinde bulunamadı. Alternatif yol deneniyor...");
       try {
         // 2. Bulamazsa direkt 'assets/' klasörünü dene
         jsonString = await rootBundle.loadString('assets/hisse_ayrinti.json');
-        debugPrint("Dosya 'assets/' klasöründen okundu.");
+        // debugPrint("Dosya 'assets/' klasöründen okundu.");
       } catch (e2) {
         debugPrint("KRİTİK HATA: JSON dosyası okunamadı! Pubspec.yaml'ı kontrol et.");
-        debugPrint("Hata 1: $e");
-        debugPrint("Hata 2: $e2");
         return []; // Dosya yoksa boş dön
       }
     }
@@ -84,7 +130,6 @@ class DataService {
   }
 
   // Türkçe karakterleri İngilizceye çeviren yardımcı fonksiyon
-  // (Örn: "Sağlık" -> "saglik", "ENERJİ" -> "enerji")
   String _normalize(String text) {
     return text
         .trim()

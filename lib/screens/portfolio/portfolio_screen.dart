@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:finance_app/screens/home/home_screen.dart';
+import 'package:finance_app/screens/home/home_screen.dart'; // Yolunuza göre değişebilir
 import 'package:intl/intl.dart';
 
 class PortfolioScreen extends StatefulWidget {
@@ -15,7 +15,9 @@ class PortfolioScreen extends StatefulWidget {
 class _PortfolioScreenState extends State<PortfolioScreen> {
   late Stream<DocumentSnapshot> _portfolioStream;
 
+  // Varsayılan değer, veri gelene kadar veya veri yoksa kullanılır.
   double _totalBalance = 250000.0;
+
   final currencyFormatter = NumberFormat.currency(
     locale: 'tr_TR',
     symbol: '₺',
@@ -149,16 +151,23 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       String cleanText = controller.text.replaceAll(',', '.');
                       double? newValue = double.tryParse(cleanText);
 
                       Navigator.pop(context);
 
                       if (newValue != null && newValue >= 0) {
-                        setState(() {
-                          _totalBalance = newValue;
-                        });
+                        try {
+                          await FirebaseFirestore.instance
+                              .collection('user_match')
+                              .doc(FirebaseAuth.instance.currentUser?.uid)
+                              .set({
+                            'totalBalance': newValue,
+                          }, SetOptions(merge: true));
+                        } catch (e) {
+                          debugPrint("Bakiye kaydedilirken hata: $e");
+                        }
                       }
                     },
                     child: const Text(
@@ -283,69 +292,67 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildTotalBalanceCard(
-              balanceCardInnerColor,
-              textColor,
-              subTextColor,
-              borderColor,
-              isDark,
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: _portfolioStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          Map<String, dynamic> data = {};
+          List portfolio = [];
+
+          if (snapshot.hasData && snapshot.data!.exists) {
+            data = snapshot.data!.data() as Map<String, dynamic>;
+            portfolio = data['recommendedPortfolio'] ?? [];
+
+            if (data.containsKey('totalBalance')) {
+              _totalBalance =
+                  double.tryParse(data['totalBalance'].toString()) ?? 250000.0;
+            }
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildTotalBalanceCard(
+                  balanceCardInnerColor,
+                  textColor,
+                  subTextColor,
+                  borderColor,
+                  isDark,
+                ),
+                const SizedBox(height: 24),
+
+                if (portfolio.isEmpty)
+                  _buildNoDataPlaceholder(cardColor, subTextColor)
+                else
+                  Column(
+                    children: [
+                      _buildSectorChart(
+                        portfolio,
+                        cardColor,
+                        textColor,
+                        subTextColor,
+                        borderColor,
+                        isDark,
+                      ),
+                      const SizedBox(height: 24),
+                      _buildComparisonChart(
+                        portfolio,
+                        cardColor,
+                        textColor,
+                        borderColor,
+                        isDark,
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 24),
-            StreamBuilder<DocumentSnapshot>(
-              stream: _portfolioStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    height: 200,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return _buildNoDataPlaceholder(cardColor, subTextColor);
-                }
-
-                var data = snapshot.data!.data() as Map<String, dynamic>;
-                List portfolio = data['recommendedPortfolio'] ?? [];
-
-                if (portfolio.isEmpty) {
-                  return Center(
-                    child: Text(
-                      "Önerilen hisse bulunamadı.",
-                      style: TextStyle(color: subTextColor),
-                    ),
-                  );
-                }
-
-                return Column(
-                  children: [
-                    _buildSectorChart(
-                      portfolio,
-                      cardColor,
-                      textColor,
-                      subTextColor,
-                      borderColor,
-                      isDark,
-                    ),
-                    const SizedBox(height: 24),
-                    _buildComparisonChart(
-                      portfolio,
-                      cardColor,
-                      textColor,
-                      borderColor,
-                      isDark,
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -498,10 +505,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                             touchedIndex = -1;
                             return;
                           }
-                          touchedIndex =
-                              pieTouchResponse
-                                  .touchedSection!
-                                  .touchedSectionIndex;
+                          touchedIndex = pieTouchResponse
+                              .touchedSection!.touchedSectionIndex;
                         });
                       },
                     ),
@@ -561,15 +566,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 30),
           Column(
-            children:
-            sortedAssets.asMap().entries.map((entry) {
+            children: sortedAssets.asMap().entries.map((entry) {
               int index = entry.key;
               MapEntry<String, double> data = entry.value;
 
               String sectorOfStock = assetSectorMap[data.key] ?? '';
-              Color legendColor =
-                  _getKnownSectorColor(sectorOfStock) ??
-                      fallbackPalette[index % fallbackPalette.length];
+              Color legendColor = _getKnownSectorColor(sectorOfStock) ??
+                  fallbackPalette[index % fallbackPalette.length];
 
               double percentage = (data.value / _totalBalance) * 100;
               return Padding(
@@ -620,6 +623,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
+  // --- GÜNCELLENEN GRAFİK KISMI ---
   Widget _buildComparisonChart(
       List portfolio,
       Color cardBg,
@@ -627,10 +631,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       Color borderColor,
       bool isDark,
       ) {
-    final marketBarColor =
-    isDark ? const Color(0xFF455A64) : const Color(0xFFCFD8DC);
-    final gridColor =
-    isDark
+    // Piyasa ortalaması renk tanımı kaldırıldı, artık gerek yok.
+    final gridColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
         : Colors.black.withValues(alpha: 0.05);
     final labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
@@ -648,14 +650,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       mySectorValues[sector] = (mySectorValues[sector] ?? 0) + contributedValue;
     }
 
-    Map<String, double> marketValues = {
-      'Teknoloji': 60.0,
-      'Enerji': 50.0,
-      'Bankacılık': 80.0,
-      'Havacılık': 40.0,
-      'Sanayi': 55.0,
-      'Diğer': 30.0,
-    };
+    // Piyasa değerleri (marketValues) haritasını sildik çünkü kullanmayacağız.
 
     List<String> labels = mySectorValues.keys.toList();
 
@@ -697,19 +692,17 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 100,
+                maxY: 40, // --- GÜNCELLEME: Y ekseni max 40 yapıldı ---
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
                   drawHorizontalLine: true,
-                  getDrawingHorizontalLine:
-                      (value) => FlLine(
+                  getDrawingHorizontalLine: (value) => FlLine(
                     color: gridColor,
                     strokeWidth: 1,
                     dashArray: [5, 5],
                   ),
-                  getDrawingVerticalLine:
-                      (value) => FlLine(
+                  getDrawingVerticalLine: (value) => FlLine(
                     color: gridColor,
                     strokeWidth: 1,
                     dashArray: [5, 5],
@@ -748,7 +741,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
-                      interval: 20,
+                      interval: 10, // Aralıkları da 10'a düşürdük
                       getTitlesWidget: (value, meta) {
                         return SideTitleWidget(
                           axisSide: meta.axisSide,
@@ -787,15 +780,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor:
-                        (group) =>
+                    getTooltipColor: (group) =>
                     isDark ? const Color(0xFF1E293B) : Colors.white,
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 8,
                     tooltipRoundedRadius: 8,
                     tooltipBorder: BorderSide(color: borderColor, width: 1),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      String label = rodIndex == 0 ? "Piyasa" : "Portföy";
+                      // Artık sadece tek bar olduğu için "Portföy" yazdırıyoruz
+                      String label = "Portföy";
                       final tooltipTextColor =
                       isDark ? Colors.white : Colors.black;
 
@@ -808,6 +801,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         ),
                         children: <TextSpan>[
                           TextSpan(
+                            // Gerçek değeri gösteriyoruz (40'tan büyük olsa bile)
                             text: "${rod.toY.round()}",
                             style: TextStyle(
                               color: rod.color,
@@ -823,25 +817,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 barGroups: List.generate(labels.length, (index) {
                   String sector = labels[index];
                   double myValue = mySectorValues[sector] ?? 0;
-                  double marketValue = marketValues[sector] ?? 50.0;
 
                   return BarChartGroupData(
                     x: index,
-                    barsSpace: 4,
+                    // barsSpace artık gerekli değil çünkü tek çubuk var
                     barRods: [
+                      // --- GÜNCELLEME: Sadece tek bir rod (yeşil) kaldı ---
                       BarChartRodData(
-                        toY: marketValue,
-                        color: marketBarColor,
-                        width: 14,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(4),
-                          topRight: Radius.circular(4),
-                        ),
-                      ),
-                      BarChartRodData(
-                        toY: myValue.clamp(0, 100),
+                        // Görsel olarak 40'ı taşmasın diye clamp kullanabiliriz
+                        // ama fl_chart genelde halleder. Yine de max 40 dedik.
+                        toY: myValue,
                         color: primaryGreen,
-                        width: 14,
+                        width: 24, // Çubuğu biraz kalınlaştırdık (daha şık durur)
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(4),
                           topRight: Radius.circular(4),
@@ -857,8 +844,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem("Piyasa Ort.", marketBarColor, isDark),
-              const SizedBox(width: 24),
+
               _buildLegendItem("Portföyüm", primaryGreen, isDark),
             ],
           ),
@@ -866,6 +852,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       ),
     );
   }
+  // --- END OF CHART UPDATE ---
 
   Widget _buildLegendItem(String label, Color color, bool isDark) {
     return Row(
