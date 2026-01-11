@@ -27,13 +27,13 @@ class StockModel {
     required this.pd,
   });
 
-  // JSON'dan Model üretme fabrikası
+  // JSON'dan Model üretme
   factory StockModel.fromJson(Map<String, dynamic> json) {
     return StockModel(
       sirketIsmi: json['SirketIsmi'] ?? '',
       sektor: json['Sektor'] ?? '',
       hisseKodu: json['HisseKodu'] ?? '',
-      // JSON'dan sayıları güvenli çekmek için ufak kontroller:
+      // JSON'dan sayıları güvenli çekmek için yaptığımız kontroller:
       hacim: (json['Hacim'] ?? 0).toDouble(),
       temettuVerimliligi: json['Temettü Verimliliği'] != null
           ? (json['Temettü Verimliliği'] as num).toDouble()

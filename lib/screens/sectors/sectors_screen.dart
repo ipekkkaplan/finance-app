@@ -231,7 +231,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
+              color: Colors.grey.withValues(alpha: 0.05),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -270,7 +270,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     child: Text(
                       sector.name,
                       style: TextStyle(
-                          color: textColor.withValues(alpha: 0.8), // DÜZELTİLDİ
+                          color: textColor.withValues(alpha: 0.8),
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                       maxLines: 1,
@@ -285,8 +285,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withValues(alpha: 0.05) // DÜZELTİLDİ
-                                : Colors.grey.withValues(alpha: 0.1), // DÜZELTİLDİ
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.grey.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
@@ -299,12 +299,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
                                 colors: isPositive
                                     ? [
                                   const Color(0xFF00C853)
-                                      .withValues(alpha: 0.7), // DÜZELTİLDİ
+                                      .withValues(alpha: 0.7),
                                   const Color(0xFF00C853)
                                 ]
                                     : [
                                   const Color(0xFFFF5252)
-                                      .withValues(alpha: 0.7), // DÜZELTİLDİ
+                                      .withValues(alpha: 0.7),
                                   const Color(0xFFFF5252)
                                 ],
                               ),
@@ -314,7 +314,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                                   color: (isPositive
                                       ? const Color(0xFF00C853)
                                       : const Color(0xFFFF5252))
-                                      .withValues(alpha: 0.3), // DÜZELTİLDİ
+                                      .withValues(alpha: 0.3),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 )
@@ -378,8 +378,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
     ];
 
     final gridColor = isDark
-        ? Colors.white.withValues(alpha: 0.08) // DÜZELTİLDİ
-        : Colors.black.withValues(alpha: 0.05); // DÜZELTİLDİ
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.05);
     final axisTextColor =
     isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87;
 
@@ -392,7 +392,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
+              color: Colors.grey.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             )
@@ -511,8 +511,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          techColor.withValues(alpha: 0.3), // DÜZELTİLDİ
-                          techColor.withValues(alpha: 0.0), // DÜZELTİLDİ
+                          techColor.withValues(alpha: 0.3),
+                          techColor.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -530,8 +530,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          healthColor.withValues(alpha: 0.3), // DÜZELTİLDİ
-                          healthColor.withValues(alpha: 0.0), // DÜZELTİLDİ
+                          healthColor.withValues(alpha: 0.3),
+                          healthColor.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -549,8 +549,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          realEstateColor.withValues(alpha: 0.3), // DÜZELTİLDİ
-                          realEstateColor.withValues(alpha: 0.0), // DÜZELTİLDİ
+                          realEstateColor.withValues(alpha: 0.3),
+                          realEstateColor.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -621,7 +621,6 @@ class _SectorsScreenState extends State<SectorsScreen> {
   }
 
   // --- SEKTÖR KARTI ---
-  // DÜZELTME: BuildContext parametre olarak eklendi
   Widget _buildSectorCard(
       BuildContext context,
       SectorModel sector,
@@ -664,7 +663,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
           boxShadow: [
             if (!isDark)
               BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.05), // DÜZELTİLDİ
+                  color: Colors.grey.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4))
           ]),
@@ -688,7 +687,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: tagColor.withValues(alpha: 0.15), // DÜZELTİLDİ
+                      color: tagColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -764,16 +763,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
           Center(
             child: TextButton.icon(
               onPressed: () async {
-                // 1. Verileri servisten çekiyoruz (Async işlem)
                 List<StockModel> detailedStocks =
                 await _dataService.getStocksBySector(sector.name);
 
-                // DÜZELTME: "context.mounted" kontrolü yapılıyor.
-                // context, bu fonksiyona parametre olarak geldiği için linter bunu doğru algılar.
                 if (!context.mounted) return;
 
                 if (detailedStocks.isNotEmpty) {
-                  // 2. Veri varsa Detay sayfasına gidiyoruz
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -781,11 +776,14 @@ class _SectorsScreenState extends State<SectorsScreen> {
                         sectorName: sector.name,
                         companies: detailedStocks,
                         initialIndex: 0,
+
+                        // --- DÜZELTME BURADA YAPILDI ---
+                        dailyChange: sector.dailyChange,
+                        // -------------------------------
                       ),
                     ),
                   );
                 } else {
-                  // 3. Veri yoksa kullanıcıya bilgi veriyoruz
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                         content: Text(

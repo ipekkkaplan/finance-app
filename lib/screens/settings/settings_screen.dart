@@ -1,8 +1,10 @@
+import 'package:finance_app/screens/auth_screen/launch_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme_provider.dart';
-import '../../services/auth_service.dart'; // Auth servisini geri açtık
-import 'update_profile_screen.dart'; // Profil güncelleme sayfasını geri açtık
+import '../../services/auth_service.dart';
+import 'update_profile_screen.dart';
+
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,7 +14,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Sabit renkleri buradan kaldırdık, temadan alacağız.
+  // Renk tanımları
   final Color primary = const Color(0xFF3D8BFF);
   final Color iconsColors = const Color(0xFF4CAF50);
 
@@ -24,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // AuthService'den gerçek kullanıcıyı çekiyoruz
+    // AuthService'den mevcut kullanıcıyı çekiyoruz
     final user = AuthService().currentUser;
 
     nameController = TextEditingController(
@@ -42,11 +44,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  // --- GÜVENLİ ÇIKIŞ FONKSİYONU ---
+  Future<void> _handleLogout() async {
+    // Firebase'den çıkış yap
+    await AuthService().signOut();
+
+    if (mounted) {
+      // Geçmişi temizle ve LaunchScreen'e yönlendir
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LaunchScreen()),
+            (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Provider'a erişiyoruz
+    // Provider ve Tema erişimi
     final themeProvider = Provider.of<ThemeProvider>(context);
-    // Renkleri artık Temadan çekiyoruz
     final isDark = themeProvider.isDarkMode;
     final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
     final cardColor = Theme.of(context).cardColor;
@@ -54,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final subTextColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey;
 
     return Scaffold(
-      backgroundColor: backgroundColor, // Dinamik arka plan
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(22),
@@ -64,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 "Ayarlar",
                 style: TextStyle(
-                  color: textColor, // Dinamik renk
+                  color: textColor,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -73,16 +88,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 "Hesap ve uygulama tercihlerini yönet.",
                 style: TextStyle(
-                  color: subTextColor, // Dinamik renk
+                  color: subTextColor,
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 26),
 
-              // PROFİL KARTI
+              // --- PROFİL KARTI ---
               Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: _settingsCard(
+                  context: context,
                   cardColor: cardColor,
                   textColor: textColor,
                   title: "Profil Bilgileri",
@@ -100,7 +116,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Yönlendirmeyi geri açtık
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -118,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: const Text(
                               "Bilgileri Güncelle",
                               style: TextStyle(
-                                color: Colors.black, // Buton içi hep siyah kalabilir
+                                color: Colors.black,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
                               ),
@@ -133,8 +148,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               const SizedBox(height: 26),
 
-              // UYGULAMA TERCİHLERİ KARTI
+              // --- UYGULAMA TERCİHLERİ KARTI ---
               _settingsCard(
+                context: context,
                 cardColor: cardColor,
                 textColor: textColor,
                 title: "Uygulama Tercihleri",
@@ -150,7 +166,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? Icons.dark_mode_outlined
                           : Icons.wb_sunny_outlined,
                       iconColor: isDark ? primary : const Color(0xFFFFC107),
-                      // Burayı Provider'a bağladık:
                       value: isDark,
                       onChange: (v) {
                         themeProvider.toggleTheme(v);
@@ -169,14 +184,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChange: (v) => setState(() => notifications = v),
                       iconColor: iconsColors,
                     ),
+
+                    // --- GÜVENLİ ÇIKIŞ BÖLÜMÜ ---
+                    const SizedBox(height: 20),
+                    Divider(color: subTextColor.withValues(alpha: 0.2)),
+                    const SizedBox(height: 10),
+
+                    InkWell(
+                      onTap: _handleLogout, // LaunchScreen'e yönlendiren fonksiyon
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 22),
+                            ),
+                            const SizedBox(width: 14),
+                            const Text(
+                              "Güvenli Çıkış",
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 16,
+                                color: subTextColor.withValues(alpha: 0.5)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 26),
 
-              // GÜVENLİK VE GİZLİLİK KARTI
+              // --- GÜVENLİK VE GİZLİLİK KARTI ---
               _settingsCard(
+                context: context,
                 cardColor: cardColor,
                 textColor: textColor,
                 title: "Güvenlik ve Gizlilik",
@@ -197,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               const SizedBox(height: 30),
 
-              // Alt bilgi
+              // --- ALT BİLGİ ---
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -221,8 +275,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ------------------ CARD ------------------
+  // ------------------ HELPER WIDGETS ------------------
+
+  // Kart Yapısı
   Widget _settingsCard({
+    required BuildContext context,
     required String title,
     IconData? icon,
     required Widget child,
@@ -233,14 +290,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: cardColor, // Dinamik kart rengi
+          color: cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            // Light modda border görünmesin veya çok silik olsun
             color: textColor.withValues(alpha: 0.05),
           ),
           boxShadow: [
-            // Light modda hafif gölge, Dark modda yok
             if (Theme.of(context).brightness == Brightness.light)
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
@@ -261,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 title,
                 style: TextStyle(
-                  color: textColor, // Dinamik başlık rengi
+                  color: textColor,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -275,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ------------------ INPUT ------------------
+  // Input Alanı
   Widget _inputField(String label, TextEditingController controller, bool isDark, Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +349,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(color: textColor),
           decoration: InputDecoration(
             filled: true,
-            // Input alanı dark modda koyu, light modda hafif gri
             fillColor: isDark ? const Color(0xFF0D1117) : Colors.grey[200],
             contentPadding: const EdgeInsets.symmetric(
               vertical: 14,
@@ -310,7 +364,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ------------------ SWITCH ROW ------------------
+  // Switch Satırı
   Widget _switchRow({
     required String title,
     required String subtitle,
@@ -349,7 +403,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         Switch(
             value: value,
-            activeColor: primary,
+            activeTrackColor: primary,
             onChanged: onChange
         ),
       ],

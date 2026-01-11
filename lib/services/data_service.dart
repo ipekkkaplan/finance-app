@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 // Modeller
 import '../models/sector_model.dart';
 import '../models/valuation_model.dart';
-import '../models/stock_model.dart'; // <--- 1. YENİ MODELİ IMPORT ETTİK
+import '../models/stock_model.dart';
 
 class DataService {
 

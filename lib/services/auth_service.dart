@@ -11,7 +11,7 @@ class AuthService {
     }
   }
 
-  // Firebase'in kullanılabilir olup olmadığını kontrol et
+  // Firebase'in kullanılabilir olup olmadığını kontrol ettik
   bool get isFirebaseAvailable {
     try {
       return Firebase.apps.isNotEmpty && _auth != null;

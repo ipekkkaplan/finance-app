@@ -39,87 +39,179 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         .snapshots();
   }
 
+  // Bottom Sheet Yapısı
   void _showEditBalanceDialog(BuildContext context) {
     final TextEditingController controller = TextEditingController(
       text: _totalBalance.toStringAsFixed(0),
     );
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            "Toplam Varlık Düzenle",
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: TextField(
-            controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: TextStyle(color: isDark ? Colors.white : Colors.black),
-            decoration: InputDecoration(
-              hintText: "Miktar giriniz",
-              hintStyle: TextStyle(
-                color: isDark ? Colors.grey : Colors.grey[700],
-              ),
-              suffixText: "₺",
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: isDark ? Colors.white54 : Colors.grey,
-                ),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: primaryGreen, width: 2),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                "İptal",
-                style: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                String cleanText = controller.text.replaceAll(',', '.');
-                double? newValue = double.tryParse(cleanText);
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+        final bgColor = isDark ? const Color(0xFF1E1E2C) : Colors.white;
+        final textColor = isDark ? Colors.white : Colors.black;
 
-                Navigator.pop(context);
-
-                if (newValue != null && newValue > 0) {
-                  setState(() {
-                    _totalBalance = newValue;
-                  });
-                }
-              },
-              child: const Text(
-                "Kaydet",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
               ),
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Tutamaç Çizgisi
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+
+                const Text(
+                  "Toplam Varlığını Gir",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Büyük Input Alanı
+                TextField(
+                  controller: controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: "0",
+                    hintStyle: TextStyle(
+                      color: isDark ? Colors.white12 : Colors.grey[200],
+                    ),
+                    suffixText: "₺",
+                    suffixStyle: TextStyle(
+                      color: primaryGreen,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  autofocus: true,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Hızlı Seçim Butonları
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildQuickActionChip(context, "100.000", controller),
+                    const SizedBox(width: 8),
+                    _buildQuickActionChip(context, "250.000", controller),
+                    const SizedBox(width: 8),
+                    _buildQuickActionChip(context, "500.000", controller),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Kaydet Butonu
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      String cleanText = controller.text.replaceAll(',', '.');
+                      double? newValue = double.tryParse(cleanText);
+
+                      Navigator.pop(context);
+
+                      if (newValue != null && newValue >= 0) {
+                        setState(() {
+                          _totalBalance = newValue;
+                        });
+                      }
+                    },
+                    child: const Text(
+                      "Bakiyeyi Güncelle",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
         );
       },
+    );
+  }
+
+  // Hızlı seçim helper widget'ı
+  Widget _buildQuickActionChip(
+      BuildContext context,
+      String value,
+      TextEditingController controller,
+      ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: () {
+        controller.text = value.replaceAll('.', '');
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: controller.text.length),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color:
+          isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        child: Text(
+          value,
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.grey[800],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 
@@ -150,8 +242,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
     final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
 
-    final borderColor =
-    isDark
+    final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
         : Colors.grey.withValues(alpha: 0.2);
 
@@ -232,14 +323,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
                 return Column(
                   children: [
-                    _buildRecommendedPortfolio(
-                      portfolio,
-                      cardColor,
-                      textColor,
-                      subTextColor,
-                      isDark,
-                    ),
-                    const SizedBox(height: 24),
                     _buildSectorChart(
                       portfolio,
                       cardColor,
@@ -283,8 +366,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color:
-            isDark
+            color: isDark
                 ? Colors.black.withValues(alpha: 0.2)
                 : Colors.grey.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -298,7 +380,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             "Toplam Değer",
             style: TextStyle(color: subTextColor, fontSize: 14),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           GestureDetector(
             onTap: () => _showEditBalanceDialog(context),
             child: Row(
@@ -322,129 +404,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.trending_up, color: Color(0xFF00C853), size: 20),
-              const SizedBox(width: 6),
-              const Text(
-                "+12.8%",
-                style: TextStyle(
-                  color: Color(0xFF00C853),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                " Son 30 gün",
-                style: TextStyle(color: subTextColor, fontSize: 14),
-              ),
-            ],
+          Text(
+            "Planladığınız tutarı giriniz",
+            style: TextStyle(
+              color: subTextColor.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRecommendedPortfolio(
-      List portfolio,
-      Color cardBg,
-      Color textColor,
-      Color subTextColor,
-      bool isDark,
-      ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            "Yapay Zeka Önerili Dağılım",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: portfolio.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            var stock = portfolio[index];
-
-            double weight = double.tryParse(stock['Onerilen_Agirlik'].toString()) ?? 0.0;
-            double stockPrice = double.tryParse(stock['Fiyat'].toString()) ?? 1.0;
-
-            double amountTL = (_totalBalance * weight) / 100;
-
-            return Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: cardBg,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  if (!isDark)
-                    BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: primaryBlue.withValues(alpha: 0.1),
-                    child: Text(
-                      stock['Hisse'].toString().substring(0, 1),
-                      style: TextStyle(
-                        color: primaryBlue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          stock['Hisse'],
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          "${stock['Sektor']} • ${currencyFormatter.format(stockPrice)}",
-                          style: TextStyle(color: subTextColor, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        currencyFormatter.format(amountTL),
-                        style: const TextStyle(
-                          color: Color(0xFF00C853),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
     );
   }
 
@@ -456,20 +424,24 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       Color borderColor,
       bool isDark,
       ) {
-    Map<String, double> sectorAmountMap = {};
+    Map<String, double> assetAmountMap = {};
+    Map<String, String> assetSectorMap = {};
 
     for (var item in portfolio) {
-      String rawSector = item['Sektor']?.toString() ?? 'Diğer';
-      String sector = rawSector.trim();
+      String stockName = item['Hisse']?.toString().trim() ?? 'Bilinmeyen';
+      String sector = item['Sektor']?.toString().trim() ?? '';
 
-      double weight = double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
+      double weight =
+          double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
 
       double amount = (_totalBalance * weight) / 100;
-      sectorAmountMap[sector] = (sectorAmountMap[sector] ?? 0) + amount;
+      assetAmountMap[stockName] = (assetAmountMap[stockName] ?? 0) + amount;
+      assetSectorMap[stockName] = sector;
     }
 
-    final List<MapEntry<String, double>> sortedSectors = sectorAmountMap.entries.toList();
-    sortedSectors.sort((a, b) => b.value.compareTo(a.value));
+    final List<MapEntry<String, double>> sortedAssets =
+    assetAmountMap.entries.toList();
+    sortedAssets.sort((a, b) => b.value.compareTo(a.value));
 
     final List<Color> fallbackPalette = [
       primaryBlue,
@@ -503,7 +475,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Sektörel Varlık Dağılımı",
+            "Varlık Dağılımı",
             style: TextStyle(
               color: textColor,
               fontSize: 16,
@@ -536,27 +508,28 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     borderData: FlBorderData(show: false),
                     sectionsSpace: 2,
                     centerSpaceRadius: 60,
-                    sections: List.generate(sortedSectors.length, (i) {
+                    sections: List.generate(sortedAssets.length, (i) {
                       final isTouched = i == touchedIndex;
                       final radius = isTouched ? 60.0 : 50.0;
 
-                      final entry = sortedSectors[i];
-                      final sectorName = entry.key;
+                      final entry = sortedAssets[i];
+                      final stockName = entry.key;
                       final amount = entry.value;
 
-                      Color sliceColor = _getKnownSectorColor(sectorName) ??
-                          fallbackPalette[i % fallbackPalette.length];
+                      String sectorOfStock = assetSectorMap[stockName] ?? '';
+                      Color sliceColor =
+                          _getKnownSectorColor(sectorOfStock) ??
+                              fallbackPalette[i % fallbackPalette.length];
 
                       double percentage = (amount / _totalBalance) * 100;
 
                       return PieChartSectionData(
                         color: sliceColor,
                         value: amount,
-                        // DEĞİŞİKLİK: title her zaman gösteriliyor
                         title: '%${percentage.toStringAsFixed(0)}',
                         radius: radius,
                         titleStyle: TextStyle(
-                          fontSize: isTouched ? 18 : 14, // Dokunulunca büyüsün
+                          fontSize: isTouched ? 18 : 14,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -569,7 +542,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        sortedSectors.length.toString(),
+                        sortedAssets.length.toString(),
                         style: TextStyle(
                           color: textColor,
                           fontSize: 28,
@@ -577,7 +550,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         ),
                       ),
                       Text(
-                        "Sektör",
+                        "Hisse",
                         style: TextStyle(color: subTextColor, fontSize: 12),
                       ),
                     ],
@@ -588,12 +561,15 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const SizedBox(height: 30),
           Column(
-            children: sortedSectors.asMap().entries.map((entry) {
+            children:
+            sortedAssets.asMap().entries.map((entry) {
               int index = entry.key;
               MapEntry<String, double> data = entry.value;
 
-              Color legendColor = _getKnownSectorColor(data.key) ??
-                  fallbackPalette[index % fallbackPalette.length];
+              String sectorOfStock = assetSectorMap[data.key] ?? '';
+              Color legendColor =
+                  _getKnownSectorColor(sectorOfStock) ??
+                      fallbackPalette[index % fallbackPalette.length];
 
               double percentage = (data.value / _totalBalance) * 100;
               return Padding(
@@ -663,8 +639,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     for (var item in portfolio) {
       String sector = item['Sektor']?.toString().trim() ?? 'Diğer';
 
-      double weight = double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
-      double performance = double.tryParse(item['Yillik_Getiri'].toString()) ?? 50.0;
+      double weight =
+          double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
+      double performance =
+          double.tryParse(item['Yillik_Getiri'].toString()) ?? 50.0;
 
       double contributedValue = (weight * performance) / 100;
       mySectorValues[sector] = (mySectorValues[sector] ?? 0) + contributedValue;

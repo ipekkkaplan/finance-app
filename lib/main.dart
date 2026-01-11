@@ -42,8 +42,8 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(
           0xFFF5F5F5,
-        ), // Sayfa arka planı açık gri
-        // Ana renk: Derin, "Fintech" laciverti
+        ),
+        // Ana renk
         primaryColor: const Color(0xFF102C57),
 
         colorScheme: ColorScheme.fromSeed(
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(
             0xFF102C57,
-          ), // PROFESYONEL RENK: Derin Lacivert
+          ),
           foregroundColor:
               Colors.white,
 
@@ -74,12 +74,11 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.white, size: 24),
           actionsIconTheme: IconThemeData(color: Colors.white, size: 24),
 
-          // Başlık Stili: Beyaz ve Okunaklı
           titleTextStyle: TextStyle(
-            color: Colors.white, // Kesinlikle Beyaz
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.5, // Harfler arası hafif boşluk (Premium hissi)
+            letterSpacing: 0.5,
           ),
         ),
 
@@ -87,7 +86,7 @@ class MyApp extends StatelessWidget {
         textTheme: const TextTheme(
           bodyLarge: TextStyle(
             color: Color(0xFF102C57),
-          ), // Yazılarda da bu tonu kullandık
+          ),
           bodyMedium: TextStyle(color: Colors.black54),
         ),
       ),
