@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/stock_model.dart';
 import '../../services/favorites_service.dart';
+import '../../widgets/stock_comments_tab.dart';
 
 class CompanyDetailScreen extends StatefulWidget {
   final String sectorName;
@@ -233,8 +234,10 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildTabButton("Özet", 0, textColor),
-                const SizedBox(width: 40),
+                const SizedBox(width: 32),
                 _buildTabButton("Finansal", 1, textColor),
+                const SizedBox(width: 32),
+                _buildTabButton("Yorumlar", 2, textColor),
               ],
             ),
             const SizedBox(height: 20),
@@ -242,6 +245,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             // 4. İÇERİK
             if (_selectedTabIndex == 0) _buildAISummaryTab(textColor, isDark),
             if (_selectedTabIndex == 1) _buildFinancialTab(cardColor, textColor, subTextColor, borderColor),
+            if (_selectedTabIndex == 2) StockCommentsTab(hisseKodu: currentCompany.hisseKodu),
           ],
         ),
       ),
