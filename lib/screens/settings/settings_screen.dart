@@ -1,6 +1,7 @@
 import 'package:finance_app/screens/auth_screen/launch_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/color_scheme.dart';
 import '../../theme_provider.dart';
 import '../../services/auth_service.dart';
 import 'update_profile_screen.dart';
@@ -14,9 +15,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Renk tanımları
-  final Color primary = const Color(0xFF3D8BFF);
-  final Color iconsColors = const Color(0xFF4CAF50);
+  // Renk tanımları (AppColors merkezi yönetim)
+  final Color primary = AppColors.accentBlue;
+  final Color iconsColors = AppColors.profitLight;
 
   bool notifications = false;
 
@@ -200,16 +201,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.redAccent.withValues(alpha: 0.1),
+                                color: AppColors.lossLight.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 22),
+                              child: const Icon(Icons.logout_rounded, color: AppColors.lossLight, size: 22),
                             ),
                             const SizedBox(width: 14),
                             const Text(
                               "Güvenli Çıkış",
                               style: TextStyle(
-                                color: Colors.redAccent,
+                                color: AppColors.lossLight,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -349,7 +350,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(color: textColor),
           decoration: InputDecoration(
             filled: true,
-            fillColor: isDark ? const Color(0xFF0D1117) : Colors.grey[200],
+            fillColor: isDark ? AppColors.darkInputBg : Colors.grey[200],
             contentPadding: const EdgeInsets.symmetric(
               vertical: 14,
               horizontal: 14,

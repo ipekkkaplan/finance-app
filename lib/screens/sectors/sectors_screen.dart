@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'dart:math'; // Min/Max hesaplaması için gerekli
+import '../../core/theme/color_scheme.dart';
 import '../../models/sector_model.dart';
 import '../../models/stock_model.dart';
 import '../../models/sector_trend_model.dart';
@@ -22,10 +23,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
   Future<List<SectorModel>>? _sectorsFuture;
   Future<List<SectorTrendModel>>? _trendsFuture;
 
-  // Marka Renkleri (Sabit)
-  final Color primary = const Color(0xFF3D8BFF);
-  final Color green = const Color(0xFF00C853);
-  final Color red = const Color(0xFFFF5252);
+  // Marka Renkleri (AppColors üzerinden merkezi yönetim)
+  final Color primary = AppColors.accentBlue;
+  final Color green = AppColors.profitLight;
+  final Color red = AppColors.lossLight;
 
   @override
   void initState() {
@@ -71,7 +72,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
     isDark ? Colors.transparent : Colors.grey.withValues(alpha: 0.2);
     // Metrik kutucukları rengi
     final metricCardBg =
-    isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+    isDark ? AppColors.darkCardInner : Colors.grey.shade100;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -405,16 +406,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
     final double finalMaxY = (maxData + padding).ceilToDouble();
     final double yInterval = (finalMaxY - finalMinY) / 5; // Aralığı hesapla
 
-    // Renk Haritası
-    final Map<String, Color> colorMap = {
-      "Teknoloji": const Color(0xFF9D46FF),
-      "Sağlık": const Color(0xFF00C853),
-      "Gayrimenkul": const Color(0xFFFF9100),
-      "Enerji": Colors.blueAccent,
-      "Bankacılık": Colors.redAccent,
-      "Sanayi": Colors.cyan,
-      "Turizm": Colors.pinkAccent,
-    };
+    // Renk Haritası (AppColors merkezi sektör renkleri)
+    final colorMap = AppColors.sectorColors;
 
     final gridColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
@@ -871,13 +864,13 @@ class _SectorsScreenState extends State<SectorsScreen> {
                   );
                 }
               },
-              icon: const Text(
+              icon: Text(
                 "Şirketleri İncele",
-                style: TextStyle(color: Colors.greenAccent),
+                style: TextStyle(color: AppColors.profitLight),
               ),
-              label: const Icon(
+              label: Icon(
                 Icons.arrow_forward,
-                color: Colors.greenAccent,
+                color: AppColors.profitLight,
                 size: 18,
               ),
             ),

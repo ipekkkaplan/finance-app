@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:finance_app/screens/home/home_screen.dart'; // Yolunuza göre değişebilir
 import 'package:intl/intl.dart';
+import '../../core/theme/color_scheme.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -24,8 +25,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     decimalDigits: 0,
   );
 
-  final Color primaryGreen = const Color(0xFF00C853);
-  final Color primaryBlue = const Color(0xFF3D8BFF);
+  final Color primaryGreen = AppColors.profitLight;
+  final Color primaryBlue = AppColors.accentBlue;
   final Color primaryYellow = const Color(0xFFFFC107);
   final Color primaryPurple = const Color(0xFF9C27B0);
   final Color primaryGrey = const Color(0xFF90A4AE);
@@ -54,7 +55,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       builder: (context) {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
-        final bgColor = isDark ? const Color(0xFF1E1E2C) : Colors.white;
+        final bgColor = isDark ? AppColors.darkCardInner : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
 
         return Padding(
@@ -450,18 +451,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     assetAmountMap.entries.toList();
     sortedAssets.sort((a, b) => b.value.compareTo(a.value));
 
-    final List<Color> fallbackPalette = [
-      primaryBlue,
-      primaryGreen,
-      primaryYellow,
-      primaryPurple,
-      Colors.orange,
-      Colors.redAccent,
-      Colors.teal,
-      Colors.indigo,
-      Colors.pink,
-      Colors.cyan,
-    ];
+    final List<Color> fallbackPalette = AppColors.chartPalette;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -781,7 +771,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipColor: (group) =>
-                    isDark ? const Color(0xFF1E293B) : Colors.white,
+                    isDark ? AppColors.darkCardInner : Colors.white,
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 8,
                     tooltipRoundedRadius: 8,
