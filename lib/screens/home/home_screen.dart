@@ -7,8 +7,14 @@ import 'package:flutter/material.dart';
 // Modeller ve Servisler
 import '../../models/sector_model.dart';
 import '../../models/valuation_model.dart';
+import '../../core/theme/color_scheme.dart';
 import '../../services/data_service.dart';
 import '../../services/favorites_service.dart';
+import '../../widgets/dashboard_feature_card.dart';
+import '../../widgets/section_header.dart';
+import '../recommendations/recommendations_screen.dart';
+import '../sentiment/sentiment_screen.dart';
+import '../signals/signals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -112,7 +118,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final cardColor = theme.cardColor;
     final textColor = theme.textTheme.bodyLarge?.color;
     final subTextColor = theme.textTheme.bodyMedium?.color;
-    final innerCardColor = isDark ? const Color(0xFF1A2038) : Colors.grey.shade100;
+    final innerCardColor = isDark ? AppColors.darkCardInner : Colors.grey.shade100;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -268,6 +274,53 @@ class _DashboardPageState extends State<DashboardPage> {
 
           const SizedBox(height: 24),
 
+          // --- 6. AI DESTEKLİ ARAÇLAR (YENİ) ---
+          SectionHeader(
+            title: "AI Destekli Araçlar",
+            icon: Icons.auto_awesome,
+          ),
+          DashboardFeatureCard(
+            icon: Icons.notifications_active,
+            title: "Al-Sat Sinyalleri",
+            description: "Değerleme + temel analizle güncel alım/satım sinyalleri.",
+            accentColor: AppColors.profitLight,
+            badgeText: "YENİ",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SignalsScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          DashboardFeatureCard(
+            icon: Icons.trending_up,
+            title: "Hisse Önerileri",
+            description: "Veri tabanlı skorlamayla size özel yatırım fırsatları.",
+            accentColor: AppColors.accentBlue,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          DashboardFeatureCard(
+            icon: Icons.forum_outlined,
+            title: "Sosyal Sentiment",
+            description: "Sosyal medya ve haber akışındaki piyasa algısı analizi.",
+            accentColor: const Color(0xFFAA00FF),
+            badgeText: "DEMO",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SentimentScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+
           // =============================================================
           // FAVORİLERİM
           // =============================================================
@@ -369,14 +422,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                   children: [
                                     Icon(
                                       isPositive ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                      color: isDark ? (isPositive ? Colors.greenAccent : Colors.redAccent) : iconColor,
+                                      color: isDark ? (isPositive ? AppColors.profitDark : AppColors.lossDark) : iconColor,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
                                       "%${item.changeRate.toStringAsFixed(2)}",
                                       style: TextStyle(
-                                        color: isDark ? (isPositive ? Colors.greenAccent : Colors.redAccent) : iconColor,
+                                        color: isDark ? (isPositive ? AppColors.profitDark : AppColors.lossDark) : iconColor,
                                         fontWeight: FontWeight.w800,
                                         fontSize: 15,
                                       ),
@@ -484,7 +537,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 itemBuilder: (context, index) {
                   var stock = displayList[index];
                   bool isOpportunity = _valuationFilter == 'Ucuz';
-                  Color themeColor = isOpportunity ? Colors.green : Colors.redAccent;
+                  Color themeColor = isOpportunity ? AppColors.profitLight : AppColors.lossDark;
                   return Container(
                     width: 140,
                     padding: const EdgeInsets.all(12),
@@ -601,7 +654,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Text(desc, style: TextStyle(color: descColor, fontSize: 12)),
             ]),
           ),
-          Text(change, style: TextStyle(color: isPositive ? Colors.greenAccent : Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(change, style: TextStyle(color: isPositive ? AppColors.profitDark : AppColors.lossDark, fontSize: 16, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -614,7 +667,7 @@ class _DashboardPageState extends State<DashboardPage> {
         Text(label, style: TextStyle(color: labelColor, fontSize: 12)),
         const SizedBox(height: 4),
         Text(title, style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.bold)),
-        Text(value, style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+        Text(value, style: TextStyle(color: AppColors.profitDark, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -680,7 +733,7 @@ class _StockTickerState extends State<StockTicker> {
           final isNegative = item["change"]!.contains("-");
           return Row(
             children: [
-              Text("${item['name']}  ${item['price']}  (${item['change']})", style: TextStyle(color: isNegative ? Colors.redAccent : Colors.green, fontSize: 14, fontWeight: FontWeight.w500)),
+              Text("${item['name']}  ${item['price']}  (${item['change']})", style: TextStyle(color: isNegative ? AppColors.lossDark : AppColors.profitLight, fontSize: 14, fontWeight: FontWeight.w500)),
               const SizedBox(width: 40),
             ],
           );

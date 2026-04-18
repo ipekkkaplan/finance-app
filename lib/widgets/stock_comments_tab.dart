@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../core/theme/color_scheme.dart';
 import '../screens/auth_screen/login_screen.dart';
 import '../services/comments_service.dart';
 
@@ -29,8 +30,8 @@ class _StockCommentsTabState extends State<StockCommentsTab> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _commentsStream =
       _service.watch(widget.hisseKodu);
 
-  // Tema renkleri (company_detail_screen ile aynı tonlar)
-  static const Color _primary = Color(0xFF3D8BFF);
+  // Tema renkleri (AppColors merkezi yönetim)
+  static const Color _primary = AppColors.accentBlue;
 
   @override
   void dispose() {

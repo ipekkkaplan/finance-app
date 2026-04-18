@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/color_scheme.dart';
+import '../../models/signal_model.dart';
 import '../../models/stock_model.dart';
 import '../../services/favorites_service.dart';
+import '../../services/signals_service.dart';
+import '../../widgets/status_badge.dart';
 import '../../widgets/stock_comments_tab.dart';
 
 class CompanyDetailScreen extends StatefulWidget {
@@ -25,15 +29,28 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   late int _selectedCompanyIndex;
   int _selectedTabIndex = 0;
 
-  // Tema Renkleri
-  final Color primary = const Color(0xFF3D8BFF);
-  final Color green = const Color(0xFF00C853);
-  final Color red = const Color(0xFFFF5252);
+  // Tema Renkleri (AppColors merkezi yönetim)
+  final Color primary = AppColors.accentBlue;
+  final Color green = AppColors.profitLight;
+  final Color red = AppColors.lossLight;
+
+  // Sinyal motoru (her hisse için rozet gösterimi)
+  final SignalsService _signalsService = SignalsService();
+  late final Future<List<SignalModel>> _allSignalsFuture =
+      _signalsService.getAllSignals();
 
   @override
   void initState() {
     super.initState();
     _selectedCompanyIndex = widget.initialIndex;
+  }
+
+  SignalModel? _findSignal(List<SignalModel>? list, String hisseKodu) {
+    if (list == null) return null;
+    for (final s in list) {
+      if (s.hisseKodu == hisseKodu) return s;
+    }
+    return null;
   }
 
   StockModel get currentCompany => widget.companies[_selectedCompanyIndex];
@@ -159,6 +176,19 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text("$hisseKodu • $sektor", style: TextStyle(color: subTextColor, fontSize: 14)),
+                            const SizedBox(height: 8),
+                            // Sinyal rozeti — SignalsService kural tabanlı sonuç
+                            FutureBuilder<List<SignalModel>>(
+                              future: _allSignalsFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState != ConnectionState.done) {
+                                  return const SizedBox.shrink();
+                                }
+                                final signal = _findSignal(snapshot.data, hisseKodu);
+                                if (signal == null) return const SizedBox.shrink();
+                                return StatusBadge.fromSignal(signal.type, compact: true);
+                              },
+                            ),
                           ],
                         ),
                       ),
