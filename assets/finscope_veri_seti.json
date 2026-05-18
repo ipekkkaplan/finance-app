@@ -1,0 +1,392 @@
+[
+  {
+    "hisse_kodu": "A1YEN",
+    "orijinal_metin": "#A1YEN hissesinde Ağustos 2021’den gelen yükselen trend yapısı korunmaya devam ediyor. Bölünme sonrası 4,07 seviyesi güçlü direnç konumunda kalmayı sürdürüyor. Özellikle bu bölgenin hacimli kırılması hissede momentumu ciddi şekilde artırabilir. Teknik hedefler: Fibonacci 0,618 → 5,26 Fibonacci 0,786 → 6,11 Destek bölgeleri: 21 EMA → 3,44 Yükselen kanal alt bandı → 2,70 3,44 üzerinde kalıcılık kısa vadeli görünüm açısından önemli olurken, ana yükselen trend desteği olan 2,70 seviyesi orta vadeli yapı için kritik konumda.",
+    "sinyal": "TUT",
+    "gerekce": "Yükselen trend yapısı korunsa da, momentumun artması için direnç bölgesinin hacimli kırılması beklendiğinden izleme aşamasında bırakılmış."
+  },
+  {
+    "hisse_kodu": "AHGAZ",
+    "orijinal_metin": "5) AHGAZ: Rakamsal olarak güçlü gelenlerden. Hasılat 20,19 milyar₺, brüt kar 6,47 milyar₺ seviyesinde. Net dönem karı tarafı da güçlü. Doğal gaz tarafında mevsimsellik ve regülasyon etkisi var ama bu çeyrek genel tablo güçlü. İlk grupta olmayı hak ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü çeyreklik tablo ve yüksek net kar performansı ile ilk grupta yer almış."
+  },
+  {
+    "hisse_kodu": "AKBNK",
+    "orijinal_metin": "Bankacılık tarafında: #YKBNK #GARAN #AKBNK #ISCTR hisselerinde toplam yaklaşık 977 Mn TL çıkış gerçekleşti. #AKBNK → Tüm periyotlarda net alım tarafında kalmayı sürdürüyor. Portföy Liderleri #AKBNK → %8,59",
+    "sinyal": "AL",
+    "gerekce": "Bankacılık tarafındaki genel çıkışa rağmen, bu hissenin tüm periyotlarda net alım tarafında kalarak portföy liderleri arasına girdiği raporlanmış."
+  },
+  {
+    "hisse_kodu": "AKSA",
+    "orijinal_metin": "Enerji tarafında: #AKSA #ASTOR hisseleri seçici şekilde model portföylerde yer almaya devam ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Kurumların seçici model portföylerinde yer almaya devam ettiği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "ANHYT",
+    "orijinal_metin": "#ANHYT Trend Gücü: 0.924 Kanal Konumu: %21.0 Yıllık Potansiyel (CAGR): %48.4 Max Risk (DD): %-12.7 Durum: NÖTR",
+    "sinyal": "TUT",
+    "gerekce": "Genel durum açıkça NÖTR olarak değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "ARASE",
+    "orijinal_metin": "Ucuz ARASE tarafında potansiyel var. Ancak regüle enerji işi olduğu için net kar tek başına yeterli gösterge değil. Nakit akışı, yatırım harcamaları ve dönemsel etkiler birlikte okunmalı. Radardan çıkmaz ama ilk grupta da değil.",
+    "sinyal": "TUT",
+    "gerekce": "Potansiyeli olmasına rağmen ilk grupta yer almadığı ve izlenmesi gerektiği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "ARDYZ",
+    "orijinal_metin": "2) ARDYZ: Çok güçlü gelenlerden. Net kar tarafında 321,9 milyon₺ seviyesi ve yıllık bazdaki ciddi artış dikkat çekiyor. Yazılım şirketlerinde önemli olan sadece büyümek değil, büyümeyi kara taşıyabilmektir. ARDYZ bu çeyrekte bunu göstermiş durumda. Konsolidasyon etkisi ayrıca not edilir ama ana tablo güçlü.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü kar büyümesi ve büyümeyi kara dönüştürebilme yeteneği olumlu bulunmuş."
+  },
+  {
+    "hisse_kodu": "ASELS",
+    "orijinal_metin": "#ASELS → 428 Mn TL çıkış. Portföy Liderleri #ASELS → %15,12. #ASELS → Uzun vadeli yabancı birikimi sürüyor. 6 ayda +20M lot üzeri giriş mevcut.",
+    "sinyal": "TUT",
+    "gerekce": "Sert bir para çıkışı yaşanmış olsa da, portföy ağırlığının yüksek olması ve yabancı yatırımcıların uzun vadeli alıma devam etmesi hisseyi elde tutma yönünde desteklemiş."
+  },
+  {
+    "hisse_kodu": "ASTOR",
+    "orijinal_metin": "Enerji tarafında: #AKSA #ASTOR hisseleri seçici şekilde model portföylerde yer almaya devam ediyor. Portföy Liderleri #ASTOR → %9,16. #ASTOR → Haftalık düzeltme görülse de uzun vadeli yabancı ilgisi devam ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Model portföylerde yer aldığı, portföy liderlerinden olduğu ve haftalık düzeltmelere rağmen uzun vadeli yabancı girişinin sürdüğü tespit edilmiş."
+  },
+  {
+    "hisse_kodu": "ATAGY",
+    "orijinal_metin": "#ATAGY Durum: GÜÇLÜ AL Tarih: 2026-05-08 RSI: 58.56 Getiri Geçmişi: %-13.46 Toplam İşlem: 7 Not: Boğa Kesişimi + RSI Onayı",
+    "sinyal": "AL",
+    "gerekce": "Durum 'GÜÇLÜ AL' olarak belirtilmiş, Boğa Kesişimi onaylanmış."
+  },
+  {
+    "hisse_kodu": "ATATP",
+    "orijinal_metin": "7) ATATP: Kaliteli iş modeli ve yüksek marj potansiyeliyle öne çıkıyor. Yazılım tarafı, ölçeklenebilir yapı ve karlılık potansiyeli nedeniyle bu dönem güçlü grupta yer alıyor. Büyümesi devam ediyor ve potansiyelin rakamlara daha net nasıl yansıyacağını izlemek lazım.",
+    "sinyal": "AL",
+    "gerekce": "Kaliteli iş modeli, karlılık potansiyeli ve güçlü grupta yer alması olumlu değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "BAKAB",
+    "orijinal_metin": "Ucuz BAKAB güzel bilanço. Eğer işler açılacaksa sanayi ve üretim tarafında bu iş ambalajla başlar ki haliyle emareleri görünüyor. Faaliyet kalitesi tarafında daha net toparlanma görmek isterim. Potansiyel var ama bu çeyrek bilanço üst gruba yazılacak kadar güçlü değil. #BAKAB BAKAB güçlü bir yükseliş trendinde. Güncel fiyat 20 günlük SMA'nın belirgin şekilde üzerinde. MACD pozitif konumda ve RSI 67.09 seviyesi güçlü alım momentumuna işaret ederken henüz aşırı alım bölgesinde değil. %9.97'lik fiyat artışı %731.28'lik hacim artışıyla desteklenerek yükselişin gücünü teyit ediyor. Genel teknik sinyaller güçlü alım yönünde seyrediyor.",
+    "sinyal": "AL",
+    "gerekce": "Bilanço orta düzeyde potansiyel barındırırken, teknik tarafta muazzam hacim artışı ve indikatör onaylarıyla güçlü alım sinyali üretilmiş."
+  },
+  {
+    "hisse_kodu": "BIGTK",
+    "orijinal_metin": "#BIGTK BIGTK teknik görünümü güçleniyor. Güncel fiyat 232.8 TL ile 20 günlük SMA (214.03 TL) üzerinde seyrediyor. %9.97'lik fiyat artışı, %239.45'lik hacimle teyit edildi, bu alıcı iştahına işaret. RSI(14) 55.88 ile aşırı alım bölgesinde değil, yükseliş için alan var. MACD (-6.61) negatif kalmaya devam etse de, kısa vadeli momentum yukarı yönlü dönmüş durumda. Orta vadede izlenmeli.",
+    "sinyal": "AL",
+    "gerekce": "Alıcı iştahı var, yükseliş için alan olduğu ve momentumun yukarı yönlü döndüğü belirtilmiş."
+  },
+  {
+    "hisse_kodu": "BIMAS",
+    "orijinal_metin": "4) BIMAS: Mutlak kar büyüklüğü olarak listenin devi. 6,46 milyar₺ net kar, yıllık bazda %83 net kar artışı ve %10 hasılat artışı var. Sürpriz etkisi bazı şirketler kadar yüksek olmayabilir ama büyük şirketlerde önemli olan istikrar, ölçek ve operasyon gücüdür. BIMAS yine güçlü tarafta. #BIMAS → 4 farklı kurumun model portföyünde yer alıyor. Defansif tarafta ise #BIMAS, volatil piyasalarda güvenli liman olarak öne çıkıyor. #BIMAS → Fonlar şimdilik bekle-gör modunda.",
+    "sinyal": "AL",
+    "gerekce": "Fonlar kısa vadede bekleyişte olsa da temel analizinin devasa gücü, kurumların model portföylerinde yer alması ve defansif yapısı nedeniyle orta/uzun vade için pozitif."
+  },
+  {
+    "hisse_kodu": "BRSAN",
+    "orijinal_metin": "#BRSAN BRSAN 601.5 TL ile tavan yaparak güçlü bir yükseliş sergiledi. 20 günlük SMA (541.17 TL) üzerinde olması ve pozitif MACD (5.84) kısa-orta vadeli yükseliş trendini destekliyor. %284.46'lık hacim artışı, %9.96 fiyat artışını güçlü şekilde teyit ediyor. RSI (62.85) aşırı alım bölgesinde değil, ancak güçlü alım iştahını gösteriyor. Genel teknik sinyaller güçlü AL yönünde. Momentum korunuyor, pozisyonlar takip edilebilir. #BRSAN → 623 Mn TL çıkış + %-9,56 düşüş. Günün Zayıf Hisseleri #BRSAN → %-9,56",
+    "sinyal": "TUT",
+    "gerekce": "Teknik olarak tavan yapıp çok güçlü AL sinyali üretmiş olmasına rağmen, devasa boyutta (623 Mn TL) para çıkışıyla günün en zayıf hisselerinden biri olması nedeniyle çelişkili sinyaller barındırıyor."
+  },
+  {
+    "hisse_kodu": "BURCE",
+    "orijinal_metin": "#BURCE - ZİNCİR ANALİZ GÜNCEL DURUM • Kırılan Seri: 2 Gün Bugün: %4.0 • Hacim Artışı: 0.66 Kat Zirveye Uzaklık: %22.3 TARİHSEL GÜVEN (3 GÜN) • Başarı Oranı: %62.5 • Ortalama Kâr: %4.1 • Güç Skoru: 2.56 VADE PERFORMANSI • 1G Getiri: %0.92 5G Getiri: %7.88 • En İyi Tepki: %60.9 Tavan İhtimali: %8.3 RİSK VE KARAKTER • En Kötü Senaryo: %-10.3 Oynaklık: 11.43 • Yıl İçi Sinyal: 24 Kez Ort. Seri: 3.3 G • Hacim Onay Oranı: %58.3",
+    "sinyal": "AL",
+    "gerekce": "Yüksek başarı oranı, pozitif getiri ve tavan ihtimali ile istatistiksel olarak güçlü görünüyor."
+  },
+  {
+    "hisse_kodu": "CANTE",
+    "orijinal_metin": "#CANTE Durum: GÜÇLÜ AL Tarih: 2026-04-30 RSI: 70.27 Getiri Geçmişi: %-9.32 Toplam İşlem: 9 Not: Boğa Kesişimi + RSI Onayı. Günün Zayıf Hisseleri #CANTE → %-8,90",
+    "sinyal": "TUT",
+    "gerekce": "Öncesinde boğa kesişimi ile GÜÇLÜ AL vermiş olsa da, sonradan %-8,90 düşüşle günün en zayıf hisselerine girmesi kısa vadeli trendin bozulduğunu işaret ediyor."
+  },
+  {
+    "hisse_kodu": "CCOLA",
+    "orijinal_metin": "#CCOLA → Çoğu vadede yabancı çıkışı sürüyor.",
+    "sinyal": "SAT",
+    "gerekce": "Hisseden birçok farklı vadede yabancı çıkışının devam ettiği tespit edilmiş."
+  },
+  {
+    "hisse_kodu": "CEMZY",
+    "orijinal_metin": "#CEMZY Trend Gücü: 0.912 Kanal Konumu: %12.6 Yıllık Potansiyel(CAGR): %368.6 Max Risk (DD): %-37.5 Durum: ALIM BÖLGESİ",
+    "sinyal": "AL",
+    "gerekce": "Hissenin ALIM BÖLGESİ'nde olduğu açıkça ifade edilmiş."
+  },
+  {
+    "hisse_kodu": "DSTKF",
+    "orijinal_metin": "#DSTKF tarafında ise dikkat çekici bir ayrışma vardı: 159,7 Mn TL para girişine rağmen hisse %-3,94 düştü. Bu durum güçlü el değişimine işaret ediyor olabilir. #DSTKF → Fon oranı yüksek olmasına rağmen tüm vadelerde satış baskısı var.",
+    "sinyal": "SAT",
+    "gerekce": "Para girişine rağmen fiyatın düştüğü ve tüm vadelerde satış baskısının devam ettiği raporlanmış."
+  },
+  {
+    "hisse_kodu": "EGPRO",
+    "orijinal_metin": "İkinci grup: EGPRO, LIDFA, GOKNR, ARASE, KUTPO, BAKAB, HRKET, ENDAE, NATEN, SKTAS Bu şirketlerde potansiyel var; ancak bu çeyrek rakamları ilk grup kadar net ve güçlü ayrışmadı. Ama kesinlikle kenara atılmamalı. EGPRO kötü bilanço açıklamadı. Hasılat ve faaliyet tarafı izlenebilir seviyede. Ancak marj ve net kar kalitesinde daha güçlü sinyal görmek isterim. Potansiyel var ama bu çeyrek üst gruba çıkacak kadar ayrışmadı.",
+    "sinyal": "TUT",
+    "gerekce": "Kötü bilanço açıklamamış olsa da net kar kalitesinde daha güçlü sinyaller bekleniyor."
+  },
+  {
+    "hisse_kodu": "EKGYO",
+    "orijinal_metin": "#EKGYO → Sert satışa rağmen kurumlar %40+ potansiyel öngörüyor. Günün Zayıf Hisseleri #EKGYO → %-7,19",
+    "sinyal": "TUT",
+    "gerekce": "Günün en zayıf hisseleri arasında yer alarak sert satış yemiş olsa da, kurumlar tarafından yüksek getiri potansiyeli öngörüldüğünden izlemede tutulabilir."
+  },
+  {
+    "hisse_kodu": "ENDAE",
+    "orijinal_metin": "ENDAE potansiyel var ve şimdilik izleme tarafında. Güçlü sinyal için faaliyet karlılığı tarafında daha net toparlanma görmek lazım. Potansiyel olabilir ama bu çeyrek bilanço bunu net şekilde ön plana çıkarmadı. İlerisi için toparlanma bariz.",
+    "sinyal": "TUT",
+    "gerekce": "İlerisi için toparlanma bekleniyor ancak şu an güçlü bir sinyal olmadığından izleme tarafında kalıyor."
+  },
+  {
+    "hisse_kodu": "ENJSA",
+    "orijinal_metin": "#ENJSA Trend Gücü: 0.966 Kanal Konumu: %20.9 Yıllık Potansiyel (CAGR): %114.1 Max Risk (DD): %-13.6 Durum: NÖTR",
+    "sinyal": "TUT",
+    "gerekce": "Genel durum açıkça NÖTR olarak değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "EREGL",
+    "orijinal_metin": "#EREGL → Son aylık ve haftalık veriler kısa vadeli negatif görünüme işaret ediyor.",
+    "sinyal": "SAT",
+    "gerekce": "Son verilere göre hissede kar satışı, fon çıkışı ve negatif görünüm olduğu açıkça ifade edilmiş."
+  },
+  {
+    "hisse_kodu": "ESEN",
+    "orijinal_metin": "#ESEN - Güncel fiyat (4.18 TL) 20 günlük SMA (4.0 TL) üzerinde, kısa vadede pozitif ivme güçlü. - Hacim %550 artarken fiyatın %6.91 yükselmesi alım iştahının teyidi. - MACD -0.02 ile nötre yakın, güçlenme sinyali veriyor. - RSI (58.93) aşırı alım/satım bölgesinde değil, yükseliş potansiyeli mevcut. - Genel teknik sinyaller güçlü alım yönünde.",
+    "sinyal": "AL",
+    "gerekce": "Genel teknik sinyaller güçlü alım yönünde değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "FRIGO",
+    "orijinal_metin": "#FRIGO Trend Gücü: 0.928 Kanal Konumu: %15.8 Yıllık Potansiyel (CAGR): %154.1 Max Risk (DD): %-28.0 Durum: NÖTR",
+    "sinyal": "TUT",
+    "gerekce": "Genel durum açıkça NÖTR olarak değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "GLYHO",
+    "orijinal_metin": "#GLYHO Trend Gücü: 0.930 Kanal Konumu: %10.0 Yıllık Potansiyel (CAGR): %82.3 Max Risk (DD): %-17.4 Durum: ALIM BÖLGESİ",
+    "sinyal": "AL",
+    "gerekce": "Hissenin ALIM BÖLGESİ'nde olduğu açıkça ifade edilmiş."
+  },
+  {
+    "hisse_kodu": "GOKNR",
+    "orijinal_metin": "GOKNR’de operasyon tamamen bozulmuş değil ama net kar tarafındaki geri çekilme dikkat çekiyor. Bunun çeyreksel etki olduğunu düşünüyorum. Şirket potansiyel taşıyor. İçecek firması beğeniyorum ve yaz geliyor. 2. ve 3. çeyrekler çok daha güçlü gelecektir.",
+    "sinyal": "TUT",
+    "gerekce": "Net kardaki geri çekilme dikkat çekiyor ancak gelecek çeyreklerde toparlanma potansiyeli taşıdığı için izlemede."
+  },
+  {
+    "hisse_kodu": "GWIND",
+    "orijinal_metin": "#GWIND - Fiyat 28.86 TL ile 20 günlük SMA (27.78 TL) üzerinde, kısa vadeli trend pozitif. - %9.98'lik güçlü fiyat artışı %750.41 hacim artışı ile teyit edildi. Bu çok güçlü bir alım sinyalidir. RSI(14) 61.51 seviyesinde; hisse aşırı alım bölgesinde değil, yükseliş için alanı var. - MACD -0.02 ile nötre yakın, pozitif bölgeye geçiş potansiyeli taşıyor. - Genel teknik görünüm ALIM ağırlıklıdır. Mevcut güçlü yükselişin devamı beklenebilir.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü hacim artışı ve ALIM ağırlıklı teknik görünüm belirtilmiş."
+  },
+  {
+    "hisse_kodu": "HEKTS",
+    "orijinal_metin": "#HEKTS → 159 Mn TL giriş + %6,15 yükseliş. #HEKTS → %6,15 Tarım ve gıda hisselerinde görülen pozitif ayrışma, piyasada savunmacı sektör rotasyonuna işaret ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü para girişi ile yükseliş gösterdiği ve piyasada pozitif ayrıştığı teyit edilmiş."
+  },
+  {
+    "hisse_kodu": "HRKET",
+    "orijinal_metin": "HRKET proje bazlı iş modeli nedeniyle tek çeyrekle çok sert hüküm verilecek bir şirket değil. Toparlanma mevcut. İşler açılmaya başlamış. Potansiyel devam ediyor ama bu çeyrek rakamlar net ayrışma yaratmadı. Yeni işler, marj yapısı ve nakit akışı önümüzdeki dönem daha belirleyici olur. #HRKET hissesi önceki dip bölgesinden yaklaşık %14 yukarıda işlem görüyor. Ancak hissede halen net bir düşen trend yapısı dikkat çekiyor. Gelen her tepki yükselişi, kanal üst bandından gelen satışlarla baskılanıyor. Kısa vadede ilk önemli direnç: 87,75 seviyesi (ana düşen trend direnci) Bu bölgenin hacimli kırılması durumunda grafik üzerindeki sıralı hedefler gündeme gelebilir. Aşağıda ise 21 EMA seviyesi olan 72,30 destek bölgesi kritik takip edilmeli. Bu desteğin kaybedilmesi halinde alt banda doğru satış baskısı artabilir.",
+    "sinyal": "TUT",
+    "gerekce": "Temel analizde toparlanma emareleri olsa da teknik olarak düşen trend devam ettiği için dirençlerin kırılması beklenmeli."
+  },
+  {
+    "hisse_kodu": "IDGYO",
+    "orijinal_metin": "#IDGYO IDGYO, %9.85 günlük yükseliş ve %248.22 hacim artışı ile dikkat çekti. - Fiyat (3.68 TL) 20 günlük SMA'nın (3.55 TL) üzerinde. Kısa vadeli trend olumlu. - RSI (52.65) nötr bölgede, aşırı alım/satım sinyali yok. - MACD (-0.15) henüz negatif olsa da fiyat tepkisi önemli.",
+    "sinyal": "AL",
+    "gerekce": "Kısa vadeli trendin olumlu olduğu ve hacim artışıyla desteklendiği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "INDES",
+    "orijinal_metin": "En Yüksek Getiri Potansiyeli #INDES → %83,42",
+    "sinyal": "AL",
+    "gerekce": "Sektör büyümesi ve dijitalleşme beklentileri doğrultusunda kurumlar tarafından en yüksek getiri potansiyeline sahip teknoloji hisselerinden biri olarak sunulmuş."
+  },
+  {
+    "hisse_kodu": "ISCTR",
+    "orijinal_metin": "#ISCTR → Haftalık güçlü girişe rağmen aylık tarafta çıkış sürüyor. Güçlü Yabancı Alımı #ISCTR → Günlük/haftalık/aylık tüm periyotlarda agresif giriş.",
+    "sinyal": "TUT",
+    "gerekce": "Fon tarafında aylık çıkış, yabancı takasında ise tüm periyotlarda agresif giriş olduğu için göstergeler arasında zıtlık bulunuyor, bekle-gör durumuna uygun."
+  },
+  {
+    "hisse_kodu": "KARSN",
+    "orijinal_metin": "1) KARSN: Listenin en dikkat çekeni bence KARSN. Net kar 65 milyon₺ görünüyor diye zayıf sanan yanılır. Hasılat 4,78 milyar₺, brüt kar 1,39 milyar₺, esas faaliyet karı 612 milyon₺, vergi öncesi kar 391 milyon₺. Net karı aşağı çeken ana kalem ertelenmiş vergi gideri. Operasyonel dönüş açısından listenin en güçlü bilançosu. #KARSN 2026/3 ilk çeyrek bilançosu beklentimizin de üzerinde çok güçlü geldi. Çubuklara aldanıp 65 milyon₺ net kar var diye bakan yanılır. Çünkü; esas faaliyet karı 612 milyon₺ gerçek kar ise 391 milyon₺... Şirket bu çeyrekte 325 milyon₺ vergi ödememiş. Muhasebe standardı gereği gelecekte oluşabilecek vergi etkisini bugünden kayda almış... Bu yüzden ben 65 milyon₺ net kara değil, 612 milyon₺ faaliyet karına, %18 FAVÖK marjına ve ertelenmiş vergi hareketinin sonraki dönemlerde yaratabileceği rahatlama alanına bakıyorum.",
+    "sinyal": "AL",
+    "gerekce": "Beklentilerin üzerinde çok güçlü bir bilanço; net karın düşük görünmesi sadece muhasebesel bir etki olup, asıl faaliyet karı ve FAVÖK marjı çok güçlü değerlendirilmiş."
+  },
+  {
+    "hisse_kodu": "KCHOL",
+    "orijinal_metin": "#KCHOL → Son dönemde güçlü giriş sonrası günlükte kar satışı öne çıktı.",
+    "sinyal": "TUT",
+    "gerekce": "Daha önceki alımların ardından zayıf görünüm sergileyerek kar satışlarının başladığı kaydedilmiş."
+  },
+  {
+    "hisse_kodu": "KLRHO",
+    "orijinal_metin": "Günün Zayıf Hisseleri #KLRHO → %-9,32 Özellikle #KLRHO tarafında daha önce dikkat çekilen fon çıkışlarının fiyat üzerinde baskı oluşturduğu görülüyor.",
+    "sinyal": "SAT",
+    "gerekce": "Fon çıkışlarının fiyat üzerinde belirgin bir baskı oluşturduğu ve günü sert düşüşle kapattığı bildirilmiş."
+  },
+  {
+    "hisse_kodu": "KRDMD",
+    "orijinal_metin": "#KRDMD → 186 Mn TL giriş + %1,72 yükseliş",
+    "sinyal": "AL",
+    "gerekce": "Hisseye ciddi seviyede para girişi olduğu ve bu durumun yükseliş getirdiği vurgulanmış."
+  },
+  {
+    "hisse_kodu": "KRVGD",
+    "orijinal_metin": "#KRVGD Durum: GÜÇLÜ AL Tarih: 2026-04-29 RSI: 62.71 Getiri Geçmişi: %25.11 Toplam İşlem: 3 Not: Boğa Kesişimi + RSI Onayı",
+    "sinyal": "AL",
+    "gerekce": "Durum 'GÜÇLÜ AL' olarak belirtilmiş, Boğa Kesişimi onaylanmış."
+  },
+  {
+    "hisse_kodu": "KTLEV",
+    "orijinal_metin": "#KTLEV → Yaklaşık +300M lot giriş mevcut. İstikrarlı fon talebi sürüyor. Genel görünümde özellikle #PEKGY ve #KTLEV tarafındaki yoğun fon hareketleri, kısa vadeli fiyatlamalarda belirleyici olabilir.",
+    "sinyal": "AL",
+    "gerekce": "Yüksek lot girişiyle beraber hisseye istikrarlı fon talebi olduğu teyit edilmiş."
+  },
+  {
+    "hisse_kodu": "KUTPO",
+    "orijinal_metin": "Ucuz KUTPO orta karar bilanço açıkladı. Ne zayıf ne çok güçlü. Faaliyet tarafı izlenebilir ama heyecanlandıran net bir kırılım henüz yok. Önümüzdeki çeyrekte satış, marj ve net kar tarafında daha belirgin toparlanma görmek gerekir.",
+    "sinyal": "TUT",
+    "gerekce": "Orta karar bilanço açıkladığı ve belirgin bir toparlanma görülene kadar beklenmesi gerektiği ifade edilmiş."
+  },
+  {
+    "hisse_kodu": "LIDFA",
+    "orijinal_metin": "LIDFA tarafında kar var. Ancak finansal şirket olduğu için sanayi şirketi gibi okunmaz. Burada aktif kalitesi, fonlama maliyeti, karşılık yapısı ve sürdürülebilir karlılık önemli. Şimdilik izleme tarafında kalır.",
+    "sinyal": "TUT",
+    "gerekce": "Karlılık olsa da finansal dinamiklerinden ötürü şimdilik izleme tarafında tutulmuş."
+  },
+  {
+    "hisse_kodu": "LOGO",
+    "orijinal_metin": "#LOGO → %53,66 Teknoloji hisselerinde yüksek hedef fiyatlar, kurumların dijitalleşme ve yazılım tarafında büyüme beklentisini koruduğunu gösteriyor.",
+    "sinyal": "AL",
+    "gerekce": "Kurumların yüksek hedef fiyatlar ve büyüme beklentileri ile belirlediği yüksek getiri potansiyeli nedeniyle olumlu bulunmuş."
+  },
+  {
+    "hisse_kodu": "NATEN",
+    "orijinal_metin": "NATEN’de potansiyel tamamen yok denemez ama rakamlar henüz ikna edici tarafta değil. Faaliyet kalitesi, finansman etkisi ve sürdürülebilir kar tarafında daha güçlü veri görmek gerekir. ESEN ve MAGEN ile benzer bilançolar geldi.",
+    "sinyal": "TUT",
+    "gerekce": "Rakamlar ikna edici değil, daha güçlü veriler görülene kadar nötr yaklaşım sergilenmiş."
+  },
+  {
+    "hisse_kodu": "ORGE",
+    "orijinal_metin": "3) ORGE: Net, temiz ve kaliteli bilanço açıkladı. Hasılat 1,25 milyar₺, brüt kar 887 milyon₺, esas faaliyet karı 841 milyon₺, net dönem karı 269 milyon₺. Brüt marj güçlü, faaliyet karlılığı korunmuş. Burada sadece net kar değil, karın operasyonel kalitesi de iyi. #ORGE ORGE güçlü bir kısa-orta vadeli yükseliş trendinde. Fiyat 20 günlük SMA'nın üzerinde ve MACD olumlu. Günlük %9.99 artışa eşlik eden %376 hacim artışı, hareketin gücünü teyit ediyor. Ancak RSI 78.96 ile aşırı alım bölgesinde, bu da kısa vadede bir düzeltme veya kar satışı potansiyeli yaratıyor. Mevcut sinyaller genel olarak alım yönünde güçlü bir trendi işaret etse de, RSI kaynaklı aşırı alım uyarısı dikkate alınmalı. Yeni alımlar için temkinli olunabilir.",
+    "sinyal": "TUT",
+    "gerekce": "Şirketin operasyonel karı ve bilanço kalitesi çok iyi olsa da, teknik analizde aşırı alım bölgesine girildiği için kısa vadeli kar satışlarına karşı temkinli (TUT) yaklaşılmış."
+  },
+  {
+    "hisse_kodu": "OZRDN",
+    "orijinal_metin": "#OZRDN - ZİNCİR ANALİZİ GÜNCEL DURUM • Kırılan Seri: 2 Gün Bugün: %1.07 • Hacim Artışı: 0.94 Kat Zirveye Uzaklık: %17.1 TARİHSEL GÜVEN (3 GÜN) • Başarı Oranı: %64.5 • Ortalama Kâr: %3.09 • Güç Skoru: 1.99 R/R Oranı: 0.27 VADE PERFORMANSI • 1G Getiri: %1.6 5G Getiri: %3.26 • En İyi Tepki: %26.4 Tavan İhtimali: %9.7 RİSK VE KARAKTER • En Kötü Senaryo: %-11.6 Oynaklık: 6.81• Yıl İçi Sinyal: 31 Kez Ort. Seri: 2.7 G • Hacim Onay Oranı: %61.3",
+    "sinyal": "AL",
+    "gerekce": "Yüksek başarı oranı ve pozitif vade getirisi analiz edilmiş."
+  },
+  {
+    "hisse_kodu": "PASEU",
+    "orijinal_metin": "#PASEU → 266 Mn TL giriş + %6,89 yükseliş Fon alımlarının fiyatı desteklediği net şekilde görüldü. #PASEU → %6,89 yükselişle endekse rağmen güçlü duruş sergiledi. Son dönemdeki güçlü fon takası fiyatlamaya net şekilde yansıyor. #PASEU → Aylık bazda +74M lotluk güçlü ivmelenme dikkat çekiyor.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü fon/para girişi olduğu ve endekse rağmen güçlü bir duruş sergileyip fiyatın desteklendiği ifade edilmiş."
+  },
+  {
+    "hisse_kodu": "PEKGY",
+    "orijinal_metin": "#PEKGY → Son 3 ayda +362M lot artışıyla fonların en agresif topladığı hisselerden biri. Genel görünümde özellikle #PEKGY ve #KTLEV tarafındaki yoğun fon hareketleri, kısa vadeli fiyatlamalarda belirleyici olabilir.",
+    "sinyal": "AL",
+    "gerekce": "Fonların en agresif topladığı hisselerden olduğu ve bu alımların fiyatlamayı pozitif etkileyeceği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "PETKM",
+    "orijinal_metin": "#PETKM → %3,83 yükselişle enerji tarafındaki hareketten destek aldı.",
+    "sinyal": "AL",
+    "gerekce": "Enerji sektöründeki yukarı yönlü hareketten destek alıp günün dirençli hisselerinden biri olduğu aktarılmış."
+  },
+  {
+    "hisse_kodu": "PKENT",
+    "orijinal_metin": "#PKENT Durum: SAT Tarih: 2026-05-04 RSI: 37.64 Getiri Geçmişi: %-69.68 Toplam İşlem: 10 Not: Ayı Kesişimi (Trend Dönüşü)",
+    "sinyal": "SAT",
+    "gerekce": "Durum 'SAT' olarak belirtilmiş, Ayı Kesişimi (düşüş) teyit edilmiş."
+  },
+  {
+    "hisse_kodu": "RYGYO",
+    "orijinal_metin": "#RYGYO → Aylık +4,7M lot 6 aylık +41,7M lot ile güçlü görünüm.",
+    "sinyal": "AL",
+    "gerekce": "Yabancı yatırımcıdan çok güçlü bir alım ve ilgi geldiği teyit edilmiş."
+  },
+  {
+    "hisse_kodu": "SAHOL",
+    "orijinal_metin": "#SAHOL → 6 aylık süreçte belirgin pozisyon azaltımı mevcut.",
+    "sinyal": "SAT",
+    "gerekce": "Son aylarda yabancı yatırımcının pozisyon azaltımına gittiği ve hissede negatif ayrışma olduğu vurgulanmış."
+  },
+  {
+    "hisse_kodu": "SASA",
+    "orijinal_metin": "#SASA → 339 Mn TL çıkış + %-8,76 düşüş. Günün Zayıf Hisseleri #SASA → %-8,76",
+    "sinyal": "SAT",
+    "gerekce": "Ciddi boyutta para çıkışı yaşandığı ve fiyatında sert bir düşüş olduğu kaydedilmiş."
+  },
+  {
+    "hisse_kodu": "SKTAS",
+    "orijinal_metin": "İzlemek gerek takas ağırlıklı oluşum daha önemli burada SKTAS'ı tamamen yok saymak doğru olmaz ama bu çeyrek güçlü bilanço tarafında henüz değil ama toparlanma başlamış. Faaliyet karı, marjlar ve borçluluk tarafında daha net iyileşme görmek gerekir. Enterasan alt kırılımlar var",
+    "sinyal": "TUT",
+    "gerekce": "Toparlanma başlamış olsa da güçlü bilanço tarafında olmadığı için iyileşmeler izlenmeli."
+  },
+  {
+    "hisse_kodu": "SMRTG",
+    "orijinal_metin": "#SMRTG bir önceki grafikten itibaren %15’e yakın prim yaptı Hissede günlükte tüm hareketli ortalamalar üzerine atılmış durumda ve düşen trend kırılımı sonrası momentum güç kazanıyor. Kritik seviyeler: Haftalık 144EMA → 10,19 direnç Bu bölgenin kırılması halinde → 15,20 ana direnç/hedef gündeme gelebilir. Destek tarafında: Son dip → 6,27 Kısa destek → 21EMA 7,87 21EMA üzerinde kalıcılık sağlandıkça teknik görünüm pozitif kalmaya devam ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Momentumun güç kazandığı ve kısa vadeli desteklerin üzerinde kalındığı sürece teknik görünümün pozitif olacağı analiz edilmiş."
+  },
+  {
+    "hisse_kodu": "SNPAM",
+    "orijinal_metin": "#SNPAM Durum: GÜÇLÜ AL Tarih: 2026-05-08 RSI: 83.40 Getiri Geçmişi: %-15.09 Toplam İşlem: 11 Not: Boğa Kesişimi + RSI Onayı",
+    "sinyal": "AL",
+    "gerekce": "Durum 'GÜÇLÜ AL' olarak belirtilmiş, Boğa kesişimi onaylanmış."
+  },
+  {
+    "hisse_kodu": "TCELL",
+    "orijinal_metin": "#TCELL → 228,6 Mn TL çıkış + %-5,66 düşüş. #TCELL → Telekom tarafında güçlü konsensüs dikkat çekiyor. Vakıf Yatırım hedefi: 174 TL. #TCELL → %51,30. #TCELL → Haftalık ve 3 aylık periyotta satış baskısı dikkat çekiyor.",
+    "sinyal": "TUT",
+    "gerekce": "Kurum beklentileri ve getiri potansiyeli çok yüksek olsa da, hisse üzerindeki satış baskısı ve fon çıkışları nedeniyle kısa vadede yön net değil."
+  },
+  {
+    "hisse_kodu": "TCKRC",
+    "orijinal_metin": "6) TCKRC: İyi gelen ve gelmeye devam eden bilançolardan biri. Ciro büyümesi, brüt kar ve esas faaliyet tarafı destekleyici. İlk bakışta çok bağıran bir bilanço gibi durmayabilir ama faaliyet tarafında güçlü okunabilecek başlıklar var. Bu yüzden benim için elenecek değil, üst grupta takip edilecek hisselerden biri.",
+    "sinyal": "AL",
+    "gerekce": "Ciro büyümesi ve faaliyet tarafındaki güç ile üst grupta takip edildiği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "THYAO",
+    "orijinal_metin": "#THYAO → 210,5 Mn TL giriş Hisse günü %-0,89 kapatsa da gelen güçlü alımlar satışları karşıladı. #THYAO → Haftalık bazda yaklaşık 9,5M lot çıkışı dikkat çekiyor.",
+    "sinyal": "TUT",
+    "gerekce": "Güçlü alımların satışları karşıladığı belirtilmesine rağmen, haftalık bazda yüksek lot çıkışı dikkat çektiğinden dolayı kararsız bir tablo çizilmiş."
+  },
+  {
+    "hisse_kodu": "TUKAS",
+    "orijinal_metin": "#TUKAS → %4,09 Tarım ve gıda hisselerinde görülen pozitif ayrışma, piyasada savunmacı sektör rotasyonuna işaret ediyor.",
+    "sinyal": "AL",
+    "gerekce": "Günün dirençli hisseleri arasına girerek sektörsel olarak pozitif bir ayrışma göstermiş."
+  },
+  {
+    "hisse_kodu": "TUPRS",
+    "orijinal_metin": "#TUPRS → Kısa vadede satış baskısı olsa da orta vadeli trend pozitif.",
+    "sinyal": "TUT",
+    "gerekce": "Orta vadede pozitif trend beklenmesine karşın kısa vadede satış baskısına maruz kaldığı için nötr bir tablo oluşmuş."
+  },
+  {
+    "hisse_kodu": "YEOTK",
+    "orijinal_metin": "#YEOTK önceki grafik paylaşımından bu yana %90 prim yaptı Hisse 40 seviyesinde tüm hareketli ortalamaların üzerine çıkarak güçlü al sinyali üretmişti. 21EMA üzerindeki kalıcılık sayesinde pozitif trend bugüne kadar korunmayı başardı. Teknik Görünüm Hissede çanak formasyonu dikkat çekiyor. Fibonacci 1,618 hedefi olan 105 seviyesi hala ana hedef konumunda. Destek Bölgeleri En kısa destek: 8EMA → 66,78 Son dönemde EMA’lar arasındaki makasın açılması momentumun güçlendiğini gösteriyor. Trend yapısı korunurken kısa vadede 8EMA önemli referans olmaya devam edecek.",
+    "sinyal": "AL",
+    "gerekce": "Güçlü al sinyali ürettiği, pozitif trendini koruduğu ve momentumun güçlendiği belirtilmiş."
+  },
+  {
+    "hisse_kodu": "YKSLN",
+    "orijinal_metin": "#YKSLN YKSLN'de güncel fiyat 3.77 TL. Kısa ve orta vadeli trend, fiyatın 20-günlük SMA'nın (3.3 TL) üzerinde ve MACD'nin pozitif (0.11) olmasıyla yükseliş yönlüdür. Ancak, RSI(14) değeri 74.11 ile hissenin aşırı alım bölgesinde olduğunu gösteriyor. Bu durum, olası bir düzeltme riskine işaret etmektedir. Muazzam hacim artışı (%864.64) ile birlikte gelen %-1.31'lik günlük düşüş, kar realizasyonlarının yaşanabileceğine dikkat çekiyor.",
+    "sinyal": "SAT",
+    "gerekce": "RSI aşırı alım bölgesinde, düzeltme riski ve kar realizasyonu uyarısı yapılmış."
+  },
+  {
+    "hisse_kodu": "ZEDUR",
+    "orijinal_metin": "#ZEDUR, 2024’teki büyük coşkudan sonra uzun ve acımasız bir ayı piyasası yaşadı. 2025 boyunca dağınık, kararsız, çoğu zaman ezilen bir hisse oldu. Ama son birkaç haftadır yeniden hayat belirtileri gösteriyor.",
+    "sinyal": "TUT",
+    "gerekce": "Uzun düşüş trendi sonrası hayat belirtileri gösterdiği ifade edilmiş ancak net bir yön tayini yapılmadığından izleme aşamasında."
+  }
+]

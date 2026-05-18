@@ -3,33 +3,56 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../models/analyst_signal_model.dart';
 import '../models/signal_model.dart';
 import '../models/stock_model.dart';
 import '../models/valuation_model.dart';
+import 'analyst_signals_service.dart';
 import 'data_service.dart';
 
-/// Değerleme + temel finansal veriden kural tabanlı al-sat sinyali üretir.
+/// Hisseler için al-sat sinyali üretir.
 ///
-/// Not: Gerçek zamanlı fiyat geçmişi yok (OHLC/RSI/MACD mümkün değil).
-/// Bu yüzden sinyaller temel analiz ağırlıklı — mock değil, ama sınırlı.
+/// Tek kaynak: `assets/finscope_veri_seti.json` (analist yorumları).
+/// Tüm sinyaller insan yargılı analiz çıktısıdır. Şirket ismi/sektör
+/// `hisse_ayrinti.json` veya `hisse_degerleme_sonuclari.json`'dan zenginleştirilir;
+/// bulunamazsa kart sadece hisse kodu + sinyal + gerekçe ile gösterilir.
 class SignalsService {
   final DataService _dataService = DataService();
+  final AnalystSignalsService _analystService = AnalystSignalsService.instance;
 
   List<SignalModel>? _cache;
 
-  /// Tüm hisseler için sinyal listesi döndürür. Veri bulunamayan hisseler atlanır.
+  /// Analist veri setindeki tüm hisseler için sinyal listesi döndürür.
   Future<List<SignalModel>> getAllSignals() async {
     if (_cache != null) return _cache!;
 
-    final valuations = await _dataService.loadValuationData();
+    final analystByKod = await _analystService.loadAll();
     final stockByKod = await _loadAllStocks();
+    final valuationByKod = await _loadValuationLookup();
 
     final List<SignalModel> result = [];
-    for (final v in valuations) {
-      final stock = stockByKod[v.hisseKodu];
-      if (stock == null) continue; // Detay yoksa sinyal üretme
-      final signal = _generateFor(stock, v);
-      if (signal != null) result.add(signal);
+    for (final entry in analystByKod.entries) {
+      final code = entry.key;
+      final analyst = entry.value;
+
+      String sirketIsmi = '';
+      String sektor = '';
+
+      final stock = stockByKod[code];
+      if (stock != null) {
+        sirketIsmi = stock.sirketIsmi;
+        sektor = stock.sektor;
+      } else {
+        final v = valuationByKod[code];
+        if (v != null) sektor = v.sektor;
+      }
+
+      result.add(_fromAnalyst(
+        hisseKodu: code,
+        sirketIsmi: sirketIsmi,
+        sektor: sektor,
+        analyst: analyst,
+      ));
     }
 
     // Güçlü al → al → bekle → sat; aynı türde güven yüksekten düşüğe
@@ -43,7 +66,7 @@ class SignalsService {
     return result;
   }
 
-  /// Belirli bir hisse için sinyal üret (company detail ekranında kullanılır).
+  /// Belirli bir hisse için sinyal döndürür (company detail rozeti için).
   Future<SignalModel?> getSignalFor(String hisseKodu) async {
     final signals = await getAllSignals();
     try {
@@ -53,7 +76,8 @@ class SignalsService {
     }
   }
 
-  /// hisse_ayrinti.json'u bir kerede okuyup hisseKodu → StockModel map'i döndürür.
+  /// hisse_ayrinti.json'u okuyup hisseKodu → StockModel map'i döndürür.
+  /// Sadece şirket ismi/sektör zenginleştirmesi için kullanılır.
   Future<Map<String, StockModel>> _loadAllStocks() async {
     String jsonString = '';
     try {
@@ -83,49 +107,49 @@ class SignalsService {
     }
   }
 
-  // --- Kural motoru ---
-  SignalModel? _generateFor(StockModel stock, ValuationModel v) {
-    final double skor = v.finalSkor;
-    final double roa = stock.roa;
-    final double fk = stock.fk;
-
-    SignalType type;
-    if (skor > 0.6 && roa > 5 && fk < 3) {
-      type = SignalType.strongBuy;
-    } else if (skor > 0.5 && roa > 3) {
-      type = SignalType.buy;
-    } else if (skor > 0.3) {
-      type = SignalType.hold;
-    } else {
-      type = SignalType.sell;
+  /// hisse_degerleme_sonuclari.json'dan hisseKodu → ValuationModel map'i.
+  /// Sadece sektör zenginleştirmesi için kullanılır (ayrinti'da olmayan hisseler).
+  Future<Map<String, ValuationModel>> _loadValuationLookup() async {
+    final valuations = await _dataService.loadValuationData();
+    final map = <String, ValuationModel>{};
+    for (final v in valuations) {
+      if (v.hisseKodu.isNotEmpty) map[v.hisseKodu] = v;
     }
+    return map;
+  }
 
-    // Güven: final_skor'u sinyal türüne göre normalize et.
-    double confidence;
+  // --- Analist datasından sinyal kartı ---
+  SignalModel _fromAnalyst({
+    required String hisseKodu,
+    required String sirketIsmi,
+    required String sektor,
+    required AnalystSignalModel analyst,
+  }) {
+    // Analist yorumu insan-yargılı olduğu için güveni yüksek tutuyoruz.
+    final type = analyst.signalType;
+    final double confidence;
     switch (type) {
       case SignalType.strongBuy:
+        confidence = 0.92;
+        break;
       case SignalType.buy:
-        confidence = (skor.clamp(0.5, 1.0) - 0.5) / 0.5;
+      case SignalType.sell:
+        confidence = 0.85;
         break;
       case SignalType.hold:
-        confidence = 1 - (skor - 0.4).abs() / 0.1;
-        break;
-      case SignalType.sell:
-        confidence = (0.3 - skor.clamp(0, 0.3)) / 0.3;
+        confidence = 0.70;
         break;
     }
-    confidence = confidence.clamp(0.0, 1.0);
-
-    final reason =
-        'Değerleme: ${v.etiket}. ROA %${roa.toStringAsFixed(1)}, FK ${fk.toStringAsFixed(1)}.';
 
     return SignalModel(
-      hisseKodu: stock.hisseKodu,
-      sirketIsmi: stock.sirketIsmi,
-      sektor: stock.sektor,
+      hisseKodu: hisseKodu,
+      sirketIsmi: sirketIsmi,
+      sektor: sektor,
       type: type,
       confidence: confidence,
-      reason: reason,
+      reason: analyst.gerekce.isNotEmpty
+          ? analyst.gerekce
+          : 'Analist görüşüne göre sinyal üretildi.',
     );
   }
 

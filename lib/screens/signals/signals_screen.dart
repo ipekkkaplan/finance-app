@@ -147,7 +147,7 @@ class _SignalsScreenState extends State<SignalsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Kural tabanlı sinyal motoru — temel analize dayalıdır.',
+                  'Analist yorumlarına dayalı — gerçek piyasa görüşleri.',
                   style: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 11,
@@ -256,18 +256,22 @@ class _SignalsScreenState extends State<SignalsScreen> {
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        s.sirketIsmi,
-                        style: TextStyle(color: subTextColor, fontSize: 12),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        s.sektor,
-                        style: TextStyle(color: subTextColor, fontSize: 11),
-                      ),
+                      if (s.sirketIsmi.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          s.sirketIsmi,
+                          style: TextStyle(color: subTextColor, fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (s.sektor.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          s.sektor,
+                          style: TextStyle(color: subTextColor, fontSize: 11),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -317,12 +321,25 @@ class _SignalsScreenState extends State<SignalsScreen> {
   }
 
   Future<void> _openStockDetail(SignalModel s) async {
+    // Sektör bilgisi yoksa detay açma — uyarı göster
+    if (s.sektor.isEmpty) {
+      _showDetailUnavailable();
+      return;
+    }
+
     final dataService = DataService();
     final stocks = await dataService.getStocksBySector(s.sektor);
-    if (stocks.isEmpty || !mounted) return;
+    if (!mounted) return;
+    if (stocks.isEmpty) {
+      _showDetailUnavailable();
+      return;
+    }
 
     final index = stocks.indexWhere((x) => x.hisseKodu == s.hisseKodu);
-    if (index < 0) return;
+    if (index < 0) {
+      _showDetailUnavailable();
+      return;
+    }
 
     // Sektör dailyChange'ini bul (yoksa 0)
     final sectors = await dataService.loadSectorData();
@@ -344,6 +361,16 @@ class _SignalsScreenState extends State<SignalsScreen> {
           initialIndex: index,
           dailyChange: dailyChange,
         ),
+      ),
+    );
+  }
+
+  void _showDetailUnavailable() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Bu hisse için detay verisi henüz mevcut değil.'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

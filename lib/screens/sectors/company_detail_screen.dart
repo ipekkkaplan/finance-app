@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/color_scheme.dart';
+import '../../models/analyst_signal_model.dart';
 import '../../models/signal_model.dart';
 import '../../models/stock_model.dart';
+import '../../services/analyst_signals_service.dart';
 import '../../services/favorites_service.dart';
 import '../../services/signals_service.dart';
 import '../../widgets/status_badge.dart';
@@ -38,6 +40,14 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   final SignalsService _signalsService = SignalsService();
   late final Future<List<SignalModel>> _allSignalsFuture =
       _signalsService.getAllSignals();
+
+  // Analist yorumları (Özet tabında uzman yorumu kartı için)
+  final AnalystSignalsService _analystService = AnalystSignalsService.instance;
+  late final Future<Map<String, AnalystSignalModel>> _analystFuture =
+      _analystService.loadAll();
+
+  // Hisse başına "tam yorumu göster" toggle durumu
+  final Set<String> _expandedAnalystKeys = <String>{};
 
   @override
   void initState() {
@@ -397,28 +407,189 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   }
 
   Widget _buildAISummaryTab(Color textColor, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1) Analist yorumu kartı (eğer veri varsa)
+        FutureBuilder<Map<String, AnalystSignalModel>>(
+          future: _analystFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const SizedBox.shrink();
+            }
+            final analyst = snapshot.data?[currentCompany.hisseKodu];
+            if (analyst == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildAnalystCommentaryCard(analyst, textColor, isDark),
+            );
+          },
+        ),
+        // 2) Rasyo analizi kartı (mevcut)
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2746) : Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: primary.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: primary, size: 20),
+                  const SizedBox(width: 10),
+                  Text("Rasyo Analizi", style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "${currentCompany.sirketIsmi} finansal verileri incelendiğinde sektör ortalamasına göre dengeli bir büyüme görülüyor. Aktif karlılık (%${currentCompany.roa}) ve FAVÖK marjları takip edilmeli.",
+                style: TextStyle(color: textColor, height: 1.5),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Finscope veri setinden gelen analist yorumu kartı.
+  Widget _buildAnalystCommentaryCard(
+      AnalystSignalModel analyst, Color textColor, bool isDark) {
+    final subTextColor = isDark ? Colors.grey[400] : Colors.grey[700];
+    final cardBg = isDark
+        ? const Color(0xFF182040)
+        : const Color(0xFFF7F9FF);
+    final accentColor = primary;
+    final borderColor = accentColor.withValues(alpha: 0.35);
+
+    final isExpanded = _expandedAnalystKeys.contains(analyst.hisseKodu);
+    final fullText = analyst.orijinalMetin;
+    final hasMore = fullText.length > 220;
+
+    final preview = !isExpanded && hasMore
+        ? '${fullText.substring(0, 220).trim()}…'
+        : fullText;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2746) : Colors.blue.shade50,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primary.withValues(alpha: 0.3)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Başlık
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: primary, size: 20),
+              Icon(Icons.psychology_alt_outlined,
+                  color: accentColor, size: 20),
               const SizedBox(width: 10),
-              Text("Rasyo Analizi", style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+              Text(
+                'Uzman Yorumu',
+                style: TextStyle(
+                  color: accentColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              StatusBadge.fromSignal(analyst.signalType, compact: true),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(
-            "${currentCompany.sirketIsmi} finansal verileri incelendiğinde sektör ortalamasına göre dengeli bir büyüme görülüyor. Aktif karlılık (%${currentCompany.roa}) ve FAVÖK marjları takip edilmeli.",
-            style: TextStyle(color: textColor, height: 1.5),
-          ),
+          const SizedBox(height: 12),
+
+          // Gerekçe (vurgulu kutu)
+          if (analyst.gerekce.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: isDark ? 0.15 : 0.07),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: accentColor.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.format_quote,
+                      size: 16, color: accentColor.withValues(alpha: 0.8)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      analyst.gerekce,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 13,
+                        height: 1.45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Orijinal yorum (kısaltılmış / tam)
+          if (fullText.isNotEmpty) ...[
+            Text(
+              'Analist Notu',
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              preview,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 13,
+                height: 1.55,
+              ),
+            ),
+            if (hasMore) ...[
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (isExpanded) {
+                      _expandedAnalystKeys.remove(analyst.hisseKodu);
+                    } else {
+                      _expandedAnalystKeys.add(analyst.hisseKodu);
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      isExpanded ? 'Daha az göster' : 'Tamamını oku',
+                      style: TextStyle(
+                        color: accentColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: accentColor,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ],
       ),
     );
