@@ -268,62 +268,257 @@ class _SentimentScreenState extends State<SentimentScreen> {
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.grey.withValues(alpha: 0.25);
 
-    return Container(
-      width: 240,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cardColor,
+    final hasMore = item.fullText.length > item.title.length;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showPostDetail(item),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+        child: Ink(
+          width: 240,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              StatusBadge.fromSentiment(item.sentiment, compact: true),
-              const Spacer(),
+              Row(
+                children: [
+                  StatusBadge.fromSentiment(item.sentiment, compact: true),
+                  const Spacer(),
+                  Text(
+                    item.hisseKodu,
+                    style: TextStyle(
+                      color: theme.primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
               Text(
-                item.hisseKodu,
+                item.title,
                 style: TextStyle(
-                  color: theme.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
+                  color: textColor,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
                 ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
+                children: [
+                  Icon(Icons.source, size: 11, color: subTextColor),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      item.source,
+                      style: TextStyle(color: subTextColor, fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (hasMore) ...[
+                    Icon(Icons.unfold_more, size: 11, color: subTextColor),
+                    const SizedBox(width: 2),
+                  ],
+                  Text(
+                    _formatAgo(item.timeAgo),
+                    style: TextStyle(color: subTextColor, fontSize: 10),
+                  ),
+                ],
               ),
             ],
           ),
-          Text(
-            item.title,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
-            ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Row(
-            children: [
-              Icon(Icons.source, size: 11, color: subTextColor),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  item.source,
-                  style: TextStyle(color: subTextColor, fontSize: 10),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text(
-                _formatAgo(item.timeAgo),
-                style: TextStyle(color: subTextColor, fontSize: 10),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  /// Karta tıklanınca tam post'u alttan açılan modal'da gösterir.
+  void _showPostDetail(NewsItem item) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF0F162C) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.grey.withValues(alpha: 0.25);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (ctx, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Drag indicator
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: subTextColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                    child: Row(
+                      children: [
+                        StatusBadge.fromSentiment(item.sentiment),
+                        const SizedBox(width: 10),
+                        Text(
+                          item.hisseKodu,
+                          style: TextStyle(
+                            color: theme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          icon: Icon(Icons.close, color: subTextColor),
+                          tooltip: 'Kapat',
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 1, color: dividerColor),
+                  // Scrollable body
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      children: [
+                        // Source row
+                        Row(
+                          children: [
+                            Icon(Icons.source,
+                                size: 14, color: subTextColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              item.source,
+                              style: TextStyle(
+                                color: subTextColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '•',
+                              style: TextStyle(color: subTextColor),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              _formatAgo(item.timeAgo),
+                              style: TextStyle(
+                                color: subTextColor,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Full original text
+                        Text(
+                          'Orijinal Post',
+                          style: TextStyle(
+                            color: subTextColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          item.fullText.isEmpty ? item.title : item.fullText,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 14,
+                            height: 1.55,
+                          ),
+                        ),
+                        if (item.reason.isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor
+                                  .withValues(alpha: isDark ? 0.15 : 0.07),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: theme.primaryColor
+                                    .withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.psychology_alt_outlined,
+                                      size: 16,
+                                      color: theme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Sentiment Yorumu',
+                                      style: TextStyle(
+                                        color: theme.primaryColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item.reason,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
