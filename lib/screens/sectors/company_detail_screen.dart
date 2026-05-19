@@ -455,7 +455,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     );
   }
 
-  /// Finscope veri setinden gelen analist yorumu kartı.
+  /// Finscope veri setinden gelen sosyal medya analiz kartı.
   Widget _buildAnalystCommentaryCard(
       AnalystSignalModel analyst, Color textColor, bool isDark) {
     final subTextColor = isDark ? Colors.grey[400] : Colors.grey[700];
@@ -486,11 +486,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           // Başlık
           Row(
             children: [
-              Icon(Icons.psychology_alt_outlined,
+              Icon(Icons.forum_outlined,
                   color: accentColor, size: 20),
               const SizedBox(width: 10),
               Text(
-                'Uzman Yorumu',
+                'Sosyal Medya Analizi',
                 style: TextStyle(
                   color: accentColor,
                   fontWeight: FontWeight.bold,
@@ -499,6 +499,15 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               const Spacer(),
               StatusBadge.fromSignal(analyst.signalType, compact: true),
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Twitter/X ve finans forumlarından toplanmış postlardan çıkarılmış sentiment.',
+            style: TextStyle(
+              color: subTextColor,
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -539,7 +548,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           // Orijinal yorum (kısaltılmış / tam)
           if (fullText.isNotEmpty) ...[
             Text(
-              'Analist Notu',
+              'Orijinal Post',
               style: TextStyle(
                 color: subTextColor,
                 fontSize: 11.5,

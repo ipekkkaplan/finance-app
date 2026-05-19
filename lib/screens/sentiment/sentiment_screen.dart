@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/color_scheme.dart';
 import '../../models/sentiment_model.dart';
-import '../../services/data_service.dart';
 import '../../services/sentiment_service.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/section_header.dart';
@@ -11,8 +10,8 @@ import '../../widgets/status_badge.dart';
 
 /// Sosyal medya / forum sentiment analizi ekranı.
 ///
-/// Tamamen mock veriyle çalışır; gerçek Twitter/X veya haber API entegrasyonu
-/// bu PR kapsamı dışında (bkz. ekran başındaki disclaimer).
+/// Veri kaynağı: finscope_veri_seti.json içindeki sosyal medya postları.
+/// AL → pozitif, TUT → nötr, SAT → negatif olarak etiketlenmiştir.
 class SentimentScreen extends StatefulWidget {
   const SentimentScreen({super.key});
 
@@ -22,7 +21,6 @@ class SentimentScreen extends StatefulWidget {
 
 class _SentimentScreenState extends State<SentimentScreen> {
   final SentimentService _service = SentimentService();
-  final DataService _dataService = DataService();
 
   late final Future<_SentimentViewData> _future;
 
@@ -33,12 +31,9 @@ class _SentimentScreenState extends State<SentimentScreen> {
   }
 
   Future<_SentimentViewData> _load() async {
-    // Mock haberlerle ve değerleme verisindeki hisselerle çalış
-    final valuations = await _dataService.loadValuationData();
-    final kodlar = valuations.map((v) => v.hisseKodu).toList();
-    final sentiments = _service.getSentimentsFor(kodlar);
-    final market = _service.getMarketOverall(kodlar);
-    final news = _service.getMockNewsFeed();
+    final sentiments = await _service.getAllSentiments();
+    final market = await _service.getMarketOverall();
+    final news = await _service.getSocialMediaFeed();
 
     return _SentimentViewData(
       market: market,
@@ -83,10 +78,16 @@ class _SentimentScreenState extends State<SentimentScreen> {
               const SizedBox(height: 16),
               _buildMarketOverall(data.market, data.sentiments),
               const SizedBox(height: 24),
-              const SectionHeader(title: 'Son Haberler', icon: Icons.article_outlined),
+              const SectionHeader(
+                title: 'Sosyal Medya Akışı',
+                icon: Icons.forum_outlined,
+              ),
               _buildNewsFeed(data.news),
               const SizedBox(height: 24),
-              const SectionHeader(title: 'Hisse Bazlı Sentiment', icon: Icons.list_alt),
+              const SectionHeader(
+                title: 'Hisse Bazlı Sentiment',
+                icon: Icons.list_alt,
+              ),
               _buildStockSentimentList(data.sentiments),
               const SizedBox(height: 24),
             ],
@@ -112,7 +113,7 @@ class _SentimentScreenState extends State<SentimentScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Bu veriler demo amaçlı simüle edilmiştir. Gerçek Twitter/haber entegrasyonu planlanmaktadır.',
+              'Sosyal medya post\'larından çıkarılmış sentiment etiketleri. Canlı Twitter/X API entegrasyonu sonraki sürümde.',
               style: TextStyle(
                 color: isDark ? Colors.amber[300] : Colors.amber[900],
                 fontSize: 11.5,
