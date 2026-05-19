@@ -9,9 +9,24 @@ import '../models/stock_model.dart';
 import '../models/sector_trend_model.dart'; // Yeni eklenen model importu
 
 class DataService {
+  // In-memory cache'ler. JSON dosyaları büyük olduğu için her ekran
+  // açılışında yeniden yüklemek yerine ilk çağrıda yüklenip saklanır.
+  static List<SectorModel>? _sectorCache;
+  static List<ValuationModel>? _valuationCache;
+  static List<SectorTrendModel>? _trendsCache;
+  static List<StockModel>? _stocksCache;
+
+  /// Test veya kullanıcı çıkışı sonrası cache'i sıfırlamak için.
+  static void clearCache() {
+    _sectorCache = null;
+    _valuationCache = null;
+    _trendsCache = null;
+    _stocksCache = null;
+  }
 
   // --- 1. MEVCUT SEKTÖR VERİLERİ ---
   Future<List<SectorModel>> loadSectorData() async {
+    if (_sectorCache != null) return _sectorCache!;
     try {
       final String sectorString = await rootBundle.loadString('assets/sektor_analiz.json');
       final List<dynamic> sectorJsonList = json.decode(sectorString);
@@ -19,7 +34,7 @@ class DataService {
       final String companyString = await rootBundle.loadString('assets/sector_top3_6m.json');
       final List<dynamic> companyJsonList = json.decode(companyString);
 
-      return sectorJsonList.map((sJson) {
+      _sectorCache = sectorJsonList.map((sJson) {
         String sectorName = sJson['Sektor'] ?? '';
         List<Map<String, dynamic>> matchingCompanies = companyJsonList
             .where((c) => c['sector'] == sectorName)
@@ -28,6 +43,7 @@ class DataService {
         return SectorModel.fromJson(sJson, matchingCompanies);
       }).toList();
 
+      return _sectorCache!;
     } catch (e) {
       debugPrint("DataService (Sector) HATA: $e");
       return [];
@@ -36,18 +52,21 @@ class DataService {
 
   // --- 2. DEĞERLEME VERİLERİ ---
   Future<List<ValuationModel>> loadValuationData() async {
+    if (_valuationCache != null) return _valuationCache!;
     try {
       final String jsonString = await rootBundle.loadString('assets/hisse_degerleme_sonuclari.json');
       final List<dynamic> jsonList = json.decode(jsonString);
-      return jsonList.map((jsonItem) => ValuationModel.fromJson(jsonItem)).toList();
+      _valuationCache = jsonList.map((jsonItem) => ValuationModel.fromJson(jsonItem)).toList();
+      return _valuationCache!;
     } catch (e) {
       debugPrint("DataService (Valuation) HATA: $e");
       return [];
     }
   }
 
-  // --- 3. SEKTÖR TREND VERİLERİ (YENİ EKLENEN KISIM) ---
+  // --- 3. SEKTÖR TREND VERİLERİ ---
   Future<List<SectorTrendModel>> getSectorTrends() async {
+    if (_trendsCache != null) return _trendsCache!;
     try {
       // Dosya isminin doğru olduğundan emin ol (pubspec.yaml'da tanımlı olmalı)
       final String jsonString = await rootBundle.loadString('assets/sector_yearly_returns_2020_2025.json');
@@ -85,6 +104,7 @@ class DataService {
         ));
       });
 
+      _trendsCache = trends;
       return trends;
 
     } catch (e) {
@@ -93,40 +113,37 @@ class DataService {
     }
   }
 
-  // --- 4. GÜÇLENDİRİLMİŞ VERİ ÇEKME FONKSİYONU ---
+  // --- 4. SEKTÖRE GÖRE HİSSE LİSTESİ ---
   Future<List<StockModel>> getStocksBySector(String sectorName) async {
-    String jsonString = "";
-
-    try {
-      // 1. Önce 'assets/json/' klasörünü dene
-      jsonString = await rootBundle.loadString('assets/json/hisse_ayrinti.json');
-      // debugPrint("Dosya 'assets/json/' klasöründen okundu.");
-    } catch (e) {
-      // debugPrint("assets/json/ içinde bulunamadı. Alternatif yol deneniyor...");
+    // Tüm hisseleri bir kez yükle, sonraki çağrılarda cache'den filtrele.
+    if (_stocksCache == null) {
+      String jsonString = "";
       try {
-        // 2. Bulamazsa direkt 'assets/' klasörünü dene
-        jsonString = await rootBundle.loadString('assets/hisse_ayrinti.json');
-        // debugPrint("Dosya 'assets/' klasöründen okundu.");
-      } catch (e2) {
-        debugPrint("KRİTİK HATA: JSON dosyası okunamadı! Pubspec.yaml'ı kontrol et.");
-        return []; // Dosya yoksa boş dön
+        jsonString = await rootBundle.loadString('assets/json/hisse_ayrinti.json');
+      } catch (e) {
+        try {
+          jsonString = await rootBundle.loadString('assets/hisse_ayrinti.json');
+        } catch (e2) {
+          debugPrint("KRİTİK HATA: JSON dosyası okunamadı! Pubspec.yaml'ı kontrol et.");
+          return [];
+        }
+      }
+
+      try {
+        final List<dynamic> data = json.decode(jsonString);
+        _stocksCache = data.map((json) => StockModel.fromJson(json)).toList();
+      } catch (e) {
+        debugPrint("JSON Ayrıştırma Hatası: $e");
+        return [];
       }
     }
 
-    try {
-      final List<dynamic> data = json.decode(jsonString);
-
-      // Türkçe karakter sorunu yaşamamak için özel karşılaştırma
-      final results = data.map((json) => StockModel.fromJson(json)).where((stock) {
-        return _normalize(stock.sektor) == _normalize(sectorName);
-      }).toList();
-
-      debugPrint("$sectorName için ${results.length} şirket bulundu.");
-      return results;
-    } catch (e) {
-      debugPrint("JSON Ayrıştırma Hatası: $e");
-      return [];
-    }
+    // Türkçe karakter sorunu yaşamamak için özel karşılaştırma
+    final results = _stocksCache!
+        .where((stock) => _normalize(stock.sektor) == _normalize(sectorName))
+        .toList();
+    debugPrint("$sectorName için ${results.length} şirket bulundu.");
+    return results;
   }
 
   // Türkçe karakterleri İngilizceye çeviren yardımcı fonksiyon

@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import 'package:finance_app/screens/home/home_screen.dart'; // Yolunuza göre değişebilir
 import 'package:intl/intl.dart';
 import '../../core/theme/color_scheme.dart';
+import '../../providers/auth_provider.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -36,9 +37,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   @override
   void initState() {
     super.initState();
+    final uid = context.read<AuthProvider>().uid;
     _portfolioStream = FirebaseFirestore.instance
         .collection('user_match')
-        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .doc(uid)
         .snapshots();
   }
 
@@ -160,9 +162,10 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
                       if (newValue != null && newValue >= 0) {
                         try {
+                          final uid = context.read<AuthProvider>().uid;
                           await FirebaseFirestore.instance
                               .collection('user_match')
-                              .doc(FirebaseAuth.instance.currentUser?.uid)
+                              .doc(uid)
                               .set({
                             'totalBalance': newValue,
                           }, SetOptions(merge: true));
