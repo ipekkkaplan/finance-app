@@ -13,9 +13,7 @@ import '../../services/data_service.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/dashboard_feature_card.dart';
 import '../../widgets/section_header.dart';
-import '../recommendations/recommendations_screen.dart';
 import '../sentiment/sentiment_screen.dart';
-import '../signals/signals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -283,33 +281,6 @@ class _DashboardPageState extends State<DashboardPage> {
             title: "AI Destekli Araçlar",
             icon: Icons.auto_awesome,
           ),
-          DashboardFeatureCard(
-            icon: Icons.notifications_active,
-            title: "Al-Sat Sinyalleri",
-            description: "Değerleme + temel analizle güncel alım/satım sinyalleri.",
-            accentColor: AppColors.profitLight,
-            badgeText: "YENİ",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignalsScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          DashboardFeatureCard(
-            icon: Icons.trending_up,
-            title: "Hisse Önerileri",
-            description: "Veri tabanlı skorlamayla size özel yatırım fırsatları.",
-            accentColor: AppColors.accentBlue,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RecommendationsScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
           DashboardFeatureCard(
             icon: Icons.forum_outlined,
             title: "Sosyal Sentiment",
