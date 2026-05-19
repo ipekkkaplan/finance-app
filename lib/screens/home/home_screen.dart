@@ -321,9 +321,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           const SizedBox(height: 24),
 
-          // =============================================================
-          // FAVORİLERİM
-          // =============================================================
+          // Favorilerim bölümü.
           ValueListenableBuilder<List<FavoriteItem>>(
             valueListenable: FavoritesService.instance.favoritesNotifier,
             builder: (context, favorites, _) {

@@ -80,10 +80,10 @@ class FavoritesService {
 
     favoritesNotifier.value = List.from(_favorites);
 
-    // TELEFONA KAYDET
+    // Cihaz belleğine kaydet.
     final prefs = await SharedPreferences.getInstance();
 
-    // Yine o anki kullanıcıya ait anahtarı alıp oraya kaydediyoruz
+    // Aktif kullanıcıya ait anahtar üzerinden saklanır.
     final String key = _getStorageKey();
 
     final String encodedData = jsonEncode(_favorites.map((e) => e.toJson()).toList());

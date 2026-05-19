@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:finance_app/providers/auth_provider.dart';
 import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
 
 class AnalysisWizardScreen extends StatefulWidget {
@@ -73,14 +74,13 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
         ),
         centerTitle: true,
       ),
-      // KRİTİK DÜZELTME: Stack Yapısı
-      // Loading sırasında PageView'ı silmek yerine üzerine bindirme yapıyoruz.
+      // Stack yapısı: yükleme sırasında PageView'ı silmek yerine üzerine bindirilir.
       body: Stack(
         children: [
-          // 1. KATMAN: Uygulama İçeriği
+          // Katman 1: Uygulama içeriği.
           Column(
             children: [
-              // ÜST KISIMDAKİ PROGRESS BAR
+              // Üst kısımdaki ilerleme çubuğu.
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -106,7 +106,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               ),
               const SizedBox(height: 10),
 
-              // SAYFA İÇERİĞİ (PageView)
+              // Sayfa içeriği (PageView).
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -126,7 +126,7 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
                 ),
               ),
 
-              // ALT BUTONLAR
+              // Alt butonlar.
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -334,19 +334,19 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
 
     debugPrint(">>> PUANLAMA BİTTİ: Skor $finalScore, Segment $segment");
 
-    // FIREBASE KAYIT
+    // Firebase'e kaydet.
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final uid = context.read<AuthProvider>().uid;
 
-      if (user != null) {
+      if (uid != null) {
         debugPrint(
-          ">>> KULLANICI BULUNDU: ${user.uid}. Veritabanına yazılıyor...",
+          ">>> KULLANICI BULUNDU: $uid. Veritabanına yazılıyor...",
         );
 
         // 10 Saniye Timeout Ekli Kayıt İşlemi
         await FirebaseFirestore.instance
             .collection('users')
-            .doc(user.uid)
+            .doc(uid)
             .collection('risk_profile')
             .add({
           'score': finalScore,

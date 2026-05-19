@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:provider/provider.dart';
+import 'package:finance_app/providers/auth_provider.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   const UpdateProfileScreen({super.key});
@@ -9,8 +11,6 @@ class UpdateProfileScreen extends StatefulWidget {
 }
 
 class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
-  final _auth = FirebaseAuth.instance;
-
   // Email Güncelleme Kontrolcüleri
   final _oldEmailController = TextEditingController();
   final _emailPasswordController = TextEditingController();
@@ -35,15 +35,16 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   @override
   void initState() {
     super.initState();
-    if (_auth.currentUser?.email != null) {
-      _oldEmailController.text = _auth.currentUser!.email!;
+    final user = context.read<AuthProvider>().user;
+    if (user?.email != null) {
+      _oldEmailController.text = user!.email!;
     }
   }
 
-  // ----------------- Email Güncelleme İşlemi -----------------
+  // Email güncelleme işlemi.
   Future<void> _updateEmail() async {
     setState(() => _loading = true);
-    final user = _auth.currentUser;
+    final user = context.read<AuthProvider>().user;
 
     if (user == null) {
       if (!mounted) return;
@@ -80,7 +81,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       if (!mounted) return;
 
       // 3. ADIM: Kullanıcıyı bilgilendir ve Çıkış Yap
-      await _auth.signOut();
+      await FirebaseAuth.instance.signOut();
 
       if (!mounted) return;
 
@@ -144,10 +145,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     }
   }
 
-  // ----------------- Şifre Güncelleme İşlemi -----------------
+  // Şifre güncelleme işlemi.
   Future<void> _updatePassword() async {
     setState(() => _loading = true);
-    final user = _auth.currentUser;
+    final user = context.read<AuthProvider>().user;
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -296,7 +297,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // TEMA VERİLERİNİ ÇEKİYORUZ
+    // Tema verilerini al.
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 

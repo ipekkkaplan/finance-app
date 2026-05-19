@@ -5,7 +5,7 @@ class SectorModel {
   final double monthlyChange;
   final double sixMonthChange;
 
-  // YENİ EKLENEN: En iyi 3 hisseyi tutacak liste
+  /// Sektördeki en iyi 3 hisseyi tutar.
   final List<Map<String, dynamic>> topCompanies;
 
   SectorModel({
@@ -17,10 +17,10 @@ class SectorModel {
     required this.topCompanies,
   });
 
-  // JSON'dan nesne üretme 2 parametre alıyor
+  /// JSON nesnesinden ve eşleşen şirket listesinden bir SectorModel üretir.
   factory SectorModel.fromJson(Map<String, dynamic> json, List<Map<String, dynamic>> companies) {
 
-    // Sayısal değerleri güvenli bir şekilde double'a çevirdiğimiz kısım
+    // Sayısal değerleri güvenli şekilde double'a çevirir.
     double toDouble(dynamic val) {
       if (val is double) return val;
       if (val is int) return val.toDouble();
@@ -29,12 +29,12 @@ class SectorModel {
     }
 
     return SectorModel(
-      name: json['Sektor'] ?? 'Bilinmiyor', // JSON ANAHTARLARI
+      name: json['Sektor'] ?? 'Bilinmiyor',
       dailyChange: toDouble(json['1 Gunluk Degisim (%)']),
       weeklyChange: toDouble(json['1 Haftalik Degisim (%)']),
       monthlyChange: toDouble(json['1 Aylik Degisim (%)']),
       sixMonthChange: toDouble(json['6 Aylik Degisim (%)']),
-      topCompanies: companies, // Eşleşmiş şirket litesi
+      topCompanies: companies,
     );
   }
 }

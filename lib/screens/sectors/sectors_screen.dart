@@ -1,6 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'dart:math'; // Min/Max hesaplaması için gerekli
 import '../../core/theme/color_scheme.dart';
 import '../../models/sector_model.dart';
 import '../../models/stock_model.dart';
@@ -481,14 +480,12 @@ class _SectorsScreenState extends State<SectorsScreen> {
 
           const SizedBox(height: 30),
 
-          // GRAFİK ALANI
+          // Grafik alanı.
           AspectRatio(
             aspectRatio: 1.6,
             child: LineChart(
               LineChartData(
-                // -------------------------------------------------------------
-                // EKLENEN KISIM BAŞLANGIÇ: Tooltip'teki sayıyı formatlıyoruz
-                // -------------------------------------------------------------
+                // Tooltip'teki sayı formatı ayarlanır.
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipColor: (touchedSpot) =>
@@ -496,7 +493,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                       return touchedBarSpots.map((barSpot) {
                         return LineTooltipItem(
-                          barSpot.y.toStringAsFixed(1), // BURADA 1. VİRGÜL AYARI
+                          barSpot.y.toStringAsFixed(1), // Bir ondalık basamak.
                           const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -506,12 +503,8 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     },
                   ),
                 ),
-                // -------------------------------------------------------------
-                // EKLENEN KISIM BİTİŞ
-                // -------------------------------------------------------------
-
                 clipData: const FlClipData
-                    .all(), // Çizgilerin dışarı taşmasını engeller
+                    .all(), // Çizgilerin dışarı taşmasını engeller.
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine:
@@ -533,9 +526,9 @@ class _SectorsScreenState extends State<SectorsScreen> {
                       sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
-                      showTitles: true, // SOL EKSEN DEĞERLERİNİ AÇTIK
+                      showTitles: true, // Sol eksen değerleri açık.
                       reservedSize:
-                      48, // Ondalık basamak için alanı genişlettik
+                      48, // Ondalık basamak için genişletilmiş alan.
                       interval: yInterval,
                       getTitlesWidget: (value, meta) {
                         // Alt ve üst sınırları yazma ki kesilmesin
@@ -603,7 +596,7 @@ class _SectorsScreenState extends State<SectorsScreen> {
                     isCurved: true,
                     curveSmoothness: 0.35, // Daha doğal kıvrım
                     preventCurveOverShooting:
-                    true, // ÖNEMLİ: Çizginin taşmasını engeller
+                    true, // Çizginin taşmasını engeller.
                     color: color,
                     barWidth: 3,
                     isStrokeCapRound: true,
