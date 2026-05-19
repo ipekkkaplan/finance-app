@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Status Bar kontrolü için eklendi
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 import 'package:finance_app/theme_provider.dart';
 import 'package:finance_app/providers/auth_provider.dart';
+import 'package:finance_app/services/supabase_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +18,17 @@ void main() async {
     );
   } catch (e) {
     debugPrint('Firebase hatası: $e');
+  }
+
+  // Algo trade icin Supabase baslatilir. Uzun vade yatirim akisi
+  // Firebase ile devam eder, bu sadece algo trade icin eklenir.
+  try {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+    );
+  } catch (e) {
+    debugPrint('Supabase hatası: $e');
   }
 
   runApp(

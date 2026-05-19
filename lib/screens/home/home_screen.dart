@@ -2,6 +2,7 @@ import 'package:finance_app/screens/analysis/analysis_wizard_screen.dart';
 import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
 import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:finance_app/screens/settings/settings_screen.dart';
+import 'package:finance_app/screens/algo_trade/algo_trade_screen.dart';
 import 'package:flutter/material.dart';
 
 // Modeller ve Servisler
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const List<Widget> _pages = [
     DashboardPage(),
     SectorsScreen(),
+    AlgoTradeScreen(),
     PortfolioScreen(),
     SettingsScreen(),
   ];
@@ -79,6 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Ana Sayfa"),
           BottomNavigationBarItem(icon: Icon(Icons.domain), label: "Sektörler"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.auto_graph), label: "Algo Trade"),
           BottomNavigationBarItem(icon: Icon(Icons.pie_chart), label: "Portföy"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Ayarlar"),
         ],
