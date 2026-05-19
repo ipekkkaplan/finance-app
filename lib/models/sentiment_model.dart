@@ -35,7 +35,7 @@ class SentimentModel {
   int get percent => ((score + 1) / 2 * 100).round().clamp(0, 100);
 }
 
-/// Sosyal medya / haber akışında gösterilecek demo haber öğesi.
+/// Sosyal medya / haber akışında gösterilecek post öğesi.
 class NewsItem {
   final String title;
   final String source;
@@ -43,11 +43,19 @@ class NewsItem {
   final String hisseKodu;
   final Duration timeAgo;
 
+  /// Karta tıklandığında bottom sheet'te gösterilecek tam post metni.
+  final String fullText;
+
+  /// Sentimentin neden bu polariteye atandığını açıklayan kısa not.
+  final String reason;
+
   const NewsItem({
     required this.title,
     required this.source,
     required this.sentiment,
     required this.hisseKodu,
     required this.timeAgo,
+    this.fullText = '',
+    this.reason = '',
   });
 }

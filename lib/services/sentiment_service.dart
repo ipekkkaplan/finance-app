@@ -81,19 +81,21 @@ class SentimentService {
   }
 
   NewsItem _toNewsItem(AnalystSignalModel a) {
-    // Orijinal metni özetle: ilk satır veya ilk 110 karakter.
-    var text = a.orijinalMetin.split('\n').first.trim();
-    if (text.length > 110) {
-      text = '${text.substring(0, 110).trim()}…';
+    // Orijinal metni özetle: ilk satır veya ilk 110 karakter (kart preview).
+    var preview = a.orijinalMetin.split('\n').first.trim();
+    if (preview.length > 110) {
+      preview = '${preview.substring(0, 110).trim()}…';
     }
     // Görsel çeşitlilik için deterministik "süre".
     final hours = (_stableHash(a.hisseKodu) % 47) + 1;
     return NewsItem(
-      title: text.isEmpty ? a.gerekce : text,
+      title: preview.isEmpty ? a.gerekce : preview,
       source: 'Sosyal Medya',
       sentiment: _typeOf(a),
       hisseKodu: a.hisseKodu,
       timeAgo: Duration(hours: hours),
+      fullText: a.orijinalMetin,
+      reason: a.gerekce,
     );
   }
 
