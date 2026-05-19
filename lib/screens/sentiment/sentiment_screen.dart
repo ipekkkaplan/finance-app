@@ -74,8 +74,6 @@ class _SentimentScreenState extends State<SentimentScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildDisclaimer(),
-              const SizedBox(height: 16),
               _buildMarketOverall(data.market, data.sentiments),
               const SizedBox(height: 24),
               const SectionHeader(
@@ -93,35 +91,6 @@ class _SentimentScreenState extends State<SentimentScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildDisclaimer() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: Colors.amber[800], size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Sosyal medya post\'larından çıkarılmış sentiment etiketleri. Canlı Twitter/X API entegrasyonu sonraki sürümde.',
-              style: TextStyle(
-                color: isDark ? Colors.amber[300] : Colors.amber[900],
-                fontSize: 11.5,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

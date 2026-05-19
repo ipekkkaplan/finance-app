@@ -286,7 +286,6 @@ class _DashboardPageState extends State<DashboardPage> {
             title: "Sosyal Sentiment",
             description: "Sosyal medya ve haber akışındaki piyasa algısı analizi.",
             accentColor: const Color(0xFFAA00FF),
-            badgeText: "DEMO",
             onTap: () {
               Navigator.push(
                 context,
