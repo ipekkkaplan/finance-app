@@ -3,6 +3,8 @@
 // Gosterilenler: sistem/borsa durumu, portfoy ozeti ve equity grafigi,
 // acik pozisyonlar, kapanan islemler ve durdurma dugmesi.
 
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -24,6 +26,7 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
   List<Map<String, dynamic>> _acik = [];
   List<Map<String, dynamic>> _kapanan = [];
   List<Map<String, dynamic>> _equity = [];
+  Timer? _yenileyici;
 
   int get _oturumId => widget.oturum['id'] as int;
 
@@ -31,6 +34,16 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
   void initState() {
     super.initState();
     _veriCek();
+    _yenileyici = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _veriCek(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _yenileyici?.cancel();
+    super.dispose();
   }
 
   Future<void> _veriCek() async {
