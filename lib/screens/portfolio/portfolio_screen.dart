@@ -1,11 +1,21 @@
+// screens/portfolio/portfolio_screen.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import 'package:finance_app/screens/home/home_screen.dart'; // Yolunuza göre değişebilir
 import 'package:intl/intl.dart';
 import '../../core/theme/color_scheme.dart';
 import '../../providers/auth_provider.dart';
+
+// ── Tema sabitleri ────────────────────────────────────────────────
+const _kBgTop = Color(0xFF07111F);
+const _kBgMid = Color(0xFF0C1B31);
+const _kBgBot = Color(0xFF0F2040);
+const _kTeal = Color(0xFF00C9A7);
+const _kCard = Color(0xFF132040);
+const _kCardInner = Color(0xFF0C1A30);
+const _kGlassBorder = Color(0x18FFFFFF);
+const _kProfit = Color(0xFF00E676);
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -16,9 +26,8 @@ class PortfolioScreen extends StatefulWidget {
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
   late Stream<DocumentSnapshot> _portfolioStream;
-
-  // Varsayılan değer, veri gelene kadar veya veri yoksa kullanılır.
   double _totalBalance = 250000.0;
+  int touchedIndex = -1;
 
   final currencyFormatter = NumberFormat.currency(
     locale: 'tr_TR',
@@ -26,27 +35,23 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     decimalDigits: 0,
   );
 
-  final Color primaryGreen = AppColors.profitLight;
-  final Color primaryBlue = AppColors.accentBlue;
-  final Color primaryYellow = const Color(0xFFFFC107);
-  final Color primaryPurple = const Color(0xFF9C27B0);
-  final Color primaryGrey = const Color(0xFF90A4AE);
-
-  int touchedIndex = -1;
+  final Color _primaryYellow = const Color(0xFFFFC107);
+  final Color _primaryPurple = const Color(0xFF9C27B0);
 
   @override
   void initState() {
     super.initState();
     final uid = context.read<AuthProvider>().uid;
-    _portfolioStream = FirebaseFirestore.instance
-        .collection('user_match')
-        .doc(uid)
-        .snapshots();
+    _portfolioStream =
+        FirebaseFirestore.instance
+            .collection('user_match')
+            .doc(uid)
+            .snapshots();
   }
 
-  // Bottom Sheet Yapısı
   void _showEditBalanceDialog(BuildContext context) {
-    final TextEditingController controller = TextEditingController(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final controller = TextEditingController(
       text: _totalBalance.toStringAsFixed(0),
     );
 
@@ -54,173 +59,155 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
-        final bgColor = isDark ? AppColors.darkCardInner : Colors.white;
-        final textColor = isDark ? Colors.white : Colors.black;
-
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(32),
-              ),
+      builder:
+          (ctx) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Tutamaç Çizgisi
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark ? _kCardInner : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
                 ),
-
-                const Text(
-                  "Toplam Varlığını Gir",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Büyük Input Alanı
-                TextField(
-                  controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: "0",
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.white12 : Colors.grey[200],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    suffixText: "₺",
-                    suffixStyle: TextStyle(
-                      color: primaryGreen,
+                  ),
+                  Text(
+                    "Toplam Varlığını Gir",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white60 : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: controller,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  autofocus: true,
-                ),
-
-                const SizedBox(height: 24),
-
-                // Hızlı Seçim Butonları
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildQuickActionChip(context, "100.000", controller),
-                    const SizedBox(width: 8),
-                    _buildQuickActionChip(context, "250.000", controller),
-                    const SizedBox(width: 8),
-                    _buildQuickActionChip(context, "500.000", controller),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Kaydet Butonu
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryGreen,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    decoration: InputDecoration(
+                      hintText: "0",
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.white12 : Colors.grey.shade200,
                       ),
+                      suffixText: "₺",
+                      suffixStyle: const TextStyle(
+                        color: _kTeal,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    onPressed: () async {
-                      String cleanText = controller.text.replaceAll(',', '.');
-                      double? newValue = double.tryParse(cleanText);
-
-                      Navigator.pop(context);
-
-                      if (newValue != null && newValue >= 0) {
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _quickChip(ctx, "100.000", controller),
+                      const SizedBox(width: 8),
+                      _quickChip(ctx, "250.000", controller),
+                      const SizedBox(width: 8),
+                      _quickChip(ctx, "500.000", controller),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  GestureDetector(
+                    onTap: () async {
+                      final clean = controller.text.replaceAll(',', '.');
+                      final newVal = double.tryParse(clean);
+                      Navigator.pop(ctx);
+                      if (newVal != null && newVal >= 0) {
                         try {
                           final uid = context.read<AuthProvider>().uid;
                           await FirebaseFirestore.instance
                               .collection('user_match')
                               .doc(uid)
                               .set({
-                            'totalBalance': newValue,
-                          }, SetOptions(merge: true));
+                                'totalBalance': newVal,
+                              }, SetOptions(merge: true));
                         } catch (e) {
                           debugPrint("Bakiye kaydedilirken hata: $e");
                         }
                       }
                     },
-                    child: const Text(
-                      "Bakiyeyi Güncelle",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: _kTeal.withValues(alpha: isDark ? 0.15 : 0.10),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _kTeal.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Bakiyeyi Güncelle",
+                          style: TextStyle(
+                            color: _kTeal,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-              ],
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
-        );
-      },
     );
   }
 
-  // Hızlı seçim helper widget'ı
-  Widget _buildQuickActionChip(
-      BuildContext context,
-      String value,
-      TextEditingController controller,
-      ) {
+  Widget _quickChip(
+    BuildContext context,
+    String value,
+    TextEditingController ctrl,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: () {
-        controller.text = value.replaceAll('.', '');
-        controller.selection = TextSelection.fromPosition(
-          TextPosition(offset: controller.text.length),
+        ctrl.text = value.replaceAll('.', '');
+        ctrl.selection = TextSelection.fromPosition(
+          TextPosition(offset: ctrl.text.length),
         );
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color:
-          isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
+          color: isDark ? _kCard : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey[300]!,
+            color: isDark ? _kGlassBorder : Colors.grey.shade300,
           ),
         ),
         child: Text(
           value,
           style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.grey[800],
+            color: isDark ? Colors.white70 : Colors.grey.shade800,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -231,13 +218,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Color? _getKnownSectorColor(String? sector) {
     switch (sector?.trim().toLowerCase()) {
       case 'teknoloji':
-        return primaryBlue;
+        return _kTeal;
       case 'enerji':
-        return primaryYellow;
+        return _primaryYellow;
       case 'bankacılık':
-        return primaryGreen;
+        return _kProfit;
       case 'havacılık':
-        return primaryPurple;
+        return _primaryPurple;
       case 'sanayi':
         return Colors.orange;
       default:
@@ -249,147 +236,166 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF102C57);
+    final subTextColor = isDark ? Colors.white54 : Colors.grey.shade600;
 
-    final scaffoldBg = theme.scaffoldBackgroundColor;
-    final cardColor = theme.cardColor;
-    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
-    final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
+    final body = StreamBuilder<DocumentSnapshot>(
+      stream: _portfolioStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: _kTeal));
+        }
 
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.withValues(alpha: 0.2);
-
-    final balanceCardInnerColor =
-    isDark ? const Color(0xFF0F162C) : Colors.white;
-
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: AppBar(
-        backgroundColor: scaffoldBg,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
-          },
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Portföyüm",
-              style: TextStyle(
-                color: textColor,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              "Kişiselleştirilmiş analiz ve öneriler",
-              style: TextStyle(color: subTextColor, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _portfolioStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+        Map<String, dynamic> data = {};
+        List portfolio = [];
+        if (snapshot.hasData && snapshot.data!.exists) {
+          data = snapshot.data!.data() as Map<String, dynamic>;
+          portfolio = data['recommendedPortfolio'] ?? [];
+          if (data.containsKey('totalBalance')) {
+            _totalBalance =
+                double.tryParse(data['totalBalance'].toString()) ?? 250000.0;
           }
+        }
 
-          Map<String, dynamic> data = {};
-          List portfolio = [];
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
 
-          if (snapshot.hasData && snapshot.data!.exists) {
-            data = snapshot.data!.data() as Map<String, dynamic>;
-            portfolio = data['recommendedPortfolio'] ?? [];
-
-            if (data.containsKey('totalBalance')) {
-              _totalBalance =
-                  double.tryParse(data['totalBalance'].toString()) ?? 250000.0;
-            }
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildTotalBalanceCard(
-                  balanceCardInnerColor,
-                  textColor,
-                  subTextColor,
-                  borderColor,
-                  isDark,
-                ),
-                const SizedBox(height: 24),
-
-                if (portfolio.isEmpty)
-                  _buildNoDataPlaceholder(cardColor, subTextColor)
-                else
+              // ── Başlık ──────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSectorChart(
-                        portfolio,
-                        cardColor,
-                        textColor,
-                        subTextColor,
-                        borderColor,
-                        isDark,
+                      Text(
+                        "Portföyüm",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const SizedBox(height: 24),
-                      _buildComparisonChart(
-                        portfolio,
-                        cardColor,
-                        textColor,
-                        borderColor,
-                        isDark,
+                      const SizedBox(height: 4),
+                      Text(
+                        "Kişiselleştirilmiş analiz",
+                        style: TextStyle(color: subTextColor, fontSize: 13),
                       ),
                     ],
                   ),
-                const SizedBox(height: 40),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _kTeal.withValues(alpha: isDark ? 0.12 : 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border:
+                          isDark
+                              ? Border.all(
+                                color: _kTeal.withValues(alpha: 0.25),
+                              )
+                              : null,
+                    ),
+                    child: const Icon(
+                      Icons.pie_chart_rounded,
+                      color: _kTeal,
+                      size: 22,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // ── Toplam Bakiye Kartı ──────────────────────────────
+              _buildBalanceCard(isDark, textColor, subTextColor),
+              const SizedBox(height: 24),
+
+              // ── İçerik ─────────────────────────────────────────
+              if (portfolio.isEmpty)
+                _buildNoDataPlaceholder(isDark, subTextColor)
+              else ...[
+                _buildSectorChart(portfolio, isDark, textColor, subTextColor),
+                const SizedBox(height: 24),
+                _buildComparisonChart(portfolio, isDark, textColor),
               ],
-            ),
-          );
-        },
-      ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+
+    return Scaffold(
+      backgroundColor: isDark ? _kBgTop : const Color(0xFFF5F5F5),
+      body:
+          isDark
+              ? Stack(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [_kBgTop, _kBgMid, _kBgBot],
+                        stops: [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                  SafeArea(child: body),
+                ],
+              )
+              : SafeArea(child: body),
     );
   }
 
-  Widget _buildTotalBalanceCard(
-      Color cardBg,
-      Color textColor,
-      Color subTextColor,
-      Color borderColor,
-      bool isDark,
-      ) {
+  // ── Bakiye Kartı ─────────────────────────────────────────────────
+  Widget _buildBalanceCard(bool isDark, Color textColor, Color subTextColor) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: isDark ? _kCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border.all(
+          color: isDark ? _kTeal.withValues(alpha: 0.20) : Colors.grey.shade200,
+        ),
+        boxShadow:
+            isDark
+                ? [
+                  BoxShadow(
+                    color: _kTeal.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+                : [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
       ),
       child: Column(
         children: [
-          Text(
-            "Toplam Değer",
-            style: TextStyle(color: subTextColor, fontSize: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: const BoxDecoration(
+                  color: _kTeal,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Text(
+                "Toplam Değer",
+                style: TextStyle(color: subTextColor, fontSize: 14),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           GestureDetector(
@@ -407,7 +413,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  Icons.edit,
+                  Icons.edit_rounded,
                   size: 18,
                   color: subTextColor.withValues(alpha: 0.5),
                 ),
@@ -415,11 +421,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            "Planladığınız tutarı giriniz",
-            style: TextStyle(
-              color: subTextColor.withValues(alpha: 0.6),
-              fontSize: 12,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: _kTeal.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _kTeal.withValues(alpha: 0.20)),
+            ),
+            child: const Text(
+              "Planladığınız tutarı dokunarak giriniz",
+              style: TextStyle(color: _kTeal, fontSize: 12),
             ),
           ),
         ],
@@ -427,60 +438,62 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
+  // ── Sektör Pasta Grafiği ─────────────────────────────────────────
   Widget _buildSectorChart(
-      List portfolio,
-      Color cardBg,
-      Color textColor,
-      Color subTextColor,
-      Color borderColor,
-      bool isDark,
-      ) {
-    Map<String, double> assetAmountMap = {};
-    Map<String, String> assetSectorMap = {};
+    List portfolio,
+    bool isDark,
+    Color textColor,
+    Color subTextColor,
+  ) {
+    final Map<String, double> amountMap = {};
+    final Map<String, String> sectorMap = {};
+    final fallback = AppColors.chartPalette;
 
     for (var item in portfolio) {
-      String stockName = item['Hisse']?.toString().trim() ?? 'Bilinmeyen';
-      String sector = item['Sektor']?.toString().trim() ?? '';
-
-      double weight =
+      final stockName = item['Hisse']?.toString().trim() ?? 'Bilinmeyen';
+      final sector = item['Sektor']?.toString().trim() ?? '';
+      final weight =
           double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
-
-      double amount = (_totalBalance * weight) / 100;
-      assetAmountMap[stockName] = (assetAmountMap[stockName] ?? 0) + amount;
-      assetSectorMap[stockName] = sector;
+      final amount = (_totalBalance * weight) / 100;
+      amountMap[stockName] = (amountMap[stockName] ?? 0) + amount;
+      sectorMap[stockName] = sector;
     }
 
-    final List<MapEntry<String, double>> sortedAssets =
-    assetAmountMap.entries.toList();
-    sortedAssets.sort((a, b) => b.value.compareTo(a.value));
-
-    final List<Color> fallbackPalette = AppColors.chartPalette;
+    final sorted =
+        amountMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: isDark ? _kCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-        ],
+        border: Border.all(
+          color: isDark ? _kGlassBorder : Colors.grey.shade200,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Varlık Dağılımı",
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 18,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: _kTeal,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                "Varlık Dağılımı",
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 30),
           SizedBox(
@@ -493,39 +506,32 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       touchCallback: (FlTouchEvent event, pieTouchResponse) {
                         setState(() {
                           if (!event.isInterestedForInteractions ||
-                              pieTouchResponse == null ||
-                              pieTouchResponse.touchedSection == null) {
+                              pieTouchResponse?.touchedSection == null) {
                             touchedIndex = -1;
                             return;
                           }
-                          touchedIndex = pieTouchResponse
-                              .touchedSection!.touchedSectionIndex;
+                          touchedIndex =
+                              pieTouchResponse!
+                                  .touchedSection!
+                                  .touchedSectionIndex;
                         });
                       },
                     ),
                     borderData: FlBorderData(show: false),
                     sectionsSpace: 2,
                     centerSpaceRadius: 60,
-                    sections: List.generate(sortedAssets.length, (i) {
+                    sections: List.generate(sorted.length, (i) {
                       final isTouched = i == touchedIndex;
-                      final radius = isTouched ? 60.0 : 50.0;
-
-                      final entry = sortedAssets[i];
-                      final stockName = entry.key;
-                      final amount = entry.value;
-
-                      String sectorOfStock = assetSectorMap[stockName] ?? '';
-                      Color sliceColor =
-                          _getKnownSectorColor(sectorOfStock) ??
-                              fallbackPalette[i % fallbackPalette.length];
-
-                      double percentage = (amount / _totalBalance) * 100;
-
+                      final entry = sorted[i];
+                      final sliceColor =
+                          _getKnownSectorColor(sectorMap[entry.key]) ??
+                          fallback[i % fallback.length];
+                      final pct = (entry.value / _totalBalance) * 100;
                       return PieChartSectionData(
                         color: sliceColor,
-                        value: amount,
-                        title: '%${percentage.toStringAsFixed(0)}',
-                        radius: radius,
+                        value: entry.value,
+                        title: '%${pct.toStringAsFixed(0)}',
+                        radius: isTouched ? 60.0 : 50.0,
                         titleStyle: TextStyle(
                           fontSize: isTouched ? 18 : 14,
                           fontWeight: FontWeight.bold,
@@ -540,7 +546,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        sortedAssets.length.toString(),
+                        sorted.length.toString(),
                         style: TextStyle(
                           color: textColor,
                           fontSize: 28,
@@ -558,109 +564,82 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           const SizedBox(height: 30),
-          Column(
-            children: sortedAssets.asMap().entries.map((entry) {
-              int index = entry.key;
-              MapEntry<String, double> data = entry.value;
-
-              String sectorOfStock = assetSectorMap[data.key] ?? '';
-              Color legendColor = _getKnownSectorColor(sectorOfStock) ??
-                  fallbackPalette[index % fallbackPalette.length];
-
-              double percentage = (data.value / _totalBalance) * 100;
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: legendColor,
-                        borderRadius: BorderRadius.circular(4),
+          ...sorted.asMap().entries.map((e) {
+            final idx = e.key;
+            final data = e.value;
+            final legendColor =
+                _getKnownSectorColor(sectorMap[data.key]) ??
+                fallback[idx % fallback.length];
+            final pct = (data.value / _totalBalance) * 100;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: legendColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    data.key,
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        currencyFormatter.format(data.value),
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      data.key,
-                      style: TextStyle(color: subTextColor, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          currencyFormatter.format(data.value),
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          "%${percentage.toStringAsFixed(1)}",
-                          style: TextStyle(
-                            color: subTextColor,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+                      Text(
+                        "%${pct.toStringAsFixed(1)}",
+                        style: TextStyle(color: subTextColor, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  // --- GÜNCELLENEN GRAFİK KISMI ---
-  Widget _buildComparisonChart(
-      List portfolio,
-      Color cardBg,
-      Color textColor,
-      Color borderColor,
-      bool isDark,
-      ) {
-    // Piyasa ortalaması renk tanımı kaldırıldı, artık gerek yok.
-    final gridColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.black.withValues(alpha: 0.05);
-    final labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
-
-    Map<String, double> mySectorValues = {};
+  // ── Performans Bar Grafiği ────────────────────────────────────────
+  Widget _buildComparisonChart(List portfolio, bool isDark, Color textColor) {
+    final Map<String, double> sectorVals = {};
     for (var item in portfolio) {
-      String sector = item['Sektor']?.toString().trim() ?? 'Diğer';
-
-      double weight =
+      final sector = item['Sektor']?.toString().trim() ?? 'Diğer';
+      final weight =
           double.tryParse(item['Onerilen_Agirlik'].toString()) ?? 0.0;
-      double performance =
-          double.tryParse(item['Yillik_Getiri'].toString()) ?? 50.0;
-
-      double contributedValue = (weight * performance) / 100;
-      mySectorValues[sector] = (mySectorValues[sector] ?? 0) + contributedValue;
+      final perf = double.tryParse(item['Yillik_Getiri'].toString()) ?? 50.0;
+      sectorVals[sector] = (sectorVals[sector] ?? 0) + (weight * perf) / 100;
     }
-
-    // Piyasa değerleri (marketValues) haritasını sildik çünkü kullanmayacağız.
-
-    List<String> labels = mySectorValues.keys.toList();
+    final labels = sectorVals.keys.toList();
+    final gridColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.05);
+    final labelColor = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: isDark ? _kCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-        ],
+        border: Border.all(
+          color: isDark ? _kGlassBorder : Colors.grey.shade200,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,15 +647,28 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Performans Analizi",
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: _kTeal,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Text(
+                    "Performans Analizi",
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              Icon(Icons.insights, color: primaryGreen, size: 20),
+              const Icon(Icons.insights, color: _kTeal, size: 20),
             ],
           ),
           const SizedBox(height: 30),
@@ -685,31 +677,32 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
-                maxY: 40, // --- GÜNCELLEME: Y ekseni max 40 yapıldı ---
+                maxY: 40,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
                   drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: gridColor,
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                  ),
-                  getDrawingVerticalLine: (value) => FlLine(
-                    color: gridColor,
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                  ),
+                  getDrawingHorizontalLine:
+                      (_) => FlLine(
+                        color: gridColor,
+                        strokeWidth: 1,
+                        dashArray: [5, 5],
+                      ),
+                  getDrawingVerticalLine:
+                      (_) => FlLine(
+                        color: gridColor,
+                        strokeWidth: 1,
+                        dashArray: [5, 5],
+                      ),
                 ),
                 titlesData: FlTitlesData(
-                  show: true,
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
-                      getTitlesWidget: (double value, TitleMeta meta) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= labels.length) {
+                      getTitlesWidget: (v, meta) {
+                        final i = v.toInt();
+                        if (i < 0 || i >= labels.length) {
                           return const SizedBox();
                         }
                         return SideTitleWidget(
@@ -718,11 +711,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           child: Transform.rotate(
                             angle: -0.5,
                             child: Text(
-                              labels[index],
+                              labels[i],
                               style: TextStyle(
                                 color: labelColor,
-                                fontWeight: FontWeight.w500,
                                 fontSize: 10,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
@@ -734,20 +727,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
-                      interval: 10, // Aralıkları da 10'a düşürdük
-                      getTitlesWidget: (value, meta) {
-                        return SideTitleWidget(
-                          axisSide: meta.axisSide,
-                          child: Text(
-                            value.toInt().toString(),
-                            style: TextStyle(
-                              color: labelColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                      interval: 10,
+                      getTitlesWidget:
+                          (v, meta) => SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            child: Text(
+                              v.toInt().toString(),
+                              style: TextStyle(
+                                color: labelColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        );
-                      },
                     ),
                   ),
                   topTitles: const AxisTitles(
@@ -762,132 +754,139 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   border: Border(
                     bottom: BorderSide(
                       color: labelColor.withValues(alpha: 0.2),
-                      width: 1,
                     ),
-                    left: BorderSide(
-                      color: labelColor.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
+                    left: BorderSide(color: labelColor.withValues(alpha: 0.2)),
                   ),
                 ),
                 barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) =>
-                    isDark ? AppColors.darkCardInner : Colors.white,
+                    getTooltipColor: (_) => isDark ? _kCardInner : Colors.white,
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 8,
                     tooltipRoundedRadius: 8,
-                    tooltipBorder: BorderSide(color: borderColor, width: 1),
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      // Artık sadece tek bar olduğu için "Portföy" yazdırıyoruz
-                      String label = "Portföy";
-                      final tooltipTextColor =
-                      isDark ? Colors.white : Colors.black;
-
-                      return BarTooltipItem(
-                        "$label\n",
-                        TextStyle(
-                          color: tooltipTextColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        children: <TextSpan>[
-                          TextSpan(
-                            // Gerçek değeri gösteriyoruz (40'tan büyük olsa bile)
-                            text: "${rod.toY.round()}",
-                            style: TextStyle(
-                              color: rod.color,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                            ),
+                    tooltipBorder: BorderSide(
+                      color: isDark ? _kGlassBorder : Colors.grey.shade200,
+                    ),
+                    getTooltipItem:
+                        (group, gi, rod, ri) => BarTooltipItem(
+                          "Portföy\n",
+                          TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
-                        ],
-                      );
-                    },
+                          children: [
+                            TextSpan(
+                              text: "${rod.toY.round()}",
+                              style: TextStyle(
+                                color: rod.color,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
                   ),
                 ),
-                barGroups: List.generate(labels.length, (index) {
-                  String sector = labels[index];
-                  double myValue = mySectorValues[sector] ?? 0;
-
-                  return BarChartGroupData(
-                    x: index,
-                    // barsSpace artık gerekli değil çünkü tek çubuk var
+                barGroups: List.generate(
+                  labels.length,
+                  (i) => BarChartGroupData(
+                    x: i,
                     barRods: [
-                      // --- GÜNCELLEME: Sadece tek bir rod (yeşil) kaldı ---
                       BarChartRodData(
-                        // Görsel olarak 40'ı taşmasın diye clamp kullanabiliriz
-                        // ama fl_chart genelde halleder. Yine de max 40 dedik.
-                        toY: myValue,
-                        color: primaryGreen,
-                        width: 24, // Çubuğu biraz kalınlaştırdık (daha şık durur)
+                        toY: sectorVals[labels[i]] ?? 0,
+                        color: _kTeal,
+                        width: 24,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(4),
                           topRight: Radius.circular(4),
                         ),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: 40,
+                          color:
+                              isDark
+                                  ? Colors.white.withValues(alpha: 0.03)
+                                  : Colors.grey.withValues(alpha: 0.05),
+                        ),
                       ),
                     ],
-                  );
-                }),
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-
-              _buildLegendItem("Portföyüm", primaryGreen, isDark),
-            ],
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: _kTeal,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Portföyüm",
+                  style: TextStyle(
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-  // --- END OF CHART UPDATE ---
 
-  Widget _buildLegendItem(String label, Color color, bool isDark) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: isDark ? Colors.grey[400] : Colors.grey[700],
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNoDataPlaceholder(Color cardBg, Color subTextColor) {
+  Widget _buildNoDataPlaceholder(bool isDark, Color subTextColor) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? _kCard : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? _kGlassBorder : Colors.grey.shade200,
+        ),
       ),
       child: Center(
         child: Column(
           children: [
-            Icon(
-              Icons.analytics_outlined,
-              size: 48,
-              color: subTextColor.withValues(alpha: 0.3),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _kTeal.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+                border: Border.all(color: _kTeal.withValues(alpha: 0.20)),
+              ),
+              child: const Icon(
+                Icons.analytics_outlined,
+                size: 40,
+                color: _kTeal,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
-              "Analiz verisi bulunamadı.\nLütfen profilinizden testi tamamlayın.",
+              "Analiz verisi bulunamadı",
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Profilinizden testi tamamlayın.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: subTextColor),
+              style: TextStyle(color: subTextColor, fontSize: 13),
             ),
           ],
         ),

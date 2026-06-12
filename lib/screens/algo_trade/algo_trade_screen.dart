@@ -1,16 +1,15 @@
-// Algo Trade ana ekrani.
-//
-// Akis: kullanicinin acik oturumu yoksa kurulum ekrani gosterilir
-// (sermaye, mod, baslat). Acik oturum varsa canli izleme gosterilir
-// (sistem/borsa durumu, equity, pozisyonlar, durdur).
-
+// screens/algo_trade/algo_trade_screen.dart
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
 import '../../services/algo_trade_service.dart';
 import 'algo_setup_view.dart';
 import 'algo_live_view.dart';
+
+// ── Tema sabitleri (home_screen ile aynı) ────────────────────────
+const _kBgTop = Color(0xFF07111F);
+const _kBgMid = Color(0xFF0C1B31);
+const _kBgBot = Color(0xFF0F2040);
+const _kTeal = Color(0xFF00C9A7);
 
 class AlgoTradeScreen extends StatefulWidget {
   const AlgoTradeScreen({super.key});
@@ -29,7 +28,6 @@ class _AlgoTradeScreenState extends State<AlgoTradeScreen> {
   void initState() {
     super.initState();
     _durumuYenile();
-    // Veriler dakikalik guncellendigi icin 20 saniyede bir tazelenir.
     _zamanlayici = Timer.periodic(
       const Duration(seconds: 20),
       (_) => _durumuYenile(sessiz: true),
@@ -59,26 +57,47 @@ class _AlgoTradeScreenState extends State<AlgoTradeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text('Algo Trade',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        automaticallyImplyLeading: false,
-      ),
-      body: _yukleniyor
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _durumuYenile,
-              child: _oturum == null
-                  ? AlgoSetupView(onBasladi: _durumuYenile)
-                  : AlgoLiveView(
-                      oturum: _oturum!,
-                      onDegisti: _durumuYenile,
+      backgroundColor: isDark ? _kBgTop : const Color(0xFFF5F5F5),
+      body:
+          isDark
+              ? Stack(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [_kBgTop, _kBgMid, _kBgBot],
+                        stops: [0.0, 0.5, 1.0],
+                      ),
                     ),
-            ),
+                  ),
+                  _body(isDark),
+                ],
+              )
+              : _body(isDark),
+    );
+  }
+
+  Widget _body(bool isDark) {
+    if (_yukleniyor) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: isDark ? _kTeal : null,
+          strokeWidth: 2,
+        ),
+      );
+    }
+    return RefreshIndicator(
+      color: _kTeal,
+      onRefresh: _durumuYenile,
+      child:
+          _oturum == null
+              ? AlgoSetupView(onBasladi: _durumuYenile)
+              : AlgoLiveView(oturum: _oturum!, onDegisti: _durumuYenile),
     );
   }
 }

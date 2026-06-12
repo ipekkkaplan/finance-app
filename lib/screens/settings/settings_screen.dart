@@ -1,11 +1,20 @@
+// screens/settings/settings_screen.dart
 import 'package:finance_app/screens/auth_screen/launch_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/color_scheme.dart';
 import '../../theme_provider.dart';
 import '../../services/auth_service.dart';
 import 'update_profile_screen.dart';
 
+// ── Tema sabitleri ────────────────────────────────────────────────
+const _kBgTop = Color(0xFF07111F);
+const _kBgMid = Color(0xFF0C1B31);
+const _kBgBot = Color(0xFF0F2040);
+const _kTeal = Color(0xFF00C9A7);
+const _kCard = Color(0xFF132040);
+const _kCardInner = Color(0xFF0C1A30);
+const _kGlassBorder = Color(0x18FFFFFF);
+const _kLoss = Color(0xFFEF5350);
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,332 +24,429 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Renk tanımları (AppColors merkezi yönetim)
-  final Color primary = AppColors.accentBlue;
-  final Color iconsColors = AppColors.profitLight;
-
   bool notifications = false;
-
-  late TextEditingController nameController;
-  late TextEditingController emailController;
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
 
   @override
   void initState() {
     super.initState();
-    // AuthService'den mevcut kullanıcıyı çekiyoruz
     final user = AuthService().currentUser;
-
-    nameController = TextEditingController(
-      text: user != null ? (user.displayName ?? '') : '',
-    );
-    emailController = TextEditingController(
-      text: user != null ? (user.email ?? '') : '',
-    );
+    _nameController = TextEditingController(text: user?.displayName ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
   }
 
   @override
   void dispose() {
-    nameController.dispose();
-    emailController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  // --- GÜVENLİ ÇIKIŞ FONKSİYONU ---
   Future<void> _handleLogout() async {
-    // Firebase'den çıkış yap
     await AuthService().signOut();
-
     if (mounted) {
-      // Geçmişi temizle ve LaunchScreen'e yönlendir
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LaunchScreen()),
-            (route) => false,
+        MaterialPageRoute(builder: (_) => const LaunchScreen()),
+        (_) => false,
       );
     }
   }
 
+  // ── Kart dekorasyonu ─────────────────────────────────────────────
+  BoxDecoration _cardDeco(bool isDark) => BoxDecoration(
+    color: isDark ? _kCard : Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: isDark ? _kGlassBorder : Colors.grey.shade200),
+    boxShadow:
+        isDark
+            ? null
+            : [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+  );
+
   @override
   Widget build(BuildContext context) {
-    // Provider ve Tema erişimi
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
-    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    final cardColor = Theme.of(context).cardColor;
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    final subTextColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey;
+    final textColor = isDark ? Colors.white : const Color(0xFF102C57);
+    final subTextColor = isDark ? Colors.white54 : Colors.grey.shade600;
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final body = SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+
+          // ── Başlık ──────────────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Ayarlar",
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Ayarlar",
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Hesap ve uygulama tercihleri",
+                    style: TextStyle(color: subTextColor, fontSize: 13),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _kTeal.withValues(alpha: isDark ? 0.12 : 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      isDark
+                          ? Border.all(color: _kTeal.withValues(alpha: 0.25))
+                          : null,
+                ),
+                child: const Icon(
+                  Icons.settings_rounded,
+                  color: _kTeal,
+                  size: 22,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                "Hesap ve uygulama tercihlerini yönet.",
-                style: TextStyle(
-                  color: subTextColor,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 26),
+            ],
+          ),
+          const SizedBox(height: 24),
 
-              // --- PROFİL KARTI ---
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: _settingsCard(
-                  context: context,
-                  cardColor: cardColor,
-                  textColor: textColor,
-                  title: "Profil Bilgileri",
-                  icon: Icons.person_outline,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // ── Profil Kartı ─────────────────────────────────────────
+          _sectionLabel("Profil Bilgileri", Icons.person_outline, textColor),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: _cardDeco(isDark),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar
+                Center(
+                  child: Stack(
                     children: [
-                      _inputField("Ad Soyad", nameController, isDark, textColor),
-                      const SizedBox(height: 10),
-                      _inputField("E-posta", emailController, isDark, textColor),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const UpdateProfileScreen(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: iconsColors,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            child: const Text(
-                              "Bilgileri Güncelle",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
-                            ),
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: _kTeal.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _kTeal.withValues(alpha: 0.40),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: _kTeal,
+                          size: 38,
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: _kTeal,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            size: 14,
+                            color: Colors.black87,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 26),
+                _inputField("Ad Soyad", _nameController, isDark, textColor),
+                const SizedBox(height: 14),
+                _inputField("E-posta", _emailController, isDark, textColor),
+                const SizedBox(height: 20),
 
-              // --- UYGULAMA TERCİHLERİ KARTI ---
-              _settingsCard(
-                context: context,
-                cardColor: cardColor,
-                textColor: textColor,
-                title: "Uygulama Tercihleri",
-                icon: null,
-                child: Column(
-                  children: [
-                    _switchRow(
-                      title: "Karanlık Mod",
-                      subtitle: isDark ? "Açık" : "Kapalı",
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: isDark
-                          ? Icons.dark_mode_outlined
-                          : Icons.wb_sunny_outlined,
-                      iconColor: isDark ? primary : const Color(0xFFFFC107),
-                      value: isDark,
-                      onChange: (v) {
-                        themeProvider.toggleTheme(v);
-                      },
+                // Profil güncelle butonu (teal outlined)
+                GestureDetector(
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const UpdateProfileScreen(),
+                        ),
+                      ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: _kTeal.withValues(alpha: isDark ? 0.12 : 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _kTeal.withValues(alpha: isDark ? 0.30 : 0.25),
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    _switchRow(
-                      title: "Bildirimler",
-                      subtitle: notifications ? "Açık" : "Kapalı",
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: notifications
-                          ? Icons.notifications_none
-                          : Icons.notifications_off,
-                      value: notifications,
-                      onChange: (v) => setState(() => notifications = v),
-                      iconColor: iconsColors,
-                    ),
-
-                    // --- GÜVENLİ ÇIKIŞ BÖLÜMÜ ---
-                    const SizedBox(height: 20),
-                    Divider(color: subTextColor.withValues(alpha: 0.2)),
-                    const SizedBox(height: 10),
-
-                    InkWell(
-                      onTap: _handleLogout, // LaunchScreen'e yönlendiren fonksiyon
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppColors.lossLight.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.logout_rounded, color: AppColors.lossLight, size: 22),
-                            ),
-                            const SizedBox(width: 14),
-                            const Text(
-                              "Güvenli Çıkış",
-                              style: TextStyle(
-                                color: AppColors.lossLight,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const Spacer(),
-                            Icon(Icons.arrow_forward_ios_rounded,
-                                size: 16,
-                                color: subTextColor.withValues(alpha: 0.5)),
-                          ],
+                    child: const Center(
+                      child: Text(
+                        "Bilgileri Güncelle",
+                        style: TextStyle(
+                          color: _kTeal,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
 
-              const SizedBox(height: 26),
+          // ── Uygulama Tercihleri ──────────────────────────────────
+          _sectionLabel("Uygulama Tercihleri", Icons.tune_rounded, textColor),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: _cardDeco(isDark),
+            child: Column(
+              children: [
+                _switchRow(
+                  title: "Karanlık Mod",
+                  subtitle: isDark ? "Açık" : "Kapalı",
+                  icon:
+                      isDark
+                          ? Icons.dark_mode_outlined
+                          : Icons.wb_sunny_outlined,
+                  iconColor: isDark ? _kTeal : const Color(0xFFFFC107),
+                  value: isDark,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onChange: (v) => themeProvider.toggleTheme(v),
+                ),
+                const SizedBox(height: 20),
+                _switchRow(
+                  title: "Bildirimler",
+                  subtitle: notifications ? "Açık" : "Kapalı",
+                  icon:
+                      notifications
+                          ? Icons.notifications_none
+                          : Icons.notifications_off,
+                  iconColor: _kTeal,
+                  value: notifications,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onChange: (v) => setState(() => notifications = v),
+                ),
 
-              // --- GÜVENLİK VE GİZLİLİK KARTI ---
-              _settingsCard(
-                context: context,
-                cardColor: cardColor,
-                textColor: textColor,
-                title: "Güvenlik ve Gizlilik",
-                icon: Icons.security_outlined,
-                iconColor: primary,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Text(
-                    "FinScope AI, kişisel verilerinizi güvenli bir şekilde saklar. "
-                        "Finansal bilgileriniz şifrelenir ve üçüncü taraflarla paylaşılmaz.",
-                    style: TextStyle(
-                      color: subTextColor,
-                      fontSize: 14,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Divider(
+                    color: isDark ? _kGlassBorder : Colors.grey.shade200,
+                  ),
+                ),
+
+                // Çıkış butonu
+                InkWell(
+                  onTap: _handleLogout,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _kLoss.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: _kLoss,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        const Text(
+                          "Güvenli Çıkış",
+                          style: TextStyle(
+                            color: _kLoss,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: subTextColor.withValues(alpha: 0.5),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // --- ALT BİLGİ ---
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "FinScope AI",
-                      style: TextStyle(color: subTextColor, fontSize: 13),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Versiyon 1.0.0",
-                      style: TextStyle(color: subTextColor.withValues(alpha: 0.5), fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ------------------ HELPER WIDGETS ------------------
-
-  // Kart Yapısı
-  Widget _settingsCard({
-    required BuildContext context,
-    required String title,
-    IconData? icon,
-    required Widget child,
-    Color? iconColor,
-    required Color cardColor,
-    required Color textColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: textColor.withValues(alpha: 0.05),
-          ),
-          boxShadow: [
-            if (Theme.of(context).brightness == Brightness.light)
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-          ]
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: iconColor ?? iconsColors, size: 22),
-                const SizedBox(width: 10),
               ],
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 20),
-          child,
+
+          // ── Güvenlik Kartı ───────────────────────────────────────
+          _sectionLabel(
+            "Güvenlik ve Gizlilik",
+            Icons.security_outlined,
+            textColor,
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: _cardDeco(isDark),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.only(right: 14),
+                  decoration: BoxDecoration(
+                    color: _kTeal.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: _kTeal.withValues(alpha: 0.20)),
+                  ),
+                  child: const Icon(
+                    Icons.shield_outlined,
+                    color: _kTeal,
+                    size: 22,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    "FinScope AI, kişisel verilerinizi güvenli biçimde saklar. "
+                    "Finansal bilgileriniz şifrelenir ve üçüncü taraflarla paylaşılmaz.",
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 13,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+
+          // ── Alt bilgi ────────────────────────────────────────────
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark ? _kCardInner : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? _kGlassBorder : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.auto_awesome, size: 14, color: _kTeal),
+                      const SizedBox(width: 6),
+                      Text(
+                        "FinScope AI  ·  v1.0.0",
+                        style: TextStyle(color: subTextColor, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
+
+    return Scaffold(
+      backgroundColor: isDark ? _kBgTop : const Color(0xFFF5F5F5),
+      body:
+          isDark
+              ? Stack(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [_kBgTop, _kBgMid, _kBgBot],
+                        stops: [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                  SafeArea(child: body),
+                ],
+              )
+              : SafeArea(child: body),
+    );
   }
 
-  // Input Alanı
-  Widget _inputField(String label, TextEditingController controller, bool isDark, Color textColor) {
+  // ── Helper: Bölüm etiketi ─────────────────────────────────────────
+  Widget _sectionLabel(String title, IconData icon, Color textColor) => Row(
+    children: [
+      Container(
+        width: 4,
+        height: 18,
+        margin: const EdgeInsets.only(right: 10),
+        decoration: BoxDecoration(
+          color: _kTeal,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      Icon(icon, size: 18, color: _kTeal),
+      const SizedBox(width: 8),
+      Text(
+        title,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  );
+
+  // ── Helper: Input alanı ───────────────────────────────────────────
+  Widget _inputField(
+    String label,
+    TextEditingController controller,
+    bool isDark,
+    Color textColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            color: textColor.withValues(alpha: 0.7),
-            fontSize: 14,
+            color: isDark ? Colors.white54 : Colors.grey.shade600,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -350,14 +456,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: TextStyle(color: textColor),
           decoration: InputDecoration(
             filled: true,
-            fillColor: isDark ? AppColors.darkInputBg : Colors.grey[200],
+            fillColor: isDark ? _kCardInner : Colors.grey.shade100,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 14,
-              horizontal: 14,
+              horizontal: 16,
             ),
-            border: OutlineInputBorder(
+            enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(
+                color: isDark ? _kGlassBorder : Colors.grey.shade200,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _kTeal, width: 1.5),
             ),
           ),
         ),
@@ -365,49 +477,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Switch Satırı
+  // ── Helper: Switch satırı ─────────────────────────────────────────
   Widget _switchRow({
     required String title,
     required String subtitle,
     required IconData icon,
+    required Color iconColor,
     required bool value,
     required Function(bool) onChange,
-    Color? iconColor,
     required Color textColor,
     required Color subTextColor,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, color: iconColor ?? primary, size: 22),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: subTextColor,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
+  }) => Row(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: iconColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
         ),
-        Switch(
-            value: value,
-            activeTrackColor: primary,
-            onChanged: onChange
+        child: Icon(icon, color: iconColor, size: 20),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(subtitle, style: TextStyle(color: subTextColor, fontSize: 12)),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+      Switch(
+        value: value,
+        activeColor: _kTeal,
+        activeTrackColor: _kTeal.withValues(alpha: 0.30),
+        onChanged: onChange,
+      ),
+    ],
+  );
 }

@@ -1,29 +1,35 @@
+// core/theme/color_scheme.dart
 import 'package:flutter/material.dart';
 
 /// Uygulamadaki tüm renk sabitleri tek bir yerden yönetilir.
 ///
-/// Kullanım: `AppColors.accentBlue`, `AppColors.profitColor(isDark)` vb.
+/// Kullanım: `AppColors.accentTeal`, `AppColors.profitColor(isDark)` vb.
 class AppColors {
   AppColors._(); // instantiate edilmesini engelle
 
   // ── PRIMARY ──────────────────────────────────────────────
-  /// Light mode primary (main.dart ThemeData ile eşleşir).
+  /// Light mode primary.
   static const Color primaryLight = Color(0xFF102C57);
 
-  /// Dark mode primary.
-  static const Color primaryDark = Color(0xFF3D8BFF);
+  /// Dark mode primary – teal/cyan (referans görsele göre güncellendi).
+  static const Color primaryDark = Color(0xFF00C9A7);
 
   /// Tema-uyumlu primary. build() içindeki `isDark` ile çağırılır.
   static Color primary(bool isDark) => isDark ? primaryDark : primaryLight;
 
-  // ── ACCENT MAVİ ──────────────────────────────────────────
-  /// Her modda aynı mavi ton (butonlar, vurgu, filtre chip'leri).
-  static const Color accentBlue = Color(0xFF3D8BFF);
+  // ── ACCENT TEAL (dark mode vurgusu) ──────────────────────
+  static const Color accentTeal = Color(0xFF00C9A7);
+
+  /// Geriye dönük uyumluluk için alias.
+  static const Color accentBlue = Color(0xFF00C9A7);
+
+  // ── ALTIN / KOİN ─────────────────────────────────────────
+  static const Color gold = Color(0xFFF5C518);
 
   // ── KÂR / ZARAR ─────────────────────────────────────────
   static const Color profit = Color(0xFF00D27B);
   static const Color loss = Color(0xFFFF5252);
-  static const Color neutral = Color(0xFF3D8BFF);
+  static const Color neutral = Color(0xFF00C9A7);
 
   static const Color profitLight = Color(0xFF00C853);
   static const Color profitDark = Color(0xFF00E676);
@@ -33,15 +39,21 @@ class AppColors {
   static Color profitColor(bool isDark) => isDark ? profitDark : profitLight;
   static Color lossColor(bool isDark) => isDark ? lossDark : lossLight;
 
-  /// getProfitColor eski uyumluluk (zaten aynı davranış).
+  /// getProfitColor eski uyumluluk.
   static Color getProfitColor(bool isDark) => profitColor(isDark);
 
   // ── DARK MODE YÜZEYLER ──────────────────────────────────
-  /// İç kart arka planı (tüm ekranlarda tutarlı).
-  static const Color darkCardInner = Color(0xFF1A2038);
+  /// Ana arka plan (en koyu katman).
+  static const Color darkBackground = Color(0xFF0A1528);
+
+  /// Kart arka planı.
+  static const Color darkCard = Color(0xFF132040);
+
+  /// İç kart / input arka planı.
+  static const Color darkCardInner = Color(0xFF0C1A30);
 
   /// Input alanı arka planı (dark mode).
-  static const Color darkInputBg = Color(0xFF0D1117);
+  static const Color darkInputBg = Color(0xFF0A1220);
 
   // ── SEKTÖR RENKLERİ ─────────────────────────────────────
   static const Map<String, Color> sectorColors = {
@@ -62,12 +74,11 @@ class AppColors {
     'Kağıt': Color(0xFFAB47BC),
   };
 
-  static Color sectorColor(String sector) =>
-      sectorColors[sector] ?? accentBlue;
+  static Color sectorColor(String sector) => sectorColors[sector] ?? accentTeal;
 
   // ── PIE CHART PALETİ ────────────────────────────────────
   static const List<Color> chartPalette = [
-    accentBlue,
+    accentTeal,
     profitLight,
     Color(0xFFFFC107),
     Color(0xFF9C27B0),
