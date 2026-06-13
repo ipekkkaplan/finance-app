@@ -134,7 +134,7 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     final durdurmaBekliyor = widget.oturum['status'] == 'STOP_REQUESTED';
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         // ── Başlık ───────────────────────────────────────────────
         if (isDark) ...[

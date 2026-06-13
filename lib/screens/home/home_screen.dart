@@ -116,7 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? _kBgTop : const Color(0xFFF5F5F5),
-      extendBody: true,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -154,10 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // ── Bottom Nav ───────────────────────────────────────────────
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color:
-              isDark
-                  ? const Color(0xFF0A1528).withValues(alpha: 0.95)
-                  : Colors.white,
+          color: isDark ? const Color(0xFF0A1528) : Colors.white,
           border: Border(
             top: BorderSide(
               color: isDark ? _kGlassBorder : Colors.grey.shade200,
@@ -270,7 +266,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final innerCardColor = isDark ? _kInnerGlass : Colors.grey.shade100;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
