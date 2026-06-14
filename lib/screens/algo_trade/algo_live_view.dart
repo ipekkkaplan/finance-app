@@ -125,10 +125,35 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
             ],
           ),
     );
-    if (secim != null) {
-      await _servis.oturumDurdur(_oturumId, secim);
-      widget.onDegisti();
+    if (secim == null) return;
+    if (secim == 'HARD') {
+      // Hizli cikis: motoru beklemeden tum acik pozisyonlari hemen
+      // guncel piyasa fiyatindan kapat, sonra oturumu durdurma istegine
+      // al (motor da gorunce STOPPED'a cevirir; isci kapaliysa bile UI
+      // hemen bos liste gosterir).
+      // Once en taze fiyatlari tazele.
+      final semboller =
+          _acik.map((p) => p['symbol'] as String).toSet().toList();
+      final fiyatlar = await _servis.guncelFiyatlar(semboller);
+      for (final p in _acik) {
+        final sem = p['symbol'] as String;
+        final g = fiyatlar[sem] ?? (p['entry_px'] as num).toDouble();
+        try {
+          await _servis.pozisyonAnindaKapat(
+            p['id'] as int,
+            (p['entry_px'] as num).toDouble(),
+            (p['qty'] as num).toDouble(),
+            g,
+          );
+        } catch (_) {
+          // Tek pozisyonda hata cikarsa digerleri kapanmaya devam etsin.
+        }
+      }
     }
+    // SOFT modda: motor pozisyonlari kendi stop/hedefine birakir;
+    // HARD modda: yukarida hepsi kapatildi.
+    await _servis.oturumDurdur(_oturumId, secim);
+    widget.onDegisti();
   }
 
   double get _sermaye => (widget.oturum['capital'] as num).toDouble();
@@ -511,6 +536,14 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     final max = noktalar.map((e) => e.y).reduce((a, b) => a > b ? a : b);
     final isProfit = noktalar.last.y >= noktalar.first.y;
     final lineColor = isProfit ? _kTeal : _kLoss;
+    // Equity henuz oynamadiysa (max == min) interval 0 olur ve fl_chart
+    // assertion atar. Bu durumda kucuk bir mutlak dolgu ekleyip grafik
+    // duzgun cizilir.
+    final yRange = max - min;
+    final yPad = yRange > 0 ? yRange * 0.005 : (max.abs() * 0.002 + 1);
+    final minY = min - yPad;
+    final maxY = max + yPad;
+    final hAralik = (maxY - minY) / 4;
 
     return _glassContainer(
       isDark,
@@ -524,12 +557,12 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
             height: 160,
             child: LineChart(
               LineChartData(
-                minY: min * 0.995,
-                maxY: max * 1.005,
+                minY: minY,
+                maxY: maxY,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: (max - min) / 4,
+                  horizontalInterval: hAralik,
                   getDrawingHorizontalLine:
                       (_) => FlLine(
                         color: Colors.white.withValues(alpha: 0.05),
