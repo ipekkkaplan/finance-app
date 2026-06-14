@@ -6,16 +6,17 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/color_scheme.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/di/locator.dart';
 
 // ── Tema sabitleri ────────────────────────────────────────────────
-const _kBgTop = Color(0xFF07111F);
-const _kBgMid = Color(0xFF0C1B31);
-const _kBgBot = Color(0xFF0F2040);
-const _kTeal = Color(0xFF00C9A7);
-const _kCard = Color(0xFF132040);
-const _kCardInner = Color(0xFF0C1A30);
-const _kGlassBorder = Color(0x18FFFFFF);
-const _kProfit = Color(0xFF00E676);
+const _kBgTop = AppColors.bgGradientTop;
+const _kBgMid = AppColors.bgGradientMid;
+const _kBgBot = AppColors.bgGradientBot;
+const _kTeal = AppColors.accentTeal;
+const _kCard = AppColors.darkCard;
+const _kCardInner = AppColors.darkCardInner;
+const _kGlassBorder = AppColors.glassBorder;
+const _kProfit = AppColors.profitDark;
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -42,11 +43,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void initState() {
     super.initState();
     final uid = context.read<AuthProvider>().uid;
-    _portfolioStream =
-        FirebaseFirestore.instance
-            .collection('user_match')
-            .doc(uid)
-            .snapshots();
+    _portfolioStream = locator.portfolio.watch(uid);
   }
 
   void _showEditBalanceDialog(BuildContext context) {
@@ -140,12 +137,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       if (newVal != null && newVal >= 0) {
                         try {
                           final uid = context.read<AuthProvider>().uid;
-                          await FirebaseFirestore.instance
-                              .collection('user_match')
-                              .doc(uid)
-                              .set({
-                                'totalBalance': newVal,
-                              }, SetOptions(merge: true));
+                          await locator.portfolio
+                              .updateTotalBalance(uid, newVal);
                         } catch (e) {
                           debugPrint("Bakiye kaydedilirken hata: $e");
                         }

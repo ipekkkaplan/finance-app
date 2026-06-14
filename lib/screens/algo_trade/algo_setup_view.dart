@@ -1,6 +1,7 @@
 // screens/algo_trade/algo_setup_view.dart
 import 'package:flutter/material.dart';
-import '../../services/algo_trade_service.dart';
+import '../../core/theme/color_scheme.dart';
+import '../../core/di/locator.dart';
 
 const _sektorler = [
   'Araci Kurum',
@@ -23,11 +24,11 @@ const _sektorler = [
 ];
 
 // ── Ortak renk sabitleri ──────────────────────────────────────────
-const _kTeal = Color(0xFF00C9A7);
-const _kTeal2 = Color(0xFF00A88A);
-const _kGlass = Color(0x0DFFFFFF);
-const _kGlassBorder = Color(0x18FFFFFF);
-const _kInnerGlass = Color(0x08FFFFFF);
+const _kTeal = AppColors.accentTeal;
+const _kTeal2 = AppColors.tealDark;
+const _kGlass = AppColors.glassFill;
+const _kGlassBorder = AppColors.glassBorder;
+const _kInnerGlass = AppColors.glassFillInner;
 
 class AlgoSetupView extends StatefulWidget {
   final VoidCallback onBasladi;
@@ -38,7 +39,7 @@ class AlgoSetupView extends StatefulWidget {
 }
 
 class _AlgoSetupViewState extends State<AlgoSetupView> {
-  final _servis = AlgoTradeService.instance;
+  final _servis = locator.algoTrade;
   final _sermayeCtrl = TextEditingController(text: '100000');
   final _beyazCtrl = TextEditingController();
   final _karaCtrl = TextEditingController();

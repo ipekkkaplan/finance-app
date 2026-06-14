@@ -2,14 +2,15 @@
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../services/algo_trade_service.dart';
+import '../../core/theme/color_scheme.dart';
+import '../../core/di/locator.dart';
 
-const _kTeal = Color(0xFF00C9A7);
-const _kGlass = Color(0x0DFFFFFF);
-const _kGlassBorder = Color(0x18FFFFFF);
-const _kInnerGlass = Color(0x08FFFFFF);
-const _kProfit = Color(0xFF00E676);
-const _kLoss = Color(0xFFEF5350);
+const _kTeal = AppColors.accentTeal;
+const _kGlass = AppColors.glassFill;
+const _kGlassBorder = AppColors.glassBorder;
+const _kInnerGlass = AppColors.glassFillInner;
+const _kProfit = AppColors.profitDark;
+const _kLoss = AppColors.lossDark;
 
 class AlgoLiveView extends StatefulWidget {
   final Map<String, dynamic> oturum;
@@ -25,7 +26,7 @@ class AlgoLiveView extends StatefulWidget {
 }
 
 class _AlgoLiveViewState extends State<AlgoLiveView> {
-  final _servis = AlgoTradeService.instance;
+  final _servis = locator.algoTrade;
   Map<String, dynamic>? _durum;
   List<Map<String, dynamic>> _acik = [];
   List<Map<String, dynamic>> _kapanan = [];

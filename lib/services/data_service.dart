@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../core/utils/app_logger.dart';
 
 // Modeller
 import '../models/sector_model.dart';
@@ -45,7 +45,7 @@ class DataService {
 
       return _sectorCache!;
     } catch (e) {
-      debugPrint("DataService (Sector) HATA: $e");
+      AppLogger.error('DataService (Sector)', e);
       return [];
     }
   }
@@ -59,7 +59,7 @@ class DataService {
       _valuationCache = jsonList.map((jsonItem) => ValuationModel.fromJson(jsonItem)).toList();
       return _valuationCache!;
     } catch (e) {
-      debugPrint("DataService (Valuation) HATA: $e");
+      AppLogger.error('DataService (Valuation)', e);
       return [];
     }
   }
@@ -108,7 +108,7 @@ class DataService {
       return trends;
 
     } catch (e) {
-      debugPrint("DataService (Trend Parse) HATA: $e");
+      AppLogger.error('DataService (Trend Parse)', e);
       return [];
     }
   }
@@ -124,7 +124,7 @@ class DataService {
         try {
           jsonString = await rootBundle.loadString('assets/hisse_ayrinti.json');
         } catch (e2) {
-          debugPrint("KRİTİK HATA: JSON dosyası okunamadı! Pubspec.yaml'ı kontrol et.");
+          AppLogger.error('DataService: hisse_ayrinti.json okunamadı (pubspec kontrol)');
           return [];
         }
       }
@@ -133,7 +133,7 @@ class DataService {
         final List<dynamic> data = json.decode(jsonString);
         _stocksCache = data.map((json) => StockModel.fromJson(json)).toList();
       } catch (e) {
-        debugPrint("JSON Ayrıştırma Hatası: $e");
+        AppLogger.error('DataService: JSON ayrıştırma', e);
         return [];
       }
     }
@@ -142,7 +142,7 @@ class DataService {
     final results = _stocksCache!
         .where((stock) => _normalize(stock.sektor) == _normalize(sectorName))
         .toList();
-    debugPrint("$sectorName için ${results.length} şirket bulundu.");
+    AppLogger.debug('$sectorName için ${results.length} şirket bulundu.');
     return results;
   }
 

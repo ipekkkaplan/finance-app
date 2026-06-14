@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../core/utils/app_logger.dart';
 
 import '../models/analyst_signal_model.dart';
 
@@ -33,7 +33,7 @@ class AnalystSignalsService {
       _cache = map;
       return map;
     } catch (e) {
-      debugPrint('AnalystSignalsService: finscope_veri_seti.json okunamadı: $e');
+      AppLogger.error('AnalystSignalsService: finscope_veri_seti.json okunamadı', e);
       _cache = {};
       return _cache!;
     }

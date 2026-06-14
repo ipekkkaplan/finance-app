@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import '../core/utils/app_logger.dart';
 
 /// assets/Nihai_Risk_Raporu.json dosyasını okur.
 /// Hisse kodu → risk skoru + potansiyel getiri + detay sözlüğü döndürür.
@@ -31,7 +31,7 @@ class RiskDataService {
       _cache = map;
       return map;
     } catch (e) {
-      debugPrint('RiskDataService HATA: $e');
+      AppLogger.error('RiskDataService', e);
       _cache = {};
       return _cache!;
     }
