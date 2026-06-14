@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:finance_app/providers/auth_provider.dart';
-import 'package:finance_app/screens/portfolio/portfolio_screen.dart';
+import 'package:finance_app/screens/home/home_screen.dart';
 
 class AnalysisWizardScreen extends StatefulWidget {
   const AnalysisWizardScreen({super.key});
@@ -456,12 +456,15 @@ class _AnalysisWizardScreenState extends State<AnalysisWizardScreen> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
+                // Portföy, ana kabuğun bir sekmesi (index 3). Tek başına
+                // PortfolioScreen'e gidince alt menü/çıkış kalmıyordu; bunun
+                // yerine portföy sekmesi seçili ana kabuğa dönüyoruz.
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PortfolioScreen(),
+                    builder: (context) => const HomeScreen(initialIndex: 3),
                   ),
-                      (route) => false,
+                  (route) => false,
                 );
               },
               child: const Text("Portföyüme Git"),

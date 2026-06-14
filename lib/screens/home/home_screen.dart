@@ -59,6 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) => setState(() => _selectedIndex = index);
 
   Widget _buildNavItem(IconData icon, String label, bool isSelected) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedColor = isDark ? Colors.white30 : Colors.grey.shade500;
+    final selectedIconColor = isDark ? Colors.white : _kTeal;
     return GestureDetector(
       onTap:
           () => _onItemTapped(
@@ -93,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.white30,
+              color: isSelected ? selectedIconColor : unselectedColor,
               size: 22,
             ),
           ),
@@ -103,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 10,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected ? _kTeal : Colors.white30,
+              color: isSelected ? _kTeal : unselectedColor,
             ),
           ),
         ],
