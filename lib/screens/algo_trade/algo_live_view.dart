@@ -128,14 +128,13 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     if (secim == null) return;
     if (secim == 'HARD') {
       // Hizli cikis: motoru beklemeden tum acik pozisyonlari hemen
-      // guncel piyasa fiyatindan kapat, sonra oturumu durdurma istegine
-      // al (motor da gorunce STOPPED'a cevirir; isci kapaliysa bile UI
-      // hemen bos liste gosterir).
-      // Once en taze fiyatlari tazele.
+      // guncel piyasa fiyatindan kapat, sonra oturumu DOGRUDAN STOPPED'a
+      // al. Motoru beklemeyiz; bilgisayar kapali olsa bile cikis anlik.
       final semboller =
           _acik.map((p) => p['symbol'] as String).toSet().toList();
       final fiyatlar = await _servis.guncelFiyatlar(semboller);
-      for (final p in _acik) {
+      // Acik pozisyonlari paralelde kapat (her biri tek update sorgusu).
+      await Future.wait(_acik.map((p) async {
         final sem = p['symbol'] as String;
         final g = fiyatlar[sem] ?? (p['entry_px'] as num).toDouble();
         try {
@@ -148,11 +147,13 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
         } catch (_) {
           // Tek pozisyonda hata cikarsa digerleri kapanmaya devam etsin.
         }
-      }
+      }));
+      // Oturumu hemen STOPPED'a al (STOP_REQUESTED'ta donup kalmasin).
+      await _servis.oturumTamamenDurdur(_oturumId, 'HARD');
+    } else {
+      // SOFT: pozisyonlar kendi stop/hedefine birakilir, motora bildir.
+      await _servis.oturumDurdur(_oturumId, secim);
     }
-    // SOFT modda: motor pozisyonlari kendi stop/hedefine birakir;
-    // HARD modda: yukarida hepsi kapatildi.
-    await _servis.oturumDurdur(_oturumId, secim);
     widget.onDegisti();
   }
 

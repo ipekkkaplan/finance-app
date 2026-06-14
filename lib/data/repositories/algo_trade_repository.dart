@@ -35,6 +35,9 @@ class AlgoTradeRepository {
   Future<void> oturumDurdur(int oturumId, String cikisModu) =>
       _service.oturumDurdur(oturumId, cikisModu);
 
+  Future<void> oturumTamamenDurdur(int oturumId, String cikisModu) =>
+      _service.oturumTamamenDurdur(oturumId, cikisModu);
+
   Future<List<Map<String, dynamic>>> acikPozisyonlar(int oturumId) =>
       _service.acikPozisyonlar(oturumId);
 

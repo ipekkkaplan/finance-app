@@ -83,6 +83,16 @@ class AlgoTradeService {
     }).eq('id', oturumId);
   }
 
+  // Hizli cikiste (HARD) app pozisyonlari kendisi kapattigi icin
+  // oturumu dogrudan STOPPED'a aliriz; motora bekleme kalmaz.
+  Future<void> oturumTamamenDurdur(int oturumId, String cikisModu) async {
+    await _sb.from('portfolio_sessions').update({
+      'status': 'STOPPED',
+      'stop_mode': cikisModu,
+      'stopped_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', oturumId);
+  }
+
   Future<List<Map<String, dynamic>>> acikPozisyonlar(int oturumId) async {
     final r = await _sb
         .from('paper_trades')
