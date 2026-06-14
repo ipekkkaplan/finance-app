@@ -45,4 +45,14 @@ class AlgoTradeRepository {
       _service.equityEgrisi(oturumId);
 
   Future<Map<String, dynamic>> sistemDurumu() => _service.sistemDurumu();
+
+  Future<Map<String, double>> guncelFiyatlar(List<String> semboller) =>
+      _service.guncelFiyatlar(semboller);
+
+  Future<void> pozisyonGuncelle(int tradeId, double stopPx, double tpPx) =>
+      _service.pozisyonGuncelle(tradeId, stopPx, tpPx);
+
+  Future<void> pozisyonAnindaKapat(
+          int tradeId, double entryPx, double qty, double guncelFiyat) =>
+      _service.pozisyonAnindaKapat(tradeId, entryPx, qty, guncelFiyat);
 }
