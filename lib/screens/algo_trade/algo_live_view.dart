@@ -31,6 +31,9 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
   List<Map<String, dynamic>> _acik = [];
   List<Map<String, dynamic>> _kapanan = [];
   List<Map<String, dynamic>> _equity = [];
+  // Acik pozisyonlardaki hisselerin en guncel piyasa fiyati (anlik
+  // kar/zarar ve "Hemen Sat" icin kullanilir).
+  Map<String, double> _guncelFiyatlar = {};
   Timer? _yenileyici;
 
   int get _oturumId => widget.oturum['id'] as int;
@@ -53,12 +56,16 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     final a = await _servis.acikPozisyonlar(_oturumId);
     final k = await _servis.kapananIslemler(_oturumId);
     final e = await _servis.equityEgrisi(_oturumId);
+    final semboller =
+        a.map((p) => p['symbol'] as String).toSet().toList();
+    final f = await _servis.guncelFiyatlar(semboller);
     if (mounted) {
       setState(() {
         _durum = d;
         _acik = a;
         _kapanan = k;
         _equity = e;
+        _guncelFiyatlar = f;
       });
     }
   }
@@ -620,83 +627,243 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
   }
 
   Widget _pozisyonItem(bool isDark, Map<String, dynamic> p) {
+    final sembol = p['symbol'] as String? ?? '?';
+    final giris = (p['entry_px'] as num).toDouble();
+    final adet = (p['qty'] as num).toDouble();
+    final stop = (p['stop_px'] as num).toDouble();
+    final hedef = (p['tp_px'] as num).toDouble();
+    final guncel = _guncelFiyatlar[sembol];
+    final kz = guncel != null ? (guncel - giris) * adet : null;
+    final kzYuzde = (guncel != null && giris > 0)
+        ? ((guncel - giris) / giris) * 100
+        : null;
+    final pozitif = (kz ?? 0) >= 0;
+    final kzRengi = pozitif ? _kProfit : _kLoss;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? _kInnerGlass : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
         border: isDark ? Border.all(color: _kGlassBorder, width: 1) : null,
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: _kTeal.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _kTeal.withValues(alpha: 0.25)),
-            ),
-            child: Center(
-              child: Text(
-                (p['symbol'] as String? ?? '?').substring(0, 2),
-                style: const TextStyle(
-                  color: _kTeal,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  p['symbol'] ?? '',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  'Adet: ${(p['qty'] as num).toStringAsFixed(1)}'
-                  '  ·  Giriş: ₺${(p['entry_px'] as num).toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: isDark ? Colors.white38 : Colors.grey,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+      // Karta dokunmak stop/hedef duzenleme diyalogunu acar.
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _stopTpDuzenle(p),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
             children: [
-              Text(
-                'Stop ₺${(p['stop_px'] as num).toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: _kLoss,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: _kTeal.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _kTeal.withValues(alpha: 0.25)),
+                ),
+                child: Center(
+                  child: Text(
+                    sembol.substring(0, sembol.length >= 2 ? 2 : 1),
+                    style: const TextStyle(
+                      color: _kTeal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               ),
-              Text(
-                'Hedef ₺${(p['tp_px'] as num).toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: _kProfit,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          sembol,
+                          style: TextStyle(
+                            color:
+                                isDark ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.edit,
+                            size: 12,
+                            color: isDark
+                                ? Colors.white38
+                                : Colors.grey.shade500),
+                      ],
+                    ),
+                    Text(
+                      'Adet: ${adet.toStringAsFixed(1)}'
+                      '  ·  Giriş: ₺${giris.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white38 : Colors.grey,
+                        fontSize: 11,
+                      ),
+                    ),
+                    if (guncel != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'Güncel: ₺${guncel.toStringAsFixed(2)}'
+                          '  ·  ${pozitif ? '+' : ''}'
+                          '${kzYuzde!.toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            color: kzRengi,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Stop ₺${stop.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: _kLoss,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    'Hedef ₺${hedef.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: _kProfit,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 6),
+              // Tek pozisyonu motoru beklemeden hemen kapatma butonu.
+              IconButton(
+                icon: const Icon(Icons.flash_on, color: _kLoss, size: 22),
+                tooltip: 'Hemen Sat',
+                onPressed: guncel == null ? null : () => _anlikSat(p, guncel),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Stop ve hedef fiyatini duzenleme diyalogu. Kaydedince Supabase'deki
+  // satir guncellenir; motor sonraki turda bu degerleri kullanir.
+  Future<void> _stopTpDuzenle(Map<String, dynamic> p) async {
+    final stopCtrl = TextEditingController(
+        text: (p['stop_px'] as num).toStringAsFixed(2));
+    final tpCtrl = TextEditingController(
+        text: (p['tp_px'] as num).toStringAsFixed(2));
+    final giris = (p['entry_px'] as num).toDouble();
+    final sonuc = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text('${p['symbol']} - Stop ve Hedef'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Giriş fiyatı: ₺${giris.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: stopCtrl,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                  labelText: 'Stop fiyatı (₺)',
+                  border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: tpCtrl,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                  labelText: 'Hedef fiyatı (₺)',
+                  border: OutlineInputBorder()),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Vazgeç')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Kaydet')),
         ],
       ),
     );
+    if (sonuc != true) return;
+    final yeniStop = double.tryParse(stopCtrl.text.replaceAll(',', '.'));
+    final yeniTp = double.tryParse(tpCtrl.text.replaceAll(',', '.'));
+    if (yeniStop == null || yeniTp == null) {
+      _uyari('Geçerli sayı girin.');
+      return;
+    }
+    if (yeniStop >= giris || yeniTp <= giris) {
+      _uyari('Stop giriş altında, Hedef giriş üstünde olmalı.');
+      return;
+    }
+    try {
+      await _servis.pozisyonGuncelle(p['id'] as int, yeniStop, yeniTp);
+      _veriCek();
+    } catch (e) {
+      _uyari('Güncellenemedi: $e');
+    }
+  }
+
+  // Tek pozisyonu motoru beklemeden satar. Komisyon ve slippage motorla
+  // aynı kuralla uygulanır.
+  Future<void> _anlikSat(Map<String, dynamic> p, double guncelFiyat) async {
+    final onay = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text('${p['symbol']} - Hemen Sat'),
+        content: Text(
+          'Bu pozisyon su anki piyasa fiyatından (₺${guncelFiyat.toStringAsFixed(2)}) '
+          'anında kapatılacak. Motor beklenmez.',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Vazgeç')),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: _kLoss),
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Sat')),
+        ],
+      ),
+    );
+    if (onay != true) return;
+    try {
+      await _servis.pozisyonAnindaKapat(
+        p['id'] as int,
+        (p['entry_px'] as num).toDouble(),
+        (p['qty'] as num).toDouble(),
+        guncelFiyat,
+      );
+      _veriCek();
+    } catch (e) {
+      _uyari('Satış başarısız: $e');
+    }
+  }
+
+  void _uyari(String mesaj) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mesaj)));
   }
 
   // ── Kapanan İşlemler ─────────────────────────────────────────────

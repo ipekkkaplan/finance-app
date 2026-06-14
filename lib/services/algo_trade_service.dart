@@ -104,6 +104,54 @@ class AlgoTradeService {
     return List<Map<String, dynamic>>.from(r);
   }
 
+  // Verilen sembollerin en guncel piyasa fiyatini (live_prices son bar
+  // kapanisi) dondurur. Anlik kar/zarar gostermek icin kullanilir.
+  Future<Map<String, double>> guncelFiyatlar(List<String> semboller) async {
+    if (semboller.isEmpty) return {};
+    final r = await _sb
+        .from('live_prices')
+        .select('symbol, ts, close')
+        .inFilter('symbol', semboller)
+        .order('ts', ascending: false)
+        .limit(semboller.length * 8);
+    final son = <String, double>{};
+    for (final row in r) {
+      final s = row['symbol'] as String;
+      if (!son.containsKey(s) && row['close'] != null) {
+        son[s] = (row['close'] as num).toDouble();
+      }
+    }
+    return son;
+  }
+
+  // Acik bir pozisyonun stop ve hedef fiyatlarini gunceller. Motor her
+  // turda DB'den okudugu icin degisiklik anlik etkili olur.
+  Future<void> pozisyonGuncelle(
+      int tradeId, double stopPx, double tpPx) async {
+    await _sb.from('paper_trades').update({
+      'stop_px': stopPx,
+      'tp_px': tpPx,
+    }).eq('id', tradeId);
+  }
+
+  // Tek bir pozisyonu motoru beklemeden hemen kapatir. Cikis fiyati
+  // su anki piyasa fiyati uzerinden komisyon ve slippage dusulerek
+  // hesaplanir; motorun "satis_fiyati" kuraliyla birebir tutarli.
+  Future<void> pozisyonAnindaKapat(
+      int tradeId, double entryPx, double qty, double guncelFiyat) async {
+    const komisyon = 0.0010;
+    const slippage = 0.0005;
+    final cikis = guncelFiyat * (1 - slippage - komisyon);
+    final pnl = (cikis - entryPx) * qty;
+    await _sb.from('paper_trades').update({
+      'status': 'CLOSED',
+      'exit_ts': DateTime.now().toUtc().toIso8601String(),
+      'exit_px': cikis,
+      'exit_reason': 'MANUAL_SELL',
+      'pnl': pnl,
+    }).eq('id', tradeId);
+  }
+
   Future<List<Map<String, dynamic>>> equityEgrisi(int oturumId) async {
     final r = await _sb
         .from('equity_curve')
