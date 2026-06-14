@@ -5,6 +5,7 @@ import 'package:finance_app/screens/sectors/sectors_screen.dart';
 import 'package:finance_app/screens/settings/settings_screen.dart';
 import 'package:finance_app/screens/algo_trade/algo_trade_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/sector_model.dart';
 import '../../models/valuation_model.dart';
@@ -123,12 +124,17 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: const Text(
+        // Açık zeminde status bar ikonları koyu, koyu zeminde beyaz olmalı.
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        title: Text(
           'FinScope AI',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
             letterSpacing: 0.3,
+            // Şeffaf AppBar + açık zeminde beyaz başlık görünmüyordu.
+            color: isDark ? Colors.white : AppColors.primaryLight,
           ),
         ),
         centerTitle: false,
