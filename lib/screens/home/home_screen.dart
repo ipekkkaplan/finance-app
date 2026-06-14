@@ -9,25 +9,26 @@ import 'package:flutter/material.dart';
 import '../../models/sector_model.dart';
 import '../../models/valuation_model.dart';
 import '../../core/theme/color_scheme.dart';
-import '../../services/data_service.dart';
+import '../../core/di/locator.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/dashboard_feature_card.dart';
 import '../../widgets/section_header.dart';
+import '../../widgets/app_card.dart';
 import '../sentiment/sentiment_screen.dart';
 
 // ── Tema sabitleri ────────────────────────────────────────────────
 // Referans görseldeki koyu lacivert gradyan arka plan
-const _kBgTop = Color(0xFF07111F);
-const _kBgMid = Color(0xFF0C1B31);
-const _kBgBot = Color(0xFF0F2040);
+const _kBgTop = AppColors.bgGradientTop;
+const _kBgMid = AppColors.bgGradientMid;
+const _kBgBot = AppColors.bgGradientBot;
 
 // Cam efekti kart — çok hafif beyaz overlay + ince border
-const _kGlassColor = Color(0x0DFFFFFF); // %5 beyaz
-const _kGlassBorder = Color(0x18FFFFFF); // %9 beyaz border
-const _kInnerGlass = Color(0x08FFFFFF); // %3 — iç kart
+const _kGlassColor = AppColors.glassFill; // %5 beyaz
+const _kGlassBorder = AppColors.glassBorder; // %9 beyaz border
+const _kInnerGlass = AppColors.glassFillInner; // %3 — iç kart
 
 // Teal vurgu
-const _kTeal = Color(0xFF00C9A7);
+const _kTeal = AppColors.accentTeal;
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -219,7 +220,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   late Future<List<ValuationModel>> _valuationFuture;
   late Future<List<SectorModel>> _sectorFuture;
-  final DataService _dataService = DataService();
+  final _dataService = locator.market;
 
   @override
   void initState() {
@@ -228,32 +229,15 @@ class _DashboardPageState extends State<DashboardPage> {
     _sectorFuture = _dataService.loadSectorData();
   }
 
-  // ── Solid kart dekorasyonu (sektörler/portföy sayfalarıyla aynı) ─
+  // ── Kart dekorasyonu → paylaşılan widgets/app_card.dart ─────────
   BoxDecoration _glass({double radius = 16, Color? borderColor}) =>
-      BoxDecoration(
-        color: const Color(0xFF132040),
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: borderColor ?? _kGlassBorder, width: 1),
-      );
+      glassCardDecoration(radius: radius, borderColor: borderColor);
 
   BoxDecoration _lightCard(
     Color cardColor,
     bool isDark, {
     double radius = 16,
-  }) => BoxDecoration(
-    color: cardColor,
-    borderRadius: BorderRadius.circular(radius),
-    boxShadow:
-        isDark
-            ? null
-            : [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-  );
+  }) => lightCardDecoration(cardColor, withShadow: !isDark, radius: radius);
 
   @override
   Widget build(BuildContext context) {

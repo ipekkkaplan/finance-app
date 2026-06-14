@@ -55,6 +55,39 @@ class AppColors {
   /// Input alanı arka planı (dark mode).
   static const Color darkInputBg = Color(0xFF0A1220);
 
+  // ── DARK MODE EKRAN GRADYANI ────────────────────────────
+  /// Ekran arka plan gradyanının üç durağı. Daha önce her ekranda
+  /// `_kBgTop/_kBgMid/_kBgBot` olarak kopyalanmıştı; tek kaynak burası.
+  static const Color bgGradientTop = Color(0xFF07111F);
+  static const Color bgGradientMid = Color(0xFF0C1B31);
+  static const Color bgGradientBot = Color(0xFF0F2040);
+
+  /// Koyu tema ekran arka planı (üstten alta).
+  static const List<Color> backgroundGradientDark = [
+    bgGradientTop,
+    bgGradientMid,
+    bgGradientBot,
+  ];
+
+  /// Açık tema düz ekran arka planı.
+  static const Color lightScaffold = Color(0xFFF5F5F5);
+
+  /// Koyu tema alt navigasyon barı.
+  static const Color darkNavBar = Color(0xFF0E1E35);
+
+  // ── CAM (GLASS) EFEKTİ OVERLAY'LERİ ─────────────────────
+  /// Kart üstü çok hafif beyaz dolgu (%5).
+  static const Color glassFill = Color(0x0DFFFFFF);
+
+  /// İç kart dolgusu (%3).
+  static const Color glassFillInner = Color(0x08FFFFFF);
+
+  /// Cam kart ince border (%9 beyaz).
+  static const Color glassBorder = Color(0x18FFFFFF);
+
+  /// Teal vurgunun koyu tonu (gradyan/aktif durum).
+  static const Color tealDark = Color(0xFF00A88A);
+
   // ── SEKTÖR RENKLERİ ─────────────────────────────────────
   static const Map<String, Color> sectorColors = {
     'Teknoloji': Color(0xFF9D46FF),

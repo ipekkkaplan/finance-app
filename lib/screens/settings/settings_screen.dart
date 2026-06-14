@@ -2,19 +2,20 @@
 import 'package:finance_app/screens/auth_screen/launch_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme/color_scheme.dart';
 import '../../theme_provider.dart';
 import '../../services/auth_service.dart';
 import 'update_profile_screen.dart';
 
 // ── Tema sabitleri ────────────────────────────────────────────────
-const _kBgTop = Color(0xFF07111F);
-const _kBgMid = Color(0xFF0C1B31);
-const _kBgBot = Color(0xFF0F2040);
-const _kTeal = Color(0xFF00C9A7);
-const _kCard = Color(0xFF132040);
-const _kCardInner = Color(0xFF0C1A30);
-const _kGlassBorder = Color(0x18FFFFFF);
-const _kLoss = Color(0xFFEF5350);
+const _kBgTop = AppColors.bgGradientTop;
+const _kBgMid = AppColors.bgGradientMid;
+const _kBgBot = AppColors.bgGradientBot;
+const _kTeal = AppColors.accentTeal;
+const _kCard = AppColors.darkCard;
+const _kCardInner = AppColors.darkCardInner;
+const _kGlassBorder = AppColors.glassBorder;
+const _kLoss = AppColors.lossDark;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -516,7 +517,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       Switch(
         value: value,
-        activeColor: _kTeal,
+        activeThumbColor: _kTeal,
         activeTrackColor: _kTeal.withValues(alpha: 0.30),
         onChanged: onChange,
       ),

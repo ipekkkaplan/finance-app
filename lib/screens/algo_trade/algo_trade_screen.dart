@@ -1,15 +1,16 @@
 // screens/algo_trade/algo_trade_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../services/algo_trade_service.dart';
+import '../../core/theme/color_scheme.dart';
+import '../../core/di/locator.dart';
 import 'algo_setup_view.dart';
 import 'algo_live_view.dart';
 
 // ── Tema sabitleri (home_screen ile aynı) ────────────────────────
-const _kBgTop = Color(0xFF07111F);
-const _kBgMid = Color(0xFF0C1B31);
-const _kBgBot = Color(0xFF0F2040);
-const _kTeal = Color(0xFF00C9A7);
+const _kBgTop = AppColors.bgGradientTop;
+const _kBgMid = AppColors.bgGradientMid;
+const _kBgBot = AppColors.bgGradientBot;
+const _kTeal = AppColors.accentTeal;
 
 class AlgoTradeScreen extends StatefulWidget {
   const AlgoTradeScreen({super.key});
@@ -19,7 +20,7 @@ class AlgoTradeScreen extends StatefulWidget {
 }
 
 class _AlgoTradeScreenState extends State<AlgoTradeScreen> {
-  final _servis = AlgoTradeService.instance;
+  final _servis = locator.algoTrade;
   Map<String, dynamic>? _oturum;
   bool _yukleniyor = true;
   Timer? _zamanlayici;

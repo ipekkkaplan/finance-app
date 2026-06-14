@@ -33,6 +33,28 @@ class SentimentModel {
 
   /// Pozitif/nötr/negatif dağılımı (0-100 arası yüzde).
   int get percent => ((score + 1) / 2 * 100).round().clamp(0, 100);
+
+  SentimentModel copyWith({
+    String? hisseKodu,
+    double? score,
+    SentimentType? type,
+  }) =>
+      SentimentModel(
+        hisseKodu: hisseKodu ?? this.hisseKodu,
+        score: score ?? this.score,
+        type: type ?? this.type,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SentimentModel &&
+          other.hisseKodu == hisseKodu &&
+          other.score == score &&
+          other.type == type;
+
+  @override
+  int get hashCode => Object.hash(hisseKodu, score, type);
 }
 
 /// Sosyal medya / haber akışında gösterilecek post öğesi.

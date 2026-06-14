@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/color_scheme.dart';
 import '../../models/sentiment_model.dart';
-import '../../services/sentiment_service.dart';
+import '../../core/di/locator.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/status_badge.dart';
@@ -20,7 +20,7 @@ class SentimentScreen extends StatefulWidget {
 }
 
 class _SentimentScreenState extends State<SentimentScreen> {
-  final SentimentService _service = SentimentService();
+  final _service = locator.sentiment;
 
   late final Future<_SentimentViewData> _future;
 

@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import '../../core/theme/color_scheme.dart';
 import '../../models/sector_model.dart';
 import '../../models/sector_trend_model.dart';
-import '../../services/data_service.dart';
+import '../../core/di/locator.dart';
 import 'company_detail_screen.dart';
 
 // ── Tema sabitleri ────────────────────────────────────────────────
-const _kBgTop = Color(0xFF07111F);
-const _kBgMid = Color(0xFF0C1B31);
-const _kBgBot = Color(0xFF0F2040);
-const _kTeal = Color(0xFF00C9A7);
-const _kCard = Color(0xFF132040);
-const _kCardInner = Color(0xFF0C1A30);
-const _kGlassBorder = Color(0x18FFFFFF);
-const _kProfit = Color(0xFF00E676);
-const _kLoss = Color(0xFFEF5350);
+const _kBgTop = AppColors.bgGradientTop;
+const _kBgMid = AppColors.bgGradientMid;
+const _kBgBot = AppColors.bgGradientBot;
+const _kTeal = AppColors.accentTeal;
+const _kCard = AppColors.darkCard;
+const _kCardInner = AppColors.darkCardInner;
+const _kGlassBorder = AppColors.glassBorder;
+const _kProfit = AppColors.profitDark;
+const _kLoss = AppColors.lossDark;
 
 class SectorsScreen extends StatefulWidget {
   const SectorsScreen({super.key});
@@ -28,7 +28,7 @@ class SectorsScreen extends StatefulWidget {
 class _SectorsScreenState extends State<SectorsScreen> {
   int _selectedFilterIndex = 0;
 
-  final DataService _dataService = DataService();
+  final _dataService = locator.market;
   Future<List<SectorModel>>? _sectorsFuture;
   Future<List<SectorTrendModel>>? _trendsFuture;
 

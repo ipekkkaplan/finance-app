@@ -25,4 +25,46 @@ class ValuationModel {
       etiket: json['Etiket'] ?? 'Bilinmiyor',
     );
   }
+
+  ValuationModel copyWith({
+    String? hisseKodu,
+    String? sektor,
+    double? hisseSkor,
+    double? sektorSkor,
+    double? finalSkor,
+    String? etiket,
+  }) =>
+      ValuationModel(
+        hisseKodu: hisseKodu ?? this.hisseKodu,
+        sektor: sektor ?? this.sektor,
+        hisseSkor: hisseSkor ?? this.hisseSkor,
+        sektorSkor: sektorSkor ?? this.sektorSkor,
+        finalSkor: finalSkor ?? this.finalSkor,
+        etiket: etiket ?? this.etiket,
+      );
+
+  /// fromJson ile aynı anahtarları üretir (round-trip).
+  Map<String, dynamic> toJson() => {
+        'HisseKodu': hisseKodu,
+        'Sektor': sektor,
+        'Hisse_Skor': hisseSkor,
+        'Sektor_Skor': sektorSkor,
+        'Final_Skor': finalSkor,
+        'Etiket': etiket,
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ValuationModel &&
+          other.hisseKodu == hisseKodu &&
+          other.sektor == sektor &&
+          other.hisseSkor == hisseSkor &&
+          other.sektorSkor == sektorSkor &&
+          other.finalSkor == finalSkor &&
+          other.etiket == etiket;
+
+  @override
+  int get hashCode =>
+      Object.hash(hisseKodu, sektor, hisseSkor, sektorSkor, finalSkor, etiket);
 }
