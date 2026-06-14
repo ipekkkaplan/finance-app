@@ -197,8 +197,8 @@ class _AlgoSetupViewState extends State<AlgoSetupView> {
           child: TextField(
             controller: _sermayeCtrl,
             keyboardType: TextInputType.number,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -367,7 +367,7 @@ class _AlgoSetupViewState extends State<AlgoSetupView> {
             accent: const Color(0xFF00C853),
             child: TextField(
               controller: _beyazCtrl,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration:
                   isDark
                       ? _inputDeco('THYAO, ASELS, GARAN...')

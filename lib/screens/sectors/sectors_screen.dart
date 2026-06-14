@@ -735,8 +735,10 @@ class _SectorsScreenState extends State<SectorsScreen> {
       const SizedBox(width: 8),
       Text(
         text,
-        style: const TextStyle(
-          color: Colors.white70,
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white70
+              : Colors.black87,
           fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
