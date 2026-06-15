@@ -661,15 +661,26 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     );
   }
 
-  // Zaman damgasini Istanbul saatiyle HH:mm formatina cevirir.
+  // Zaman damgasini bicimlendirir. Bugune aitse 'HH:mm', degilse
+  // 'g Ay HH:mm' (orn '13 Haz 18:00') olarak gosterilir. Boylece
+  // verinin ne kadar eski oldugu net anlasilir.
   String _saatFormat(dynamic ts) {
     if (ts == null) return '—';
+    const aylar = [
+      'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
+      'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
+    ];
     try {
       final t = ts is DateTime ? ts : DateTime.parse(ts.toString());
-      final yerel = t.toLocal();
-      final h = yerel.hour.toString().padLeft(2, '0');
-      final m = yerel.minute.toString().padLeft(2, '0');
-      return '$h:$m';
+      final y = t.toLocal();
+      final simdi = DateTime.now();
+      final saat =
+          '${y.hour.toString().padLeft(2, '0')}:${y.minute.toString().padLeft(2, '0')}';
+      final ayniGun = y.year == simdi.year &&
+          y.month == simdi.month &&
+          y.day == simdi.day;
+      if (ayniGun) return saat;
+      return '${y.day} ${aylar[y.month - 1]} $saat';
     } catch (_) {
       return '—';
     }

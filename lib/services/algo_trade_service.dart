@@ -114,26 +114,56 @@ class AlgoTradeService {
     return List<Map<String, dynamic>>.from(r);
   }
 
-  // Verilen sembollerin en guncel piyasa fiyatini ve o fiyatin yazildigi
-  // zamani dondurur. Her sembol icin {'fiyat': double, 'ts': iso-string}.
+  // Verilen sembollerin en guncel piyasa fiyatini ve fiyatin temel
+  // aldigi gercek market saatini dondurur.
+  //
+  // Onemli ayrim:
+  //   - 'fiyat'  : live_prices tablosundan en yeni close. Test modunda
+  //     simule edilmis (random walk), gercek modda taze borsa fiyati.
+  //   - 'ts'     : ohlcv_1h tablosundaki son saatlik bar zamani — yani
+  //     fiyatin temel aldigi GERCEK piyasa zamani. Test modunda borsa
+  //     kapali oldugu icin bu damga eski olur (Cuma kapanisi gibi) ve
+  //     kullaniciya verinin ne kadar gec oldugunu durustce gosterir.
   Future<Map<String, Map<String, dynamic>>> guncelFiyatlar(
       List<String> semboller) async {
     if (semboller.isEmpty) return {};
-    final r = await _sb
+
+    final fiyatSatirlari = await _sb
         .from('live_prices')
-        .select('symbol, ts, close')
+        .select('symbol, close')
         .inFilter('symbol', semboller)
         .order('ts', ascending: false)
         .limit(semboller.length * 8);
-    final son = <String, Map<String, dynamic>>{};
-    for (final row in r) {
+    final fiyatlar = <String, double>{};
+    for (final row in fiyatSatirlari) {
       final s = row['symbol'] as String;
-      if (!son.containsKey(s) && row['close'] != null) {
-        son[s] = {
-          'fiyat': (row['close'] as num).toDouble(),
-          'ts': row['ts'],
-        };
+      if (!fiyatlar.containsKey(s) && row['close'] != null) {
+        fiyatlar[s] = (row['close'] as num).toDouble();
       }
+    }
+
+    final zamanSatirlari = await _sb
+        .from('ohlcv_1h')
+        .select('symbol, ts')
+        .inFilter('symbol', semboller)
+        .order('ts', ascending: false)
+        .limit(semboller.length * 4);
+    final zamanlar = <String, dynamic>{};
+    for (final row in zamanSatirlari) {
+      final s = row['symbol'] as String;
+      if (!zamanlar.containsKey(s)) {
+        zamanlar[s] = row['ts'];
+      }
+    }
+
+    final son = <String, Map<String, dynamic>>{};
+    for (final s in semboller) {
+      if (!fiyatlar.containsKey(s)) continue;
+      son[s] = {
+        'fiyat': fiyatlar[s],
+        'ts': zamanlar[s] ??
+            DateTime.now().toUtc().toIso8601String(),
+      };
     }
     return son;
   }
