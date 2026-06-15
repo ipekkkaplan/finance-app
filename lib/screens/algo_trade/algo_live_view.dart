@@ -33,7 +33,7 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
   List<Map<String, dynamic>> _equity = [];
   // Acik pozisyonlardaki hisselerin en guncel piyasa fiyati (anlik
   // kar/zarar ve "Hemen Sat" icin kullanilir).
-  Map<String, double> _guncelFiyatlar = {};
+  Map<String, Map<String, dynamic>> _guncelFiyatlar = {};
   Timer? _yenileyici;
 
   int get _oturumId => widget.oturum['id'] as int;
@@ -136,7 +136,8 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
       // Acik pozisyonlari paralelde kapat (her biri tek update sorgusu).
       await Future.wait(_acik.map((p) async {
         final sem = p['symbol'] as String;
-        final g = fiyatlar[sem] ?? (p['entry_px'] as num).toDouble();
+        final g = (fiyatlar[sem]?['fiyat'] as num?)?.toDouble() ??
+            (p['entry_px'] as num).toDouble();
         try {
           await _servis.pozisyonAnindaKapat(
             p['id'] as int,
@@ -660,135 +661,244 @@ class _AlgoLiveViewState extends State<AlgoLiveView> {
     );
   }
 
+  // Zaman damgasini Istanbul saatiyle HH:mm formatina cevirir.
+  String _saatFormat(dynamic ts) {
+    if (ts == null) return '—';
+    try {
+      final t = ts is DateTime ? ts : DateTime.parse(ts.toString());
+      final yerel = t.toLocal();
+      final h = yerel.hour.toString().padLeft(2, '0');
+      final m = yerel.minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    } catch (_) {
+      return '—';
+    }
+  }
+
   Widget _pozisyonItem(bool isDark, Map<String, dynamic> p) {
     final sembol = p['symbol'] as String? ?? '?';
     final giris = (p['entry_px'] as num).toDouble();
     final adet = (p['qty'] as num).toDouble();
     final stop = (p['stop_px'] as num).toDouble();
     final hedef = (p['tp_px'] as num).toDouble();
-    final guncel = _guncelFiyatlar[sembol];
-    final kz = guncel != null ? (guncel - giris) * adet : null;
+    final girisSaat = _saatFormat(p['entry_ts']);
+
+    final guncelMap = _guncelFiyatlar[sembol];
+    final guncel =
+        (guncelMap?['fiyat'] as num?)?.toDouble();
+    final guncelSaat =
+        guncelMap == null ? '—' : _saatFormat(guncelMap['ts']);
     final kzYuzde = (guncel != null && giris > 0)
         ? ((guncel - giris) / giris) * 100
         : null;
-    final pozitif = (kz ?? 0) >= 0;
+    final pozitif = (kzYuzde ?? 0) >= 0;
     final kzRengi = pozitif ? _kProfit : _kLoss;
 
+    final mutedRengi = isDark ? Colors.white54 : Colors.grey.shade600;
+    final govde = isDark ? Colors.white : Colors.black87;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: isDark ? _kInnerGlass : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: isDark ? Border.all(color: _kGlassBorder, width: 1) : null,
       ),
-      // Karta dokunmak stop/hedef duzenleme diyalogunu acar.
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         onTap: () => _stopTpDuzenle(p),
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: _kTeal.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _kTeal.withValues(alpha: 0.25)),
-                ),
-                child: Center(
-                  child: Text(
-                    sembol.substring(0, sembol.length >= 2 ? 2 : 1),
-                    style: const TextStyle(
-                      color: _kTeal,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+              // Baslik: avatar + sembol + duzenle + ⚡
+              Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: _kTeal.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(11),
+                      border: Border.all(color: _kTeal.withValues(alpha: 0.25)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        sembol.substring(
+                            0, sembol.length >= 2 ? 2 : 1),
+                        style: const TextStyle(
+                          color: _kTeal,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Row(
                       children: [
                         Text(
                           sembol,
                           style: TextStyle(
-                            color:
-                                isDark ? Colors.white : Colors.black87,
+                            color: govde,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 17,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Icon(Icons.edit,
-                            size: 12,
-                            color: isDark
-                                ? Colors.white38
-                                : Colors.grey.shade500),
+                        Icon(Icons.edit_outlined,
+                            size: 14, color: mutedRengi),
                       ],
                     ),
-                    Text(
-                      'Adet: ${adet.toStringAsFixed(1)}'
-                      '  ·  Giriş: ₺${giris.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: isDark ? Colors.white38 : Colors.grey,
-                        fontSize: 11,
-                      ),
-                    ),
-                    if (guncel != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          'Güncel: ₺${guncel.toStringAsFixed(2)}'
-                          '  ·  ${pozitif ? '+' : ''}'
-                          '${kzYuzde!.toStringAsFixed(2)}%',
-                          style: TextStyle(
-                            color: kzRengi,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Stop ₺${stop.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: _kLoss,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
                   ),
-                  Text(
-                    'Hedef ₺${hedef.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: _kProfit,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.flash_on,
+                        color: _kLoss, size: 24),
+                    tooltip: 'Hemen Sat',
+                    onPressed: guncel == null
+                        ? null
+                        : () => _anlikSat(p, guncel),
                   ),
                 ],
               ),
-              const SizedBox(width: 6),
-              // Tek pozisyonu motoru beklemeden hemen kapatma butonu.
-              IconButton(
-                icon: const Icon(Icons.flash_on, color: _kLoss, size: 22),
-                tooltip: 'Hemen Sat',
-                onPressed: guncel == null ? null : () => _anlikSat(p, guncel),
+              const SizedBox(height: 12),
+              // Bilgi satirlari
+              _pozBilgiSatir(mutedRengi, govde, 'Adet',
+                  adet.toStringAsFixed(1)),
+              const SizedBox(height: 6),
+              _pozBilgiSatir(mutedRengi, govde, 'Giriş',
+                  '₺${giris.toStringAsFixed(2)}  ·  $girisSaat'),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 64,
+                    child: Text(
+                      'Güncel',
+                      style: TextStyle(
+                          color: mutedRengi, fontSize: 12),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      guncel == null
+                          ? '—'
+                          : '₺${guncel.toStringAsFixed(2)}  ·  $guncelSaat',
+                      style: TextStyle(
+                        color: govde,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (kzYuzde != null)
+                    Container(
+                      margin: const EdgeInsets.only(right: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: kzRengi.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: kzRengi.withValues(alpha: 0.4),
+                            width: 0.5),
+                      ),
+                      child: Text(
+                        '${pozitif ? '+' : ''}'
+                        '${kzYuzde.toStringAsFixed(2)}%',
+                        style: TextStyle(
+                          color: kzRengi,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 1,
+                color: mutedRengi.withValues(alpha: 0.18),
+              ),
+              const SizedBox(height: 10),
+              // Stop ve Hedef alt sira
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Stop',
+                              style: TextStyle(
+                                  color: mutedRengi, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text(
+                            '₺${stop.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: _kLoss,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Hedef',
+                              style: TextStyle(
+                                  color: mutedRengi, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text(
+                            '₺${hedef.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: _kProfit,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _pozBilgiSatir(
+      Color etiketRengi, Color degerRengi, String etiket, String deger) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(etiket,
+              style: TextStyle(color: etiketRengi, fontSize: 12)),
+        ),
+        Expanded(
+          child: Text(
+            deger,
+            style: TextStyle(
+              color: degerRengi,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -114,9 +114,10 @@ class AlgoTradeService {
     return List<Map<String, dynamic>>.from(r);
   }
 
-  // Verilen sembollerin en guncel piyasa fiyatini (live_prices son bar
-  // kapanisi) dondurur. Anlik kar/zarar gostermek icin kullanilir.
-  Future<Map<String, double>> guncelFiyatlar(List<String> semboller) async {
+  // Verilen sembollerin en guncel piyasa fiyatini ve o fiyatin yazildigi
+  // zamani dondurur. Her sembol icin {'fiyat': double, 'ts': iso-string}.
+  Future<Map<String, Map<String, dynamic>>> guncelFiyatlar(
+      List<String> semboller) async {
     if (semboller.isEmpty) return {};
     final r = await _sb
         .from('live_prices')
@@ -124,11 +125,14 @@ class AlgoTradeService {
         .inFilter('symbol', semboller)
         .order('ts', ascending: false)
         .limit(semboller.length * 8);
-    final son = <String, double>{};
+    final son = <String, Map<String, dynamic>>{};
     for (final row in r) {
       final s = row['symbol'] as String;
       if (!son.containsKey(s) && row['close'] != null) {
-        son[s] = (row['close'] as num).toDouble();
+        son[s] = {
+          'fiyat': (row['close'] as num).toDouble(),
+          'ts': row['ts'],
+        };
       }
     }
     return son;
