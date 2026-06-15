@@ -166,6 +166,81 @@ class AlgoTradeService {
     }).eq('id', tradeId);
   }
 
+  // Kullanicinin TUM gecmis oturumlarini ve genel kar/zarar ozetini
+  // dondurur. Geçmiş Oturumlar ekrani bunu kullanir.
+  // Donen yapi:
+  //   { 'oturumlar': [ {...oturum, pnl, islem_sayisi, kazanan}, ... ],
+  //     'toplam':    { pnl, oturum, islem, kazanma_orani } }
+  Future<Map<String, dynamic>> gecmisOzet() async {
+    final uid = _uid;
+    if (uid == null) {
+      return {'oturumlar': [], 'toplam': _bosToplam()};
+    }
+    final oturumlar = List<Map<String, dynamic>>.from(
+      await _sb
+          .from('portfolio_sessions')
+          .select()
+          .eq('user_id', uid)
+          .order('started_at', ascending: false),
+    );
+    if (oturumlar.isEmpty) {
+      return {'oturumlar': [], 'toplam': _bosToplam()};
+    }
+    final ids = oturumlar.map<int>((s) => s['id'] as int).toList();
+    final trades = List<Map<String, dynamic>>.from(
+      await _sb
+          .from('paper_trades')
+          .select('session_id, pnl')
+          .inFilter('session_id', ids)
+          .eq('status', 'CLOSED'),
+    );
+
+    final pnlSession = <int, double>{};
+    final cntSession = <int, int>{};
+    final winSession = <int, int>{};
+    double toplamPnl = 0;
+    int toplamIslem = 0;
+    int toplamKazanan = 0;
+    for (final t in trades) {
+      final sid = t['session_id'] as int;
+      final pnl = (t['pnl'] as num?)?.toDouble() ?? 0;
+      pnlSession[sid] = (pnlSession[sid] ?? 0) + pnl;
+      cntSession[sid] = (cntSession[sid] ?? 0) + 1;
+      if (pnl > 0) winSession[sid] = (winSession[sid] ?? 0) + 1;
+      toplamPnl += pnl;
+      toplamIslem += 1;
+      if (pnl > 0) toplamKazanan += 1;
+    }
+
+    final zenginlestirilmis = oturumlar.map<Map<String, dynamic>>((s) {
+      final sid = s['id'] as int;
+      return {
+        ...s,
+        'pnl': pnlSession[sid] ?? 0.0,
+        'islem_sayisi': cntSession[sid] ?? 0,
+        'kazanan': winSession[sid] ?? 0,
+      };
+    }).toList();
+
+    return {
+      'oturumlar': zenginlestirilmis,
+      'toplam': {
+        'pnl': toplamPnl,
+        'oturum': oturumlar.length,
+        'islem': toplamIslem,
+        'kazanma_orani':
+            toplamIslem > 0 ? toplamKazanan / toplamIslem : 0.0,
+      },
+    };
+  }
+
+  Map<String, dynamic> _bosToplam() => {
+        'pnl': 0.0,
+        'oturum': 0,
+        'islem': 0,
+        'kazanma_orani': 0.0,
+      };
+
   Future<List<Map<String, dynamic>>> equityEgrisi(int oturumId) async {
     final r = await _sb
         .from('equity_curve')

@@ -49,6 +49,8 @@ class AlgoTradeRepository {
 
   Future<Map<String, dynamic>> sistemDurumu() => _service.sistemDurumu();
 
+  Future<Map<String, dynamic>> gecmisOzet() => _service.gecmisOzet();
+
   Future<Map<String, Map<String, dynamic>>> guncelFiyatlar(
           List<String> semboller) =>
       _service.guncelFiyatlar(semboller);

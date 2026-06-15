@@ -5,6 +5,7 @@ import '../../core/theme/color_scheme.dart';
 import '../../core/di/locator.dart';
 import 'algo_setup_view.dart';
 import 'algo_live_view.dart';
+import 'algo_gecmis_view.dart';
 
 // ── Tema sabitleri (home_screen ile aynı) ────────────────────────
 const _kBgTop = AppColors.bgGradientTop;
@@ -92,13 +93,65 @@ class _AlgoTradeScreenState extends State<AlgoTradeScreen> {
         ),
       );
     }
-    return RefreshIndicator(
-      color: _kTeal,
-      onRefresh: _durumuYenile,
-      child:
-          _oturum == null
-              ? AlgoSetupView(onBasladi: _durumuYenile)
-              : AlgoLiveView(oturum: _oturum!, onDegisti: _durumuYenile),
+    return Column(
+      children: [
+        _gecmisCubugu(isDark),
+        Expanded(
+          child: RefreshIndicator(
+            color: _kTeal,
+            onRefresh: _durumuYenile,
+            child: _oturum == null
+                ? AlgoSetupView(onBasladi: _durumuYenile)
+                : AlgoLiveView(oturum: _oturum!, onDegisti: _durumuYenile),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Ust sira: 'Gecmis Oturumlar' butonu. Hem kurulum hem canli ekranda
+  // gorunur. Dokununca toplam K/Z ozeti ve eski oturumlar acilir.
+  Widget _gecmisCubugu(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AlgoGecmisView()),
+          ),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _kTeal.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: _kTeal.withValues(alpha: 0.30), width: 1),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.history, color: _kTeal, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Geçmiş oturumlar ve toplam kâr/zarar',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right,
+                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
